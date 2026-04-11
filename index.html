@@ -3,91 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>彼得老蘇戰情室｜隨浪逐流</title>
+    <title>星際軌道｜引力量化戰情室</title>
     <style>
+        /* 宇宙科技色票 */
         :root {
-            --jp-indigo: #0F2540;   /* 深靛青 */
-            --jp-sand: #F2EFE9;     /* 砂色/和紙 */
-            --jp-red: #A61B1B;      /* 胭脂紅 */
-            --jp-gold: #C5A059;     /* 金箔色 */
-            --text-charcoal: #333333;
+            --space-bg: #0B0C10;        /* 宇宙深淵黑 */
+            --space-panel: #1F2833;     /* 太空艙面板灰 */
+            --neon-cyan: #66FCF1;       /* 霓虹青 (主光束) */
+            --neon-blue: #45A29E;       /* 暗物質藍 */
+            --alert-red: #FF4C4C;       /* 警戒紅 */
+            --text-main: #C5C6C7;       /* 螢幕白灰 */
         }
+        
         body {
-            background-color: var(--jp-sand);
-            color: var(--text-charcoal);
-            font-family: "PingFang TC", "Hiragino Sans GB", "Microsoft JhengHei", serif;
+            background-color: var(--space-bg);
+            /* 模擬太空艙的微弱網格雷達背景 */
+            background-image: 
+                linear-gradient(rgba(69, 162, 158, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(69, 162, 158, 0.05) 1px, transparent 1px);
+            background-size: 30px 30px;
+            color: var(--text-main);
+            font-family: 'Courier New', Courier, 'Microsoft JhengHei', monospace; /* 儀表板字體 */
             margin: 0; padding: 20px;
-            background-image: radial-gradient(var(--jp-indigo) 0.5px, transparent 0.5px);
-            background-size: 20px 20px;
-            background-opacity: 0.05;
+            overflow-x: hidden;
         }
+
         .header {
             text-align: center;
-            border-bottom: 2px solid var(--jp-indigo);
+            border-bottom: 1px solid var(--neon-blue);
             padding-bottom: 20px; margin-bottom: 40px;
+            position: relative;
         }
+        
         .header h1 { 
-            color: var(--jp-indigo); 
-            font-size: 32px; 
-            letter-spacing: 4px; 
+            color: var(--neon-cyan); 
+            font-size: 34px; 
+            letter-spacing: 6px; 
             margin-bottom: 5px;
+            text-shadow: 0 0 10px rgba(102, 252, 241, 0.5); /* 發光特效 */
         }
-        .header p { font-style: italic; color: var(--jp-gold); }
+        .header p { color: var(--neon-blue); letter-spacing: 2px; font-size: 14px; }
         
         .grid-container {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
             gap: 25px; max-width: 1200px; margin: 0 auto;
         }
+
+        /* 零重力漂浮動畫 */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+            100% { transform: translateY(0px); }
+        }
+
         .card {
-            background: white;
-            border: 1px solid #ddd;
-            border-top: 6px solid var(--jp-indigo);
-            box-shadow: 6px 6px 0px rgba(15, 37, 64, 0.1);
+            background: rgba(31, 40, 51, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(69, 162, 158, 0.3);
+            border-left: 4px solid var(--neon-cyan);
+            border-radius: 8px;
             padding: 20px;
-            position: relative;
-            overflow: hidden;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.8);
+            animation: float 6s ease-in-out infinite; /* 套用漂浮 */
+            transition: all 0.3s ease;
         }
-        .card::after {
-            content: "🌊"; position: absolute; bottom: -10px; right: -5px;
-            font-size: 40px; opacity: 0.1;
+        
+        /* 讓每張卡片漂浮頻率稍微錯開，更有真實感 */
+        .card:nth-child(even) { animation-delay: -3s; }
+        .card:nth-child(3n) { animation-delay: -1.5s; }
+
+        .card:hover {
+            box-shadow: 0 0 25px rgba(102, 252, 241, 0.4);
+            border: 1px solid var(--neon-cyan);
         }
+
         .stock-header {
             display: flex; justify-content: space-between; align-items: baseline;
-            margin-bottom: 15px; border-bottom: 1px solid var(--jp-sand); padding-bottom: 8px;
+            margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;
         }
-        .stock-id { font-size: 28px; font-weight: 900; color: var(--jp-indigo); }
-        .stock-name { font-size: 18px; color: var(--jp-gold); margin-left: 10px; font-weight: bold; }
+        .stock-id { font-size: 28px; font-weight: 900; color: #FFF; text-shadow: 0 0 8px var(--neon-cyan); }
+        .stock-name { font-size: 16px; color: var(--text-main); margin-left: 10px; }
         
         .inst-badge {
-            background: var(--jp-indigo); color: white;
-            padding: 3px 10px; border-radius: 20px; font-size: 12px;
+            background: rgba(102, 252, 241, 0.1); color: var(--neon-cyan);
+            border: 1px solid var(--neon-cyan);
+            padding: 4px 10px; border-radius: 4px; font-size: 12px;
+            box-shadow: 0 0 5px rgba(102, 252, 241, 0.2);
         }
-        .data-row { display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px dotted #eee; }
-        .label { color: #888; font-size: 13px; }
-        .val { font-weight: bold; font-family: "Courier New", monospace; }
+
+        .data-row { display: flex; justify-content: space-between; margin-bottom: 10px; }
+        .label { color: var(--neon-blue); font-size: 13px; }
+        .val { font-weight: bold; color: #FFF; letter-spacing: 1px; }
 
         .action-box {
             margin-top: 20px; padding: 12px;
-            text-align: center; font-weight: bold;
-            border: 1.5px solid var(--jp-indigo);
-            letter-spacing: 2px;
+            text-align: center; font-weight: bold; letter-spacing: 2px;
+            border-radius: 4px; text-transform: uppercase;
         }
-        .buy { background-color: var(--jp-indigo); color: white; }
-        .watch { border-style: dashed; color: var(--jp-indigo); }
+        .buy { 
+            background: rgba(102, 252, 241, 0.15); 
+            border: 1px solid var(--neon-cyan); 
+            color: var(--neon-cyan); 
+            text-shadow: 0 0 5px var(--neon-cyan);
+        }
+        .watch { 
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px dashed var(--text-main); 
+            color: var(--text-main); 
+        }
 
         .footer-rules {
-            font-size: 11px; margin-top: 15px; display: flex; justify-content: space-around;
-            color: #666; background: #f9f9f9; padding: 5px;
+            font-size: 12px; margin-top: 15px; display: flex; justify-content: space-around;
+            color: var(--neon-blue); background: rgba(0,0,0,0.4); padding: 8px; border-radius: 4px;
         }
-        .target { color: var(--jp-red); }
+        .target { color: #88FF88; } /* 抵達綠 */
+        .stop { color: var(--alert-red); } /* 警戒紅 */
+
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1>波濤之中｜隨浪逐流</h1>
-        <p>— 彼得老蘇量化選股戰情室 —</p>
+        <h1>🛰️ 星際軌道｜引力漂流</h1>
+        <p>[ BOHO-TECH QUANT SYSTEM V5.0_ONLINE ]</p>
     </div>
 
     <div class="grid-container" id="main-list">
@@ -95,15 +134,21 @@
 
     <script>
         fetch('plum_blossom_data.json')
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) throw new Error('Data Sync Failed');
+                return res.json();
+            })
             .then(data => {
                 const container = document.getElementById('main-list');
                 if(data.length === 0) {
-                    container.innerHTML = "<div style='grid-column: 1/-1; text-align:center;'>今日海象平穩，靜候潮流。</div>";
+                    container.innerHTML = "<div style='grid-column: 1/-1; text-align:center; color: var(--neon-blue); letter-spacing: 2px;'>[ 空間站雷達掃描完畢：目前星域無異常能量反應，保持軌道巡航。 ]</div>";
                     return;
                 }
                 data.forEach(s => {
-                    const actionClass = s.action === '買入' ? 'buy' : 'watch';
+                    const isBuy = s.action === '買入';
+                    const actionClass = isBuy ? 'buy' : 'watch';
+                    const actionText = isBuy ? '🚀 點火升空 (IGNITE)' : '🛰️ 軌道巡航 (ORBIT)';
+
                     const card = document.createElement('div');
                     card.className = 'card';
                     card.innerHTML = `
@@ -112,26 +157,26 @@
                                 <span class="stock-id">${s.stock_id}</span>
                                 <span class="stock-name">${s.stock_name}</span>
                             </div>
-                            <span class="inst-badge">法人 30D +${s.inst_buy}張</span>
+                            <span class="inst-badge">⚡ 能量注入 +${s.inst_buy}</span>
                         </div>
-                        <div class="data-row"><span class="label">現價</span><span class="val">${s.close}</span></div>
-                        <div class="data-row"><span class="label">量(張)</span><span class="val">${s.volume.toLocaleString()}</span></div>
-                        <div class="data-row"><span class="label">5MA</span><span class="val">${s.ma5}</span></div>
+                        <div class="data-row"><span class="label">目前座標 (現價)</span><span class="val">${s.close}</span></div>
+                        <div class="data-row"><span class="label">躍遷動能 (張數)</span><span class="val">${s.volume.toLocaleString()}</span></div>
+                        <div class="data-row"><span class="label">引力防線 (5MA)</span><span class="val">${s.ma5}</span></div>
                         
                         <div class="action-box ${actionClass}">
-                            判定：${s.action === '買入' ? '🌊 順勢入倉' : '🧘 靜心觀察'}
+                            [ 系統指令: ${actionText} ]
                         </div>
                         
                         <div class="footer-rules">
-                            <span>利: <b class="target">${s.target_price}</b></span>
-                            <span>損: <b>${s.stop_loss}</b></span>
+                            <span>抵達點: <b class="target">${s.target_price}</b></span>
+                            <span>逃生艙: <b class="stop">${s.stop_loss}</b></span>
                         </div>
                     `;
                     container.appendChild(card);
                 });
             })
             .catch(e => {
-                document.getElementById('main-list').innerHTML = "資料讀取中或尚未上傳檔案...";
+                document.getElementById('main-list').innerHTML = "<div style='grid-column: 1/-1; text-align:center; color: var(--alert-red);'>[ 錯誤 ] 雷達訊號遺失，請確認資料艙 (JSON) 是否連線正常。</div>";
             });
     </script>
 </body>
