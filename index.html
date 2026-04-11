@@ -1,1 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>梅花量化戰情室 Plum Blossom Model</title>
+    <style>
+        :root {
+            --plum-white: #FAF9F6;   /* 霜白 */
+            --plum-red: #D2355C;     /* 梅紅 */
+            --plum-pink: #F4C4CE;    /* 粉瓣 */
+            --branch-brown: #3E2723; /* 墨棕枝幹 */
+        }
+        body {
+            font-family: 'Helvetica Neue', Arial, 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+            background-color: var(--plum-white);
+            color: var(--branch-brown);
+            margin: 0; padding: 20px;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 3px solid var(--branch-brown);
+            padding-bottom: 10px; margin-bottom: 30px;
+        }
+        .header h1 { color: var(--plum-red); letter-spacing: 2px; }
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            max-width: 1200px; margin: 0 auto;
+        }
+        .card {
+            background: white;
+            border: 1px solid var(--plum-pink);
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            padding: 20px;
+            border-left: 5px solid var(--plum-red);
+            transition: transform 0.2s;
+        }
+        .card-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 15px; border-bottom: 1px dashed var(--plum-pink); padding-bottom: 10px;
+        }
+        .stock-id { font-size: 24px; font-weight: bold; }
+        .badge {
+            background-color: var(--plum-red); color: white;
+            padding: 4px 8px; border-radius: 4px; font-size: 12px;
+        }
+        .data-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
+        .action-box {
+            margin-top: 15px; padding: 10px; text-align: center; font-weight: bold;
+            background-color: var(--plum-white); border: 1px solid var(--branch-brown); border-radius: 4px;
+        }
+        .buy { color: var(--plum-red); border-color: var(--plum-red); background-color: #FDF2F4; }
+        .rules { font-size: 12px; color: #777; margin-top: 10px; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🌸 梅花量化戰情室</h1>
+        <p>「越冷越開花」：突破均線與法人籌碼共振模型</p>
+    </div>
+    <div class="grid-container" id="dashboard">正在載入梅花戰情資料...</div>
 
+    <script>
+        fetch('plum_blossom_data.json')
+            .then(response => {
+                if (!response.ok) throw new Error('找不到資料檔案');
+                return response.json();
+            })
+            .then(data => {
+                const dashboard = document.getElementById('dashboard');
+                dashboard.innerHTML = '';
+                if(data.length === 0) {
+                    dashboard.innerHTML = "<p style='text-align:center; width:100%;'>今日無符合條件之標的。</p>";
+                    return;
+                }
+                data.forEach(stock => {
+                    const marginBadge = stock.margin_doubled ? `<span style="background:#E67E22" class="badge">🚀 融資倍增</span>` : '';
+                    const actionClass = stock.action.includes('買入') ? 'buy' : '';
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.innerHTML = `
+                        <div class="card-header">
+                            <span class="stock-id">${stock.stock_id}</span>
+                            <div><span class="badge">法人買 ${stock.inst_buy} 張</span>${marginBadge}</div>
+                        </div>
+                        <div class="data-row"><span>最新收盤價</span> <strong>${stock.close}</strong></div>
+                        <div class="data-row"><span>成交量(張)</span> <strong>${stock.volume}</strong></div>
+                        <div class="action-box ${actionClass}">操作判定：${stock.action}</div>
+                        <div class="rules">
+                            🎯 停利 (+50%): ${stock.target_price} | 🛑 停損 (-10%): ${stock.stop_loss}
+                        </div>
+                    `;
+                    dashboard.appendChild(card);
+                });
+            })
+            .catch(error => {
+                document.getElementById('dashboard').innerHTML = `<p style='text-align:center; width:100%; color:red;'>錯誤：${error.message}。請確認 plum_blossom_data.json 是否已上傳。</p>`;
+            });
+    </script>
+</body>
+</html>
