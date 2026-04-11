@@ -18,7 +18,6 @@
         
         body {
             background-color: var(--lake-bg);
-            /* 模擬水面波紋的禪意背景 */
             background-image: 
                 radial-gradient(circle at 50% 0%, rgba(255,255,255,0.5) 0%, transparent 80%),
                 linear-gradient(0deg, rgba(10, 90, 122, 0.04) 1px, transparent 1px),
@@ -32,7 +31,7 @@
 
         .header {
             text-align: center;
-            border-bottom: 2px solid rgba(44, 62, 80, 0.1);
+            border-bottom: 2px solid rgba(10, 90, 122, 0.1);
             padding-bottom: 25px; margin-bottom: 40px;
             position: relative;
         }
@@ -49,6 +48,21 @@
             letter-spacing: 4px; 
             font-size: 15px; 
             font-style: italic;
+            margin-bottom: 5px;
+        }
+
+        /* 👑 新增的更新時間樣式 */
+        .update-time {
+            color: var(--water-blue);
+            font-size: 13px;
+            margin-top: 15px;
+            letter-spacing: 2px;
+            font-weight: bold;
+            background: rgba(255,255,255,0.6);
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            border: 1px dashed rgba(10, 90, 122, 0.3);
         }
         
         .grid-container {
@@ -57,7 +71,6 @@
             gap: 25px; max-width: 1200px; margin: 0 auto;
         }
 
-        /* 水面浮標漂浮動畫 */
         @keyframes float-water {
             0% { transform: translateY(0px) rotate(0deg); }
             50% { transform: translateY(-6px) rotate(0.5deg); }
@@ -71,32 +84,31 @@
             border-top: 4px solid var(--bamboo-green);
             border-radius: 6px;
             padding: 24px;
-            box-shadow: 0 10px 20px rgba(92, 131, 116, 0.05), 0 2px 5px rgba(0, 0, 0, 0.02);
-            animation: float-water 7s ease-in-out infinite; /* 柔和的水波漂浮 */
+            box-shadow: 0 10px 20px rgba(10, 90, 122, 0.05), 0 2px 5px rgba(0, 0, 0, 0.02);
+            animation: float-water 7s ease-in-out infinite; 
             transition: all 0.4s ease;
             position: relative;
         }
         
-        /* 讓每張卡片漂浮頻率錯開，像池子裡不同的浮標 */
         .card:nth-child(odd) { animation-delay: -2s; border-top-color: var(--copper-accent); }
         .card:nth-child(3n) { animation-delay: -4s; border-top-color: var(--water-blue); }
 
         .card:hover {
-            box-shadow: 0 15px 30px rgba(92, 131, 116, 0.12);
+            box-shadow: 0 15px 30px rgba(10, 90, 122, 0.12);
             transform: translateY(-2px);
         }
 
         .stock-header {
             display: flex; justify-content: space-between; align-items: baseline;
-            margin-bottom: 15px; border-bottom: 1px dashed rgba(44, 62, 80, 0.15); padding-bottom: 12px;
+            margin-bottom: 15px; border-bottom: 1px dashed rgba(10, 90, 122, 0.15); padding-bottom: 12px;
         }
         .stock-id { font-size: 28px; font-weight: bold; color: var(--water-blue); letter-spacing: 1px; }
         .stock-name { font-size: 16px; color: var(--ink-text); margin-left: 10px; font-weight: 500;}
         
         .inst-badge {
-            background: rgba(169, 113, 66, 0.1); 
+            background: rgba(194, 122, 58, 0.1); 
             color: var(--copper-accent);
-            border: 1px solid rgba(169, 113, 66, 0.3);
+            border: 1px solid rgba(194, 122, 58, 0.3);
             padding: 5px 12px; border-radius: 20px; font-size: 12px;
             font-weight: bold;
         }
@@ -111,13 +123,13 @@
             border-radius: 4px; transition: all 0.3s;
         }
         .buy { 
-            background: rgba(92, 131, 116, 0.1); 
+            background: rgba(46, 139, 87, 0.1); 
             border: 1px solid var(--bamboo-green); 
             color: var(--bamboo-green); 
         }
         .watch { 
-            background: rgba(44, 62, 80, 0.03);
-            border: 1px dashed rgba(44, 62, 80, 0.3); 
+            background: rgba(10, 90, 122, 0.03);
+            border: 1px dashed rgba(10, 90, 122, 0.3); 
             color: #555; 
         }
 
@@ -134,13 +146,13 @@
 <body>
 
     <div class="header">
-        <h1>🎣 靜水流深｜隨波逐流</h1>
+        <h1>🎣 靜水流深｜彼得魚池戰情室</h1>
         <p>[ 台灣釣客精神：心如止水，伺機而動 ]</p>
+        <div class="update-time" id="update-time">⏳ 魚池水情探測中...</div>
     </div>
 
     <div class="grid-container" id="main-list">
-        <!-- 數據注入處 -->
-    </div>
+        </div>
 
     <script>
         fetch('plum_blossom_data.json')
@@ -148,12 +160,19 @@
                 if (!res.ok) throw new Error('Data Sync Failed');
                 return res.json();
             })
-            .then(data => {
+            .then(json_data => {
+                // 👑 1. 更新面板上的時間標籤
+                document.getElementById('update-time').innerText = "⏱️ 魚池最後打撈時間：" + json_data.last_updated;
+                
+                // 👑 2. 讀取新的股票陣列結構
+                const data = json_data.data;
                 const container = document.getElementById('main-list');
-                if(data.length === 0) {
-                    container.innerHTML = "<div style='grid-column: 1/-1; text-align:center; color: var(--copper-accent); letter-spacing: 3px; font-size: 16px; margin-top: 40px;'>[ 水面平靜無波，靜候大魚現蹤 ]</div>";
+                
+                if(!data || data.length === 0) {
+                    container.innerHTML = "<div style='grid-column: 1/-1; text-align:center; color: var(--copper-accent); letter-spacing: 3px; font-size: 16px; margin-top: 40px;'>[ 水面平靜無波，今日無大魚現蹤 ]</div>";
                     return;
                 }
+                
                 data.forEach(s => {
                     const isBuy = s.action === '買入';
                     const actionClass = isBuy ? 'buy' : 'watch';
@@ -186,7 +205,8 @@
                 });
             })
             .catch(e => {
-                document.getElementById('main-list').innerHTML = "<div style='grid-column: 1/-1; text-align:center; color: var(--alert-red);'>[ 錯誤 ] 釣竿訊號遺失，請確認漁獲資料 (JSON) 是否連線正常。</div>";
+                document.getElementById('update-time').innerText = "⚠️ 雷達連線失敗";
+                document.getElementById('main-list').innerHTML = "<div style='grid-column: 1/-1; text-align:center; color: var(--alert-red);'>[ 錯誤 ] 釣竿訊號遺失，請確認漁獲資料 (JSON) 是否已上傳。</div>";
             });
     </script>
 </body>
