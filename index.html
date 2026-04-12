@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>靜水流深｜彼得魚池戰情室</title>
+    <title>靜水流深｜彼誰還楓姊夫魚池戰情室</title>
     <style>
-        /* 禪意與釣魚自然色票 */
         :root {
-            --lake-bg: #E3F0F5;         /* 海洋淺藍 (背景) */
-            --card-bg: rgba(255, 255, 255, 0.85); /* 浪花白 (卡片) */
-            --ink-text: #1E3A5F;        /* 深海藍 (主文字) */
-            --bamboo-green: #2E8B57;    /* 海藻綠 (買入/良好) */
-            --water-blue: #0A5A7A;      /* 遠洋深藍 (強調色) */
-            --copper-accent: #C27A3A;   /* 浮標古銅 (輔助色) */
-            --alert-red: #D35400;       /* 警戒紅 (停損/警戒) */
+            --lake-bg: #E3F0F5;         
+            --card-bg: rgba(255, 255, 255, 0.85); 
+            --ink-text: #1E3A5F;        
+            --bamboo-green: #2E8B57;    
+            --water-blue: #0A5A7A;      
+            --copper-accent: #C27A3A;   
+            --alert-red: #D35400;       
+            --pool-title-bg: rgba(10, 90, 122, 0.08);
         }
         
         body {
@@ -32,181 +32,150 @@
         .header {
             text-align: center;
             border-bottom: 2px solid rgba(10, 90, 122, 0.1);
-            padding-bottom: 25px; margin-bottom: 40px;
-            position: relative;
+            padding-bottom: 25px; margin-bottom: 30px;
+        }
+        .header h1 { color: var(--water-blue); font-size: 32px; letter-spacing: 6px; margin-bottom: 10px; font-weight: bold;}
+        .update-time {
+            color: var(--water-blue); font-size: 13px; font-weight: bold;
+            background: rgba(255,255,255,0.6); display: inline-block;
+            padding: 5px 15px; border-radius: 20px; border: 1px dashed rgba(10, 90, 122, 0.3);
         }
         
-        .header h1 { 
-            color: var(--water-blue); 
-            font-size: 32px; 
-            letter-spacing: 8px; 
-            margin-bottom: 10px;
-            font-weight: 600;
-        }
-        .header p { 
-            color: var(--copper-accent); 
-            letter-spacing: 4px; 
-            font-size: 15px; 
-            font-style: italic;
-            margin-bottom: 5px;
+        /* 魚池區塊樣式 */
+        .pool-section { margin-bottom: 50px; }
+        .pool-title {
+            font-size: 20px; color: var(--water-blue);
+            background: var(--pool-title-bg); padding: 12px 20px;
+            border-left: 6px solid var(--copper-accent); border-radius: 4px;
+            margin-bottom: 20px; letter-spacing: 2px; font-weight: bold;
         }
 
-        /* 👑 新增的更新時間樣式 */
-        .update-time {
-            color: var(--water-blue);
-            font-size: 13px;
-            margin-top: 15px;
-            letter-spacing: 2px;
-            font-weight: bold;
-            background: rgba(255,255,255,0.6);
-            display: inline-block;
-            padding: 5px 15px;
-            border-radius: 20px;
-            border: 1px dashed rgba(10, 90, 122, 0.3);
-        }
-        
         .grid-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 25px; max-width: 1200px; margin: 0 auto;
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px;
         }
 
         @keyframes float-water {
             0% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-6px) rotate(0.5deg); }
+            50% { transform: translateY(-5px) rotate(0.3deg); }
             100% { transform: translateY(0px) rotate(0deg); }
         }
 
         .card {
-            background: var(--card-bg);
-            backdrop-filter: blur(8px);
+            background: var(--card-bg); backdrop-filter: blur(8px);
             border: 1px solid rgba(255, 255, 255, 0.6);
-            border-top: 4px solid var(--bamboo-green);
-            border-radius: 6px;
-            padding: 24px;
-            box-shadow: 0 10px 20px rgba(10, 90, 122, 0.05), 0 2px 5px rgba(0, 0, 0, 0.02);
-            animation: float-water 7s ease-in-out infinite; 
-            transition: all 0.4s ease;
-            position: relative;
+            border-top: 4px solid var(--bamboo-green); border-radius: 6px;
+            padding: 20px; box-shadow: 0 8px 15px rgba(10, 90, 122, 0.05);
+            animation: float-water 7s ease-in-out infinite; transition: all 0.3s;
         }
-        
-        .card:nth-child(odd) { animation-delay: -2s; border-top-color: var(--copper-accent); }
-        .card:nth-child(3n) { animation-delay: -4s; border-top-color: var(--water-blue); }
-
-        .card:hover {
-            box-shadow: 0 15px 30px rgba(10, 90, 122, 0.12);
-            transform: translateY(-2px);
-        }
+        .card.watch-mode { border-top-color: var(--copper-accent); }
+        .card:hover { transform: translateY(-2px); box-shadow: 0 12px 20px rgba(10, 90, 122, 0.1); }
 
         .stock-header {
             display: flex; justify-content: space-between; align-items: baseline;
-            margin-bottom: 15px; border-bottom: 1px dashed rgba(10, 90, 122, 0.15); padding-bottom: 12px;
+            margin-bottom: 15px; border-bottom: 1px dashed rgba(10, 90, 122, 0.15); padding-bottom: 10px;
         }
-        .stock-id { font-size: 28px; font-weight: bold; color: var(--water-blue); letter-spacing: 1px; }
-        .stock-name { font-size: 16px; color: var(--ink-text); margin-left: 10px; font-weight: 500;}
-        
+        .stock-id { font-size: 24px; font-weight: bold; color: var(--water-blue); }
+        .stock-name { font-size: 15px; margin-left: 8px; font-weight: bold;}
         .inst-badge {
-            background: rgba(194, 122, 58, 0.1); 
-            color: var(--copper-accent);
-            border: 1px solid rgba(194, 122, 58, 0.3);
-            padding: 5px 12px; border-radius: 20px; font-size: 12px;
-            font-weight: bold;
+            background: rgba(194, 122, 58, 0.1); color: var(--copper-accent);
+            border: 1px solid rgba(194, 122, 58, 0.3); padding: 4px 10px; border-radius: 20px; font-size: 11px;
         }
 
-        .data-row { display: flex; justify-content: space-between; margin-bottom: 12px; }
-        .label { color: #666; font-size: 14px; }
-        .val { font-weight: 600; color: var(--ink-text); letter-spacing: 0.5px; }
+        .data-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px;}
+        .label { color: #666; }
+        .val { font-weight: bold; color: var(--ink-text); }
 
         .action-box {
-            margin-top: 25px; padding: 14px;
-            text-align: center; font-weight: bold; letter-spacing: 4px;
-            border-radius: 4px; transition: all 0.3s;
+            margin-top: 15px; padding: 10px; text-align: center; font-weight: bold; 
+            letter-spacing: 2px; border-radius: 4px; font-size: 15px;
         }
-        .buy { 
-            background: rgba(46, 139, 87, 0.1); 
-            border: 1px solid var(--bamboo-green); 
-            color: var(--bamboo-green); 
-        }
-        .watch { 
-            background: rgba(10, 90, 122, 0.03);
-            border: 1px dashed rgba(10, 90, 122, 0.3); 
-            color: #555; 
-        }
-
+        .buy { background: rgba(46, 139, 87, 0.1); border: 1px solid var(--bamboo-green); color: var(--bamboo-green); }
+        .watch { background: rgba(10, 90, 122, 0.05); border: 1px dashed rgba(10, 90, 122, 0.3); color: #555; }
+        
         .footer-rules {
-            font-size: 13px; margin-top: 20px; display: flex; justify-content: space-around;
-            color: var(--ink-text); background: rgba(255,255,255,0.5); 
-            padding: 10px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.03);
+            font-size: 12px; margin-top: 15px; display: flex; justify-content: space-around;
+            background: rgba(255,255,255,0.5); padding: 8px; border-radius: 4px;
         }
         .target { color: var(--bamboo-green); font-weight: bold;} 
         .stop { color: var(--alert-red); font-weight: bold;} 
-
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1>🎣 靜水流深｜彼得魚池戰情室</h1>
-        <p>[ 台灣釣客精神：心如止水，伺機而動 ]</p>
+        <h1>🎣 靜水流深｜彼誰還楓姊夫魚池戰情室</h1>
+        <p>[ 核心持股導航 ╳ 廣域海象探測 ]</p>
         <div class="update-time" id="update-time">⏳ 魚池水情探測中...</div>
     </div>
 
-    <div class="grid-container" id="main-list">
+    <div id="main-container">
         </div>
 
     <script>
         fetch('plum_blossom_data.json')
-            .then(res => {
-                if (!res.ok) throw new Error('Data Sync Failed');
-                return res.json();
-            })
+            .then(res => res.json())
             .then(json_data => {
-                // 👑 1. 更新面板上的時間標籤
                 document.getElementById('update-time').innerText = "⏱️ 魚池最後打撈時間：" + json_data.last_updated;
                 
-                // 👑 2. 讀取新的股票陣列結構
-                const data = json_data.data;
-                const container = document.getElementById('main-list');
+                const container = document.getElementById('main-container');
+                const pools = json_data.pools;
                 
-                if(!data || data.length === 0) {
-                    container.innerHTML = "<div style='grid-column: 1/-1; text-align:center; color: var(--copper-accent); letter-spacing: 3px; font-size: 16px; margin-top: 40px;'>[ 水面平靜無波，今日無大魚現蹤 ]</div>";
-                    return;
-                }
-                
-                data.forEach(s => {
-                    const isBuy = s.action === '買入';
-                    const actionClass = isBuy ? 'buy' : 'watch';
-                    const actionText = isBuy ? '🎣 揮竿中魚' : '🌊 靜候魚訊';
+                for (const [poolName, stocks] of Object.entries(pools)) {
+                    // 建立魚池區塊
+                    const section = document.createElement('div');
+                    section.className = 'pool-section';
+                    
+                    // 建立魚池標題
+                    const title = document.createElement('div');
+                    title.className = 'pool-title';
+                    title.innerText = poolName + ` (共 ${stocks.length} 檔)`;
+                    section.appendChild(title);
+                    
+                    // 建立卡片網格
+                    const grid = document.createElement('div');
+                    grid.className = 'grid-container';
+                    
+                    if(stocks.length === 0) {
+                        grid.innerHTML = "<div style='color: var(--copper-accent); padding: 10px;'>[ 此水域平靜無波 ]</div>";
+                    } else {
+                        stocks.forEach(s => {
+                            const isBuy = s.action === '買入加碼';
+                            const actionClass = isBuy ? 'buy' : 'watch';
+                            const cardStyle = isBuy ? '' : 'watch-mode';
+                            const actionText = isBuy ? '🎯 買入加碼' : '🌊 靜候觀察';
 
-                    const card = document.createElement('div');
-                    card.className = 'card';
-                    card.innerHTML = `
-                        <div class="stock-header">
-                            <div>
-                                <span class="stock-id">${s.stock_id}</span>
-                                <span class="stock-name">${s.stock_name}</span>
-                            </div>
-                            <span class="inst-badge">🐟 魚訊強度 +${s.inst_buy}</span>
-                        </div>
-                        <div class="data-row"><span class="label">海浪高度</span><span class="val">${s.close}</span></div>
-                        <div class="data-row"><span class="label">海浪強度</span><span class="val">${s.volume.toLocaleString()} 張</span></div>
-                        <div class="data-row"><span class="label">海浪5日警戒</span><span class="val">${s.ma5}</span></div>
-                        
-                        <div class="action-box ${actionClass}">
-                            [ ${actionText} ]
-                        </div>
-                        
-                        <div class="footer-rules">
-                            <span>漁貨豐收點: <span class="target">${s.target_price}</span></span>
-                            <span>釣竿剪線點: <span class="stop">${s.stop_loss}</span></span>
-                        </div>
-                    `;
-                    container.appendChild(card);
-                });
+                            const card = document.createElement('div');
+                            card.className = `card ${cardStyle}`;
+                            card.innerHTML = `
+                                <div class="stock-header">
+                                    <div>
+                                        <span class="stock-id">${s.stock_id}</span>
+                                        <span class="stock-name">${s.stock_name}</span>
+                                    </div>
+                                    <span class="inst-badge">🐟 魚訊 +${s.inst_buy}</span>
+                                </div>
+                                <div class="data-row"><span class="label">海浪高度 (現價)</span><span class="val">${s.close}</span></div>
+                                <div class="data-row"><span class="label">海浪強度 (張數)</span><span class="val">${s.volume.toLocaleString()}</span></div>
+                                <div class="data-row"><span class="label">5日警戒 (5MA)</span><span class="val">${s.ma5}</span></div>
+                                <div class="data-row"><span class="label">生命線 (30MA)</span><span class="val">${s.ma30}</span></div>
+                                
+                                <div class="action-box ${actionClass}">[ ${actionText} ]</div>
+                                
+                                <div class="footer-rules">
+                                    <span>豐收: <span class="target">${s.target_price}</span></span>
+                                    <span>剪線: <span class="stop">${s.stop_loss}</span></span>
+                                </div>
+                            `;
+                            grid.appendChild(card);
+                        });
+                    }
+                    section.appendChild(grid);
+                    container.appendChild(section);
+                }
             })
             .catch(e => {
                 document.getElementById('update-time').innerText = "⚠️ 雷達連線失敗";
-                document.getElementById('main-list').innerHTML = "<div style='grid-column: 1/-1; text-align:center; color: var(--alert-red);'>[ 錯誤 ] 釣竿訊號遺失，請確認漁獲資料 (JSON) 是否已上傳。</div>";
+                document.getElementById('main-container').innerHTML = "<div style='text-align:center; color: var(--alert-red);'>[ 錯誤 ] 釣竿訊號遺失，請確認漁獲資料 (JSON) 是否已上傳。</div>";
             });
     </script>
 </body>
