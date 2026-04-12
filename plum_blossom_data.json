@@ -1,59 +1,11 @@
 {
-  "last_updated": "2026/04/12 17:43",
+  "last_updated": "2026/04/12 11:34",
   "pools": {
     "🔥 姊夫爆發小魚池": [
       {
-        "stock_id": "6155",
-        "stock_name": "鈞寶",
-        "close": "讀取中",
-        "volume": 0,
-        "inst_buy": 0,
-        "ma5": 0,
-        "ma30": 0,
-        "action": "靜候觀察",
-        "target_price": 0,
-        "stop_loss": 0
-      },
-      {
-        "stock_id": "2327",
-        "stock_name": "國巨*",
-        "close": "讀取中",
-        "volume": 0,
-        "inst_buy": 0,
-        "ma5": 0,
-        "ma30": 0,
-        "action": "靜候觀察",
-        "target_price": 0,
-        "stop_loss": 0
-      },
-      {
-        "stock_id": "00910",
-        "stock_name": "第一金太空衛星",
-        "close": "讀取中",
-        "volume": 0,
-        "inst_buy": 0,
-        "ma5": 0,
-        "ma30": 0,
-        "action": "靜候觀察",
-        "target_price": 0,
-        "stop_loss": 0
-      },
-      {
         "stock_id": "5312",
         "stock_name": "寶島科",
-        "close": "讀取中",
-        "volume": 0,
-        "inst_buy": 0,
-        "ma5": 0,
-        "ma30": 0,
-        "action": "靜候觀察",
-        "target_price": 0,
-        "stop_loss": 0
-      },
-      {
-        "stock_id": "1513",
-        "stock_name": "中興電",
-        "close": "讀取中",
+        "close": "無資料",
         "volume": 0,
         "inst_buy": 0,
         "ma5": 0,
@@ -65,57 +17,9 @@
     ],
     "🍁 楓大永動魚池": [
       {
-        "stock_id": "2308",
-        "stock_name": "台達電",
-        "close": "讀取中",
-        "volume": 0,
-        "inst_buy": 0,
-        "ma5": 0,
-        "ma30": 0,
-        "action": "靜候觀察",
-        "target_price": 0,
-        "stop_loss": 0
-      },
-      {
-        "stock_id": "00923",
-        "stock_name": "群益台ESG低碳50",
-        "close": "讀取中",
-        "volume": 0,
-        "inst_buy": 0,
-        "ma5": 0,
-        "ma30": 0,
-        "action": "靜候觀察",
-        "target_price": 0,
-        "stop_loss": 0
-      },
-      {
-        "stock_id": "2344",
-        "stock_name": "華邦電",
-        "close": "讀取中",
-        "volume": 0,
-        "inst_buy": 0,
-        "ma5": 0,
-        "ma30": 0,
-        "action": "靜候觀察",
-        "target_price": 0,
-        "stop_loss": 0
-      },
-      {
         "stock_id": "6469",
         "stock_name": "大樹",
-        "close": "讀取中",
-        "volume": 0,
-        "inst_buy": 0,
-        "ma5": 0,
-        "ma30": 0,
-        "action": "靜候觀察",
-        "target_price": 0,
-        "stop_loss": 0
-      },
-      {
-        "stock_id": "1707",
-        "stock_name": "葡萄王",
-        "close": "讀取中",
+        "close": "無資料",
         "volume": 0,
         "inst_buy": 0,
         "ma5": 0,
@@ -127,33 +31,9 @@
     ],
     "🌟 彼神黃金魚池": [
       {
-        "stock_id": "3028",
-        "stock_name": "增你強",
-        "close": "讀取中",
-        "volume": 0,
-        "inst_buy": 0,
-        "ma5": 0,
-        "ma30": 0,
-        "action": "靜候觀察",
-        "target_price": 0,
-        "stop_loss": 0
-      },
-      {
-        "stock_id": "2484",
-        "stock_name": "希華",
-        "close": "讀取中",
-        "volume": 0,
-        "inst_buy": 0,
-        "ma5": 0,
-        "ma30": 0,
-        "action": "靜候觀察",
-        "target_price": 0,
-        "stop_loss": 0
-      },
-      {
         "stock_id": "3221",
         "stock_name": "台嘉碩",
-        "close": "讀取中",
+        "close": "無資料",
         "volume": 0,
         "inst_buy": 0,
         "ma5": 0,
@@ -165,7 +45,7 @@
       {
         "stock_id": "8182",
         "stock_name": "加高",
-        "close": "讀取中",
+        "close": "無資料",
         "volume": 0,
         "inst_buy": 0,
         "ma5": 0,
@@ -177,7 +57,7 @@
       {
         "stock_id": "8289",
         "stock_name": "泰藝",
-        "close": "讀取中",
+        "close": "無資料",
         "volume": 0,
         "inst_buy": 0,
         "ma5": 0,
@@ -189,21 +69,9 @@
     ],
     "🔭 自選觀察水域": [
       {
-        "stock_id": "2330",
-        "stock_name": "台積電",
-        "close": "讀取中",
-        "volume": 0,
-        "inst_buy": 0,
-        "ma5": 0,
-        "ma30": 0,
-        "action": "靜候觀察",
-        "target_price": 0,
-        "stop_loss": 0
-      },
-      {
-        "stock_id": "0050",
-        "stock_name": "元大台灣50",
-        "close": "讀取中",
+        "stock_id": "1785",
+        "stock_name": "光洋科",
+        "close": "無資料",
         "volume": 0,
         "inst_buy": 0,
         "ma5": 0,
@@ -213,79 +81,6 @@
         "stop_loss": 0
       }
     ],
-    "🌊 汪洋大魚 (全市場強勢股參考)": [
-      {
-        "stock_id": "6438",
-        "stock_name": "迅得",
-        "close": 179.5,
-        "volume": 4838,
-        "inst_buy": 1071,
-        "ma5": 175.2,
-        "ma30": 161.57,
-        "action": "買入加碼",
-        "target_price": 269.25,
-        "stop_loss": 161.55
-      },
-      {
-        "stock_id": "3450",
-        "stock_name": "聯鈞",
-        "close": 306.5,
-        "volume": 31518,
-        "inst_buy": 5432,
-        "ma5": 273.3,
-        "ma30": 276.83,
-        "action": "買入加碼",
-        "target_price": 459.75,
-        "stop_loss": 275.85
-      },
-      {
-        "stock_id": "2495",
-        "stock_name": "普安",
-        "close": 36.85,
-        "volume": 10383,
-        "inst_buy": 6754,
-        "ma5": 34.16,
-        "ma30": 33.32,
-        "action": "買入加碼",
-        "target_price": 55.28,
-        "stop_loss": 33.16
-      },
-      {
-        "stock_id": "2340",
-        "stock_name": "台亞",
-        "close": 28.25,
-        "volume": 5554,
-        "inst_buy": 7012,
-        "ma5": 28.08,
-        "ma30": 27.02,
-        "action": "買入加碼",
-        "target_price": 42.38,
-        "stop_loss": 25.43
-      },
-      {
-        "stock_id": "8438",
-        "stock_name": "昶昕",
-        "close": 89.3,
-        "volume": 5356,
-        "inst_buy": 1509,
-        "ma5": 80.34,
-        "ma30": 68.81,
-        "action": "買入加碼",
-        "target_price": 133.95,
-        "stop_loss": 80.37
-      },
-      {
-        "stock_id": "8162",
-        "stock_name": "微矽電子-創",
-        "close": 43.1,
-        "volume": 1126,
-        "inst_buy": 18,
-        "ma5": 40.55,
-        "ma30": 39.2,
-        "action": "買入加碼",
-        "target_price": 64.65,
-        "stop_loss": 38.79
-      }
-    ]
+    "🌊 汪洋大魚": []
   }
 }
