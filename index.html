@@ -15,10 +15,8 @@
         }
         .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid rgba(10,90,122,0.1); padding-bottom: 20px; }
         .update-time { font-size: 13px; background: white; padding: 5px 15px; border-radius: 20px; border: 1px dashed var(--water-blue); font-weight: bold; }
-        
         .pool-section { margin-bottom: 40px; }
         .pool-title { font-size: 20px; font-weight: bold; background: rgba(10,90,122,0.05); padding: 10px 20px; border-left: 5px solid var(--copper-accent); margin-bottom: 15px; }
-        
         .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
         .card { 
             background: var(--card-bg); border-radius: 8px; padding: 20px; border: 1px solid #ddd; border-top: 4px solid var(--copper-accent); 
@@ -26,47 +24,38 @@
         }
         .card.is-buy { border-top-color: var(--bamboo-green); }
         .card:hover { transform: translateY(-3px); box-shadow: 0 8px 15px rgba(0,0,0,0.1); }
-        
         .stock-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #ccc; padding-bottom: 8px; margin-bottom: 12px; }
         .stock-id { font-size: 22px; font-weight: bold; color: var(--water-blue); }
         .stock-name { font-size: 16px; font-weight: bold; }
         .inst-badge { background: #F2F2F2; padding: 3px 8px; border-radius: 4px; font-size: 11px; color: var(--copper-accent); font-weight: bold; }
-        
         .data-row { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 6px; }
         .action-box { margin-top: 15px; padding: 10px; text-align: center; font-weight: bold; border-radius: 4px; border: 1px solid #ddd; }
         .action-box.buy { background: rgba(46,139,87,0.1); color: var(--bamboo-green); border-color: var(--bamboo-green); }
         .action-box.watch { background: #F9F9F9; color: #777; }
-        
         .footer-rules { font-size: 12px; display: flex; justify-content: space-around; margin-top: 12px; color: #888; }
         .target { color: var(--bamboo-green); font-weight: bold; }
         .stop { color: var(--alert-red); font-weight: bold; }
     </style>
 </head>
 <body>
-
     <div class="header">
         <h1>🎣 靜水流深｜彼我還楓姊夫魚池戰情室</h1>
         <div class="update-time" id="update-time">探測中...</div>
     </div>
-
     <div id="main-container"></div>
-
     <script>
-        fetch('plum_blossom_data.json')
+        fetch('plum_blossom_data.json?t=' + new Date().getTime())
             .then(res => res.json())
             .then(json_data => {
                 document.getElementById('update-time').innerText = "⏱️ 打撈時間：" + json_data.last_updated;
                 const container = document.getElementById('main-container');
                 const pools = json_data.pools;
-                
                 for (const [poolName, stocks] of Object.entries(pools)) {
                     const section = document.createElement('div');
                     section.className = 'pool-section';
                     section.innerHTML = `<div class="pool-title">${poolName}</div>`;
-                    
                     const grid = document.createElement('div');
                     grid.className = 'grid-container';
-                    
                     stocks.forEach(s => {
                         const isBuy = s.action === '買入加碼';
                         const card = document.createElement('div');
@@ -77,8 +66,9 @@
                                 <div class="inst-badge">魚訊 +${s.inst_buy}</div>
                             </div>
                             <div class="data-row"><span>海浪高度</span><b>${s.close}</b></div>
-                            <div class="data-row"><span>海浪強度</span><b>${s.volume}</b></div>
-                            <div class="data-row"><span>5日警戒</span><b>${s.ma5}</b></div>
+                            <div class="data-row"><span>海浪強度</span><b>${s.volume.toLocaleString()}</b></div>
+                            <div class="data-row"><span>5日警戒線</span><b>${s.ma5}</b></div>
+                            <div class="data-row"><span>30日平均海浪線</span><b>${s.ma30}</b></div>
                             <div class="action-box ${isBuy ? 'buy' : 'watch'}">${isBuy ? '🎯 買入加碼' : '🌊 靜候觀察'}</div>
                             <div class="footer-rules">
                                 <span>獲利豐收: <span class="target">${s.target_price}</span></span>
@@ -90,6 +80,9 @@
                     section.appendChild(grid);
                     container.appendChild(section);
                 }
+            })
+            .catch(e => {
+                document.getElementById('update-time').innerText = "⚠️ 雷達連線失敗";
             });
     </script>
 </body>
