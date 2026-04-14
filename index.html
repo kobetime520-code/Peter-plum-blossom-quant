@@ -99,7 +99,7 @@
             <h1>🌌 匹夫有責｜彼夫有責楓葉戰情室</h1>
             <div class="update-time" id="update-time">衛星同步中...</div>
         </div>
-        <input type="text" id="global-search" class="search-box" placeholder="🛸 輸入股票代碼開啟模擬探測...">
+        <input type="text" id="global-search" class="search-box" placeholder="🛸 探測汪洋大魚星系，輸入代碼啟動模擬...">
     </div>
 
     <div id="search-result-container" class="pool-section">
@@ -131,7 +131,7 @@
             if (!isWangYang) {
                 simHtml = `
                     <div class="sim-panel">
-                        <div class="sim-title">🛠️ 獨立沙盒模擬艙 (無痕模式)</div>
+                        <div class="sim-title">🛠️ Beta user 模擬倉</div>
                         <div class="sim-input-group">
                             <div>
                                 <span class="sim-label">持股價位</span>
@@ -143,8 +143,8 @@
                             </div>
                         </div>
                         <div class="sim-result">
-                            <div class="result-row"><span>🎯 飛向太空50%獲利目標</span><b class="target" id="profit-${s.stock_id}" style="color: var(--neon-cyan);">--</b></div>
-                            <div class="result-row"><span>✂️ 停利吃紅利或停損經驗防線</span><b class="stop" id="loss-${s.stock_id}" style="color: var(--neon-red);">--</b></div>
+                            <div class="result-row"><span>🎯飛向太空建議停利點(+50%)</span><b class="target" id="profit-${s.stock_id}" style="color: var(--neon-cyan);">--</b></div>
+                            <div class="result-row"><span>✂️ 返回人間停損點(-10%)</span><b class="stop" id="loss-${s.stock_id}" style="color: var(--neon-red);">--</b></div>
                         </div>
                     </div>
                 `;
