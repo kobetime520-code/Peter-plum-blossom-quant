@@ -99,7 +99,7 @@
             <h1>🌌 匹夫有責｜彼夫有責楓葉戰情室</h1>
             <div class="update-time" id="update-time">衛星同步中...</div>
         </div>
-        <input type="text" id="global-search" class="search-box" placeholder="🛸 探測汪洋大魚星系，輸入代碼啟動模擬...">
+        <input type="text" id="global-search" class="search-box" placeholder="🛸 啟動聲納：輸入汪洋大魚代碼進行探測...">
     </div>
 
     <div id="search-result-container" class="pool-section">
@@ -129,6 +129,7 @@
 
             let simHtml = '';
             if (!isWangYang) {
+                // 四大核心魚池：提供手動模擬
                 simHtml = `
                     <div class="sim-panel">
                         <div class="sim-title">🛠️ Beta user 模擬倉</div>
@@ -145,6 +146,19 @@
                         <div class="sim-result">
                             <div class="result-row"><span>🎯飛向太空建議停利點(+50%)</span><b class="target" id="profit-${s.stock_id}" style="color: var(--neon-cyan);">--</b></div>
                             <div class="result-row"><span>✂️ 返回人間停損點(-10%)</span><b class="stop" id="loss-${s.stock_id}" style="color: var(--neon-red);">--</b></div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                // 汪洋大魚：直接基於 5MA 自動導航
+                const autoProfit = (s.ma5 * 1.5).toFixed(2);
+                const autoLoss = (s.ma5 * 0.9).toFixed(2);
+                simHtml = `
+                    <div class="sim-panel">
+                        <div class="sim-title">🤖 系統自動導航 (基於5MA基準)</div>
+                        <div class="sim-result" style="border-top:none; padding-top:0;">
+                            <div class="result-row"><span>🎯飛向太空建議停利點(+50%)</span><b class="target" style="color: var(--neon-cyan);">${autoProfit}</b></div>
+                            <div class="result-row"><span>✂️ 返回人間停損點(-10%)</span><b class="stop" style="color: var(--neon-red);">${autoLoss}</b></div>
                         </div>
                     </div>
                 `;
@@ -199,7 +213,7 @@
                 for (const stocks of Object.values(fullData.pools)) {
                     const match = stocks.find(s => s.stock_id === code);
                     if (match) {
-                        searchGrid.innerHTML = createCard(match, false);
+                        searchGrid.innerHTML = createCard(match, false); // 搜尋結果開放手動模擬
                         found = true;
                         break;
                     }
