@@ -25,6 +25,7 @@
             margin: 0; padding: 20px; min-height: 100vh;
         }
 
+        /* 頂部搜索與標題 */
         .top-nav {
             max-width: 1200px; margin: 0 auto 30px;
             display: flex; flex-direction: column; align-items: center;
@@ -36,11 +37,11 @@
             color: var(--text-main); font-size: 16px; outline: none;
             box-shadow: 0 0 15px rgba(100,255,218,0.2); text-align: center;
         }
-        .search-box:focus { box-shadow: 0 0 25px rgba(100,255,218,0.4); }
 
         .header h1 { margin: 0; letter-spacing: 2px; text-shadow: 0 0 10px rgba(100,255,218,0.3); font-size: 28px; }
         .update-time { font-size: 12px; color: var(--neon-cyan); opacity: 0.8; margin-top: 5px; }
 
+        /* 卡片區域 */
         .pool-section { margin-bottom: 50px; max-width: 1400px; margin-left: auto; margin-right: auto; }
         .pool-title { 
             font-size: 20px; font-weight: bold; color: var(--neon-cyan);
@@ -54,42 +55,44 @@
             background: var(--panel-bg); backdrop-filter: blur(10px);
             border-radius: 15px; padding: 22px; border: 1px solid var(--panel-border);
             border-top: 4px solid var(--text-muted); box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-            transition: 0.3s ease; position: relative;
+            transition: 0.3s ease;
         }
         .card.is-buy { border-top-color: var(--neon-green); }
-        .card:hover { transform: translateY(-5px); border-color: var(--neon-cyan); box-shadow: 0 15px 35px rgba(100,255,218,0.2); }
 
         .stock-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .stock-id { font-size: 26px; font-weight: bold; color: var(--neon-cyan); font-family: monospace; }
+        .stock-id { font-size: 26px; font-weight: bold; color: var(--neon-cyan); }
         .stock-name { font-size: 18px; color: var(--text-main); margin-left: 10px; }
         .inst-badge { background: rgba(255,215,0,0.05); padding: 4px 10px; border-radius: 4px; font-size: 12px; color: var(--neon-gold); border: 1px solid rgba(255,215,0,0.2); }
 
         .data-row { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 8px; color: var(--text-muted); }
         .data-row b { color: var(--text-main); font-size: 16px; }
-        .highlight { color: var(--neon-cyan) !important; font-size: 20px !important; text-shadow: 0 0 10px rgba(100,255,218,0.4); }
+        .highlight { color: var(--neon-cyan) !important; font-size: 20px !important; }
 
         .sim-panel {
             margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);
             background: rgba(0,0,0,0.2); border-radius: 8px; padding: 12px;
         }
-        .sim-title { font-size: 12px; color: var(--neon-gold); margin-bottom: 10px; font-weight: bold; text-align: center; letter-spacing: 1px; }
+        .sim-title { font-size: 12px; color: var(--neon-gold); margin-bottom: 10px; font-weight: bold; text-align: center; }
         .sim-input-group { display: flex; gap: 10px; margin-bottom: 10px; }
-        .sim-input-group div { flex: 1; }
-        .sim-label { font-size: 11px; display: block; margin-bottom: 4px; color: var(--text-muted); }
         .sim-input {
             width: 85%; background: rgba(0,0,0,0.3); border: 1px solid var(--panel-border);
             border-radius: 4px; color: var(--neon-cyan); padding: 5px; font-size: 13px; outline: none;
         }
-        .sim-input:focus { border-color: var(--neon-cyan); }
         
         .sim-result { font-size: 12px; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 10px; line-height: 1.6; }
         .result-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
 
-        .action-box { margin-top: 15px; padding: 12px; text-align: center; font-weight: bold; border-radius: 6px; font-size: 15px; letter-spacing: 1px; }
-        .action-box.buy { background: rgba(0,230,118,0.15); color: var(--neon-green); border: 1px solid var(--neon-green); text-shadow: 0 0 8px rgba(0,230,118,0.5); }
+        .action-box { margin-top: 15px; padding: 12px; text-align: center; font-weight: bold; border-radius: 6px; font-size: 15px; }
+        .action-box.buy { background: rgba(0,230,118,0.15); color: var(--neon-green); border: 1px solid var(--neon-green); }
         .action-box.watch { background: rgba(136,146,176,0.1); color: var(--text-muted); border: 1px solid rgba(136,146,176,0.2); }
 
-        #search-result-container { margin-bottom: 30px; display: none; }
+        /* 👑 著作權與聲明樣式 */
+        .footer-copyright {
+            text-align: center; padding: 40px 20px; margin-top: 60px;
+            border-top: 1px solid var(--panel-border); color: var(--text-muted);
+            font-size: 12px; line-height: 1.8; letter-spacing: 1px;
+        }
+        .copyright-symbol { color: var(--neon-cyan); font-weight: bold; }
     </style>
 </head>
 <body>
@@ -102,14 +105,25 @@
         <input type="text" id="global-search" class="search-box" placeholder="🛸 啟動聲納：輸入汪洋大魚代碼進行探測...">
     </div>
 
-    <div id="search-result-container" class="pool-section">
+    <div id="search-result-container" class="pool-section" style="display:none;">
         <div class="pool-title">🛰️ 搜尋結果探測</div>
         <div id="search-grid" class="grid-container"></div>
     </div>
 
     <div id="main-container"></div>
 
+    <footer class="footer-copyright">
+        <p><span class="copyright-symbol">©</span> <span id="current-year"></span> 彼夫有擇楓葉戰情室. All Rights Reserved.</p>
+        <p style="opacity: 0.6; margin-top: 10px;">
+            ⚠️ 本系統僅供量化投資模擬推演與技術測試之用，所提供之數據資訊不構成任何投資建議。<br>
+            投資一定有風險，台股投資有賺有賠，申購前應詳閱公開說明書，入市請謹慎評估。
+        </p>
+    </footer>
+
     <script>
+        // 設定著作權年份
+        document.getElementById('current-year').innerText = new Date().getFullYear();
+
         let fullData = null;
 
         function updateSim(sid) {
@@ -129,19 +143,12 @@
 
             let simHtml = '';
             if (!isWangYang) {
-                // 四大核心魚池：提供手動模擬
                 simHtml = `
                     <div class="sim-panel">
                         <div class="sim-title">🛠️ Beta user 模擬倉</div>
                         <div class="sim-input-group">
-                            <div>
-                                <span class="sim-label">持股價位</span>
-                                <input type="number" id="price-${s.stock_id}" class="sim-input" placeholder="輸入價位" oninput="updateSim('${s.stock_id}')">
-                            </div>
-                            <div>
-                                <span class="sim-label">持股股數</span>
-                                <input type="number" id="shares-${s.stock_id}" class="sim-input" placeholder="輸入股數" max="499000">
-                            </div>
+                            <div><input type="number" id="price-${s.stock_id}" class="sim-input" placeholder="持股價位" oninput="updateSim('${s.stock_id}')"></div>
+                            <div><input type="number" id="shares-${s.stock_id}" class="sim-input" placeholder="持股股數"></div>
                         </div>
                         <div class="sim-result">
                             <div class="result-row"><span>🎯飛向太空建議停利點(+50%)</span><b class="target" id="profit-${s.stock_id}" style="color: var(--neon-cyan);">--</b></div>
@@ -150,7 +157,6 @@
                     </div>
                 `;
             } else {
-                // 汪洋大魚：直接基於 5MA 自動導航
                 const autoProfit = (s.ma5 * 1.5).toFixed(2);
                 const autoLoss = (s.ma5 * 0.9).toFixed(2);
                 simHtml = `
@@ -170,10 +176,10 @@
                         <div><span class="stock-id">${s.stock_id}</span><span class="stock-name">${s.stock_name}</span></div>
                         <div class="inst-badge">30日法人買賣超 ${instText}</div>
                     </div>
-                    <div class="data-row"><span>海浪最新收盤價 (現價)</span><b class="highlight">${s.close}</b></div>
-                    <div class="data-row"><span>海浪成交量 (張)</span><b>${s.volume.toLocaleString()}</b></div>
-                    <div class="data-row"><span>海浪5日均線 (5MA)</span><b>${s.ma5}</b></div>
-                    <div class="data-row"><span>海浪30日月線 (30MA)</span><b>${s.ma30}</b></div>
+                    <div class="data-row"><span>現價</span><b class="highlight">${s.close}</b></div>
+                    <div class="data-row"><span>成交量 (張)</span><b>${s.volume.toLocaleString()}</b></div>
+                    <div class="data-row"><span>5MA</span><b>${s.ma5}</b></div>
+                    <div class="data-row"><span>30MA</span><b>${s.ma30}</b></div>
                     <div class="action-box ${isBuy ? 'buy' : 'watch'}">${isBuy ? '🚀 買入加碼 (Launch)' : '📡 靜候觀察 (Standby)'}</div>
                     ${simHtml}
                 </div>
@@ -199,9 +205,7 @@
                     container.appendChild(section);
                 }
             })
-            .catch(e => {
-                document.getElementById('update-time').innerText = "⚠️ 衛星連線失敗";
-            });
+            .catch(e => { console.error(e); });
 
         document.getElementById('global-search').addEventListener('input', (e) => {
             const code = e.target.value.trim();
@@ -213,7 +217,7 @@
                 for (const stocks of Object.values(fullData.pools)) {
                     const match = stocks.find(s => s.stock_id === code);
                     if (match) {
-                        searchGrid.innerHTML = createCard(match, false); // 搜尋結果開放手動模擬
+                        searchGrid.innerHTML = createCard(match, false);
                         found = true;
                         break;
                     }
