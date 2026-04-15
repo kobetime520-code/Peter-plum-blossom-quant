@@ -6,7 +6,7 @@
     <title>全域雷達 V6.7｜匹夫有責｜彼夫有責楓葉戰情室</title>
     <style>
         /* =========================================
-           1. 預設：太空深海風格 (Deep Ocean Space - 暗色系)
+           1. 預設：太空深海風格 (Deep Ocean Space)
            ========================================= */
         :root {
             --ocean-bg: radial-gradient(circle at top, #0A192F 0%, #020C1B 100%);
@@ -18,7 +18,6 @@
             --neon-green: #00E676;
             --neon-red: #FF5252;
             --neon-gold: #FFD700;
-            /* 區塊與陰影底色 */
             --title-bg: rgba(0, 0, 0, 0.4);
             --badge-bg: rgba(0, 0, 0, 0.2);
             --sim-bg: rgba(0, 0, 0, 0.2);
@@ -26,36 +25,32 @@
             --watch-bg: rgba(255, 255, 255, 0.05);
             --watch-border: rgba(255, 255, 255, 0.1);
             --card-shadow: rgba(0, 0, 0, 0.4);
+            --log-bg: rgba(100, 255, 218, 0.05);
         }
 
         /* =========================================
-           2. 切換：加拿大淡楓葉風格 (Light Maple - 淺色柔和系)
+           2. 切換：加拿大淡楓葉風格 (Light Maple)
            ========================================= */
         [data-theme="maple"] {
-            /* 柔和的秋日奶茶/陽光漸層 */
             --ocean-bg: linear-gradient(135deg, #FFF6E5 0%, #FAD7A1 100%);
-            /* 輕透的白玻璃質感 */
             --panel-bg: rgba(255, 255, 255, 0.75);
             --panel-border: rgba(211, 84, 0, 0.3);
-            /* 文字改為深咖啡色確保閱讀舒適度 */
             --text-main: #3E2723;
             --text-muted: #795548;
-            /* 提示色系轉為沉穩的秋色 */
-            --neon-cyan: #D35400; /* 楓葉橘紅 */
-            --neon-green: #2E7D32; /* 森林綠 */
-            --neon-red: #C62828; /* 漿果紅 */
+            --neon-cyan: #D35400; 
+            --neon-green: #2E7D32; 
+            --neon-red: #C62828; 
             --neon-gold: #E67E22;
-            /* 區塊與陰影底色 (淺色模式適配) */
             --title-bg: rgba(255, 255, 255, 0.6);
             --badge-bg: rgba(255, 255, 255, 0.6);
             --sim-bg: rgba(255, 255, 255, 0.5);
             --input-bg: rgba(255, 255, 255, 0.8);
             --watch-bg: rgba(0, 0, 0, 0.03);
             --watch-border: rgba(0, 0, 0, 0.1);
-            --card-shadow: rgba(0, 0, 0, 0.12); /* 陰影變淡，更輕盈 */
+            --card-shadow: rgba(0, 0, 0, 0.12);
+            --log-bg: rgba(211, 84, 0, 0.05);
         }
 
-        /* 基礎佈局 */
         body {
             background: var(--ocean-bg); 
             background-attachment: fixed;
@@ -65,7 +60,6 @@
             transition: background 0.6s ease, color 0.6s ease; 
         }
 
-        /* 👑 右上角主題切換按鈕 */
         .theme-toggle-btn {
             position: fixed; top: 20px; right: 20px; z-index: 1000;
             background: var(--panel-bg); color: var(--neon-cyan);
@@ -74,12 +68,7 @@
             transition: 0.3s ease; backdrop-filter: blur(5px);
             box-shadow: 0 4px 15px var(--card-shadow); font-size: 14px;
         }
-        .theme-toggle-btn:hover {
-            box-shadow: 0 0 15px var(--panel-border);
-            transform: translateY(-2px);
-        }
 
-        /* 頂部搜索與標題 */
         .top-nav {
             max-width: 1200px; margin: 0 auto 30px;
             display: flex; flex-direction: column; align-items: center;
@@ -89,21 +78,48 @@
             background: var(--panel-bg); border: 1px solid var(--neon-cyan);
             border-radius: 30px; padding: 10px 25px; width: 100%; max-width: 400px;
             color: var(--text-main); font-size: 16px; outline: none;
-            box-shadow: 0 0 15px var(--card-shadow); text-align: center;
+            box-shadow: 0 0 15px var(--card-shadow); text-align: center; transition: 0.3s ease;
+        }
+
+        .header { text-align: center; }
+        .header h1 { margin: 0; letter-spacing: 2px; text-shadow: 0 0 10px var(--panel-border); font-size: 28px; }
+        .update-time { font-size: 12px; color: var(--neon-cyan); opacity: 0.8; margin-top: 5px; margin-bottom: 15px; }
+
+        /* 👑 折疊日誌與指南區 */
+        .collapsible-section {
+            width: 100%; max-width: 800px; margin: 10px auto;
+            background: var(--log-bg); border: 1px solid var(--panel-border);
+            border-radius: 8px; font-size: 13px; color: var(--text-muted);
             transition: 0.3s ease;
         }
-        .search-box:focus { box-shadow: 0 0 25px var(--panel-border); }
+        .collapsible-section summary {
+            font-weight: bold; color: var(--neon-gold); cursor: pointer; padding: 10px 15px;
+            display: flex; align-items: center; justify-content: center; letter-spacing: 1px;
+        }
+        .log-content { padding: 15px; line-height: 1.8; text-align: left; border-top: 1px dashed var(--panel-border); }
+        .log-content b { color: var(--neon-cyan); }
+        .log-content ul { margin: 10px 0; padding-left: 20px; }
+        .log-content li { margin-bottom: 8px; }
 
-        .header h1 { margin: 0; letter-spacing: 2px; text-shadow: 0 0 10px var(--panel-border); font-size: 28px; }
-        .update-time { font-size: 12px; color: var(--neon-cyan); opacity: 0.8; margin-top: 5px; }
+        /* 🌠 許願池樣式 */
+        .wish-well { margin-top: 15px; }
+        .wish-input {
+            width: 100%; background: var(--input-bg); border: 1px solid var(--panel-border);
+            border-radius: 6px; color: var(--text-main); padding: 10px; font-size: 14px;
+            resize: vertical; min-height: 80px; outline: none; margin-bottom: 10px;
+        }
+        .wish-btn {
+            background: var(--neon-cyan); color: #000; border: none; padding: 8px 20px;
+            border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.3s;
+        }
+        .wish-btn:hover { filter: brightness(1.2); transform: scale(1.05); }
 
-        /* 卡片區域 */
         .pool-section { margin-bottom: 50px; max-width: 1400px; margin-left: auto; margin-right: auto; }
         .pool-title { 
             font-size: 20px; font-weight: bold; color: var(--neon-cyan);
             background: var(--title-bg); padding: 12px 20px; 
             border-left: 4px solid var(--neon-cyan); margin-bottom: 20px; 
-            border-radius: 0 8px 8px 0; transition: 0.5s ease;
+            border-radius: 0 8px 8px 0;
         }
         .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 25px; }
 
@@ -114,12 +130,11 @@
             transition: 0.4s ease; position: relative;
         }
         .card.is-buy { border-top-color: var(--neon-green); }
-        .card:hover { transform: translateY(-5px); border-color: var(--neon-cyan); box-shadow: 0 15px 35px var(--panel-border); }
 
         .stock-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .stock-id { font-size: 26px; font-weight: bold; color: var(--neon-cyan); }
         .stock-name { font-size: 18px; color: var(--text-main); margin-left: 10px; }
-        .inst-badge { background: var(--badge-bg); padding: 4px 10px; border-radius: 4px; font-size: 12px; color: var(--neon-gold); border: 1px solid var(--panel-border); transition: 0.5s ease;}
+        .inst-badge { background: var(--badge-bg); padding: 4px 10px; border-radius: 4px; font-size: 12px; color: var(--neon-gold); border: 1px solid var(--panel-border); }
 
         .data-row { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 8px; color: var(--text-muted); }
         .data-row b { color: var(--text-main); font-size: 16px; }
@@ -127,29 +142,27 @@
 
         .sim-panel {
             margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--panel-border);
-            background: var(--sim-bg); border-radius: 8px; padding: 12px; transition: 0.5s ease;
+            background: var(--sim-bg); border-radius: 8px; padding: 12px;
         }
         .sim-title { font-size: 12px; color: var(--neon-gold); margin-bottom: 10px; font-weight: bold; text-align: center; }
         .sim-input-group { display: flex; gap: 10px; margin-bottom: 10px; }
         .sim-input {
             width: 85%; background: var(--input-bg); border: 1px solid var(--panel-border);
-            border-radius: 4px; color: var(--neon-cyan); padding: 5px; font-size: 13px; outline: none; transition: 0.5s ease;
+            border-radius: 4px; color: var(--neon-cyan); padding: 5px; font-size: 13px; outline: none;
         }
         
         .sim-result { font-size: 12px; border-top: 1px dashed var(--panel-border); padding-top: 10px; line-height: 1.6; }
         .result-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
 
-        .action-box { margin-top: 15px; padding: 12px; text-align: center; font-weight: bold; border-radius: 6px; font-size: 15px; transition: 0.5s ease;}
+        .action-box { margin-top: 15px; padding: 12px; text-align: center; font-weight: bold; border-radius: 6px; font-size: 15px; }
         .action-box.buy { background: rgba(0,255,0,0.1); color: var(--neon-green); border: 1px solid var(--neon-green); }
         .action-box.watch { background: var(--watch-bg); color: var(--text-muted); border: 1px solid var(--watch-border); }
 
-        /* 著作權與聲明樣式 */
         .footer-copyright {
             text-align: center; padding: 40px 20px; margin-top: 60px;
             border-top: 1px solid var(--panel-border); color: var(--text-muted);
             font-size: 12px; line-height: 1.8; letter-spacing: 1px;
         }
-        .copyright-symbol { color: var(--neon-cyan); font-weight: bold; }
     </style>
 </head>
 <body>
@@ -160,7 +173,58 @@
         <div class="header">
             <h1>🌌 匹夫有責｜彼夫有責楓葉戰情室</h1>
             <div class="update-time" id="update-time">衛星同步中...</div>
+            
+            <details class="collapsible-section">
+                <summary>🌊 汪洋大魚每日選股邏輯 (必讀)</summary>
+                <div class="log-content">
+                    這是系統每日針對全台股進行的「聲納掃描」，旨在打撈出具備<b>右側發動潛力</b>的標的。其選股邏輯嚴守三道濾網：
+                    <ul>
+                        <li><b>1. 動能門檻：</b>成交量必須 > 1,000 張。確保流動性充足，不是冷門殭屍股。</li>
+                        <li><b>2. 趨勢門檻：</b>股價必須站穩「海浪30日月線 (30MA)」。這是多空的生命線，站上才具備多頭動能。</li>
+                        <li><b>3. 籌碼門檻：</b>30日法人買賣超必須 > 0。有真金白銀的專業大戶背書，提高勝率。</li>
+                    </ul>
+                    當上述條件滿足且股價 > 5MA 時，雷達將亮起 <b>🚀 買入加碼</b> 訊號。
+                </div>
+            </details>
+
+            <details class="collapsible-section">
+                <summary>💡 Beta User 指揮官選股方針</summary>
+                <div class="log-content">
+                    對於初次接觸本系統的指揮官，建議遵循以下實戰紀律：
+                    <ul>
+                        <li><b>🎯 優先專注：</b>觀察「🚀 買入加碼」且「30日法人買賣超」數字龐大（如 > 1000張）的個股。</li>
+                        <li><b>🛠️ 風險推演：</b>善用卡片下方的<b>「Beta user 模擬倉」</b>。填入預計成交價位，系統會自動生成「50% 獲利」與「-10% 停損」參考點。</li>
+                        <li><b>🔭 長線守護：</b>四大核心魚池（姊夫、楓大、彼神、自選）是我們長期觀測的優質水域，適合在拉回支撐時佈局。</li>
+                    </ul>
+                </div>
+            </details>
+
+            <details class="collapsible-section">
+                <summary>📜 查看本日 (4/15) 更新項目</summary>
+                <div class="log-content">
+                    <b>✅ V6.7.9 指揮系統全面升級：</b>
+                    <ul>
+                        <li><b>雙棲指揮艙：</b>實裝太空(暗)與淺楓(亮)雙主題切換。</li>
+                        <li><b>聲納導航：</b>汪洋大魚池實裝「法人買賣超 > 股價」自動降冪排序。</li>
+                        <li><b>使用者教育：</b>新增汪洋大魚選股邏輯與 Beta User 操作方針。</li>
+                        <li><b>戰情反饋：</b>實裝「戰情室許願池」，與指揮官信箱連線。</li>
+                        <li><b>核心擴編：</b>自選觀察水域正式收編 2493(揚博)、3450(聯鈞)、2313(華通)。</li>
+                    </ul>
+                </div>
+            </details>
+
+            <details class="collapsible-section">
+                <summary>🌠 戰情室許願池 (功能提案)</summary>
+                <div class="log-content">
+                    <div class="wish-well">
+                        <b>有什麼想看的新指標或新功能嗎？請在此投下你的願望：</b>
+                        <textarea id="wish-text" class="wish-input" placeholder="例如：希望加入融資變化、或是增加外資連續買超天數..."></textarea>
+                        <button class="wish-btn" onclick="sendWish()">投下願望瓶</button>
+                    </div>
+                </div>
+            </details>
         </div>
+        
         <input type="text" id="global-search" class="search-box" placeholder="🛸 啟動聲納：輸入汪洋大魚代碼進行探測...">
     </div>
 
@@ -173,17 +237,12 @@
 
     <footer class="footer-copyright">
         <p><span class="copyright-symbol">©</span> <span id="current-year"></span> 彼夫有擇楓葉戰情室. All Rights Reserved.</p>
-        <p style="opacity: 0.6; margin-top: 10px;">
-            ⚠️ 本系統僅供量化投資模擬推演與技術測試之用，所提供之數據資訊不構成任何投資建議。<br>
-            投資一定有風險，台股投資有賺有賠，申購前應詳閱公開說明書，入市請謹慎評估。
-        </p>
+        <p style="opacity: 0.6; margin-top: 10px;">⚠️ 本系統僅供量化投資模擬推演，投資有賺有賠，入市請謹慎評估。</p>
     </footer>
 
     <script>
-        // 設定著作權年份
         document.getElementById('current-year').innerText = new Date().getFullYear();
 
-        // 👑 主題切換邏輯
         const themeBtn = document.getElementById('theme-toggle');
         themeBtn.addEventListener('click', () => {
             const root = document.documentElement;
@@ -195,6 +254,24 @@
                 themeBtn.innerText = '🌌 切換深海太空版';
             }
         });
+
+        // 👑 許願瓶傳送邏輯 (直連指揮官信箱)
+        function sendWish() {
+            const wish = document.getElementById('wish-text').value;
+            if (wish.trim()) {
+                const email = "wangjeff0226@hotmail.com";
+                const subject = encodeURIComponent("🚀 彼夫有擇戰情室 - Beta User 許願提案");
+                const body = encodeURIComponent("指揮官你好，以下是我的戰情室功能提案：\n\n" + wish);
+                
+                // 喚醒 User 的預設收發信軟體
+                window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+                
+                // 清空輸入框
+                document.getElementById('wish-text').value = '';
+            } else {
+                alert('請輸入你的願望再送出喔！');
+            }
+        }
 
         let fullData = null;
 
@@ -272,13 +349,10 @@
                     const grid = document.createElement('div');
                     grid.className = 'grid-container';
                     
-                    // 👑 汪洋大魚專屬雙重排序：法人買超(大->小) -> 股價(高->低)
                     let displayStocks = stocks;
                     if (poolName === "🌊 汪洋大魚") {
                         displayStocks = stocks.sort((a, b) => {
-                            if (b.inst_buy !== a.inst_buy) {
-                                return b.inst_buy - a.inst_buy;
-                            }
+                            if (b.inst_buy !== a.inst_buy) return b.inst_buy - a.inst_buy;
                             return b.close - a.close;
                         });
                     }
