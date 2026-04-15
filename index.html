@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>全域雷達 V6.7｜匹夫有責｜彼夫有責楓葉戰情室</title>
     <style>
+        /* =========================================
+           1. 預設：太空深海風格 (Deep Ocean Space)
+           ========================================= */
         :root {
             --ocean-bg: radial-gradient(circle at top, #0A192F 0%, #020C1B 100%);
             --panel-bg: rgba(16, 32, 64, 0.75);
@@ -17,12 +20,43 @@
             --neon-gold: #FFD700;
         }
 
+        /* =========================================
+           2. 切換：加拿大楓葉風格 (Canadian Maple)
+           ========================================= */
+        [data-theme="maple"] {
+            --ocean-bg: linear-gradient(135deg, #3E1111 0%, #1A0505 100%);
+            --panel-bg: rgba(50, 15, 15, 0.8);
+            --panel-border: rgba(255, 167, 38, 0.3);
+            --text-main: #FFF8E1;
+            --text-muted: #FFCC80;
+            --neon-cyan: #FFB300; /* 楓葉橘金 */
+            --neon-green: #81C784; /* 秋季暖綠 */
+            --neon-red: #E57373; /* 楓葉紅 */
+            --neon-gold: #FFCA28;
+        }
+
+        /* 基礎佈局 */
         body {
             background: var(--ocean-bg); 
             background-attachment: fixed;
             color: var(--text-main);
             font-family: "PingFang TC", "Microsoft JhengHei", sans-serif;
             margin: 0; padding: 20px; min-height: 100vh;
+            transition: background 0.5s ease; /* 切換背景時的漸變動畫 */
+        }
+
+        /* 👑 右上角主題切換按鈕 */
+        .theme-toggle-btn {
+            position: fixed; top: 20px; right: 20px; z-index: 1000;
+            background: var(--panel-bg); color: var(--neon-cyan);
+            border: 1px solid var(--neon-cyan); padding: 8px 16px;
+            border-radius: 20px; cursor: pointer; font-weight: bold;
+            transition: 0.3s ease; backdrop-filter: blur(5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3); font-size: 14px;
+        }
+        .theme-toggle-btn:hover {
+            box-shadow: 0 0 15px var(--panel-border);
+            transform: translateY(-2px);
         }
 
         /* 頂部搜索與標題 */
@@ -35,17 +69,19 @@
             background: var(--panel-bg); border: 1px solid var(--neon-cyan);
             border-radius: 30px; padding: 10px 25px; width: 100%; max-width: 400px;
             color: var(--text-main); font-size: 16px; outline: none;
-            box-shadow: 0 0 15px rgba(100,255,218,0.2); text-align: center;
+            box-shadow: 0 0 15px rgba(0,0,0,0.2); text-align: center;
+            transition: 0.3s ease;
         }
+        .search-box:focus { box-shadow: 0 0 25px var(--panel-border); }
 
-        .header h1 { margin: 0; letter-spacing: 2px; text-shadow: 0 0 10px rgba(100,255,218,0.3); font-size: 28px; }
+        .header h1 { margin: 0; letter-spacing: 2px; text-shadow: 0 0 10px rgba(100,255,218,0.1); font-size: 28px; }
         .update-time { font-size: 12px; color: var(--neon-cyan); opacity: 0.8; margin-top: 5px; }
 
         /* 卡片區域 */
         .pool-section { margin-bottom: 50px; max-width: 1400px; margin-left: auto; margin-right: auto; }
         .pool-title { 
             font-size: 20px; font-weight: bold; color: var(--neon-cyan);
-            background: rgba(10, 25, 47, 0.8); padding: 12px 20px; 
+            background: rgba(0, 0, 0, 0.4); padding: 12px 20px; 
             border-left: 4px solid var(--neon-cyan); margin-bottom: 20px; 
             border-radius: 0 8px 8px 0;
         }
@@ -55,14 +91,15 @@
             background: var(--panel-bg); backdrop-filter: blur(10px);
             border-radius: 15px; padding: 22px; border: 1px solid var(--panel-border);
             border-top: 4px solid var(--text-muted); box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-            transition: 0.3s ease;
+            transition: 0.3s ease; position: relative;
         }
         .card.is-buy { border-top-color: var(--neon-green); }
+        .card:hover { transform: translateY(-5px); border-color: var(--neon-cyan); box-shadow: 0 15px 35px var(--panel-border); }
 
         .stock-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .stock-id { font-size: 26px; font-weight: bold; color: var(--neon-cyan); }
         .stock-name { font-size: 18px; color: var(--text-main); margin-left: 10px; }
-        .inst-badge { background: rgba(255,215,0,0.05); padding: 4px 10px; border-radius: 4px; font-size: 12px; color: var(--neon-gold); border: 1px solid rgba(255,215,0,0.2); }
+        .inst-badge { background: rgba(0,0,0,0.2); padding: 4px 10px; border-radius: 4px; font-size: 12px; color: var(--neon-gold); border: 1px solid var(--panel-border); }
 
         .data-row { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 8px; color: var(--text-muted); }
         .data-row b { color: var(--text-main); font-size: 16px; }
@@ -83,10 +120,10 @@
         .result-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
 
         .action-box { margin-top: 15px; padding: 12px; text-align: center; font-weight: bold; border-radius: 6px; font-size: 15px; }
-        .action-box.buy { background: rgba(0,230,118,0.15); color: var(--neon-green); border: 1px solid var(--neon-green); }
-        .action-box.watch { background: rgba(136,146,176,0.1); color: var(--text-muted); border: 1px solid rgba(136,146,176,0.2); }
+        .action-box.buy { background: rgba(0,255,0,0.1); color: var(--neon-green); border: 1px solid var(--neon-green); }
+        .action-box.watch { background: rgba(255,255,255,0.05); color: var(--text-muted); border: 1px solid rgba(255,255,255,0.1); }
 
-        /* 👑 著作權與聲明樣式 */
+        /* 著作權與聲明樣式 */
         .footer-copyright {
             text-align: center; padding: 40px 20px; margin-top: 60px;
             border-top: 1px solid var(--panel-border); color: var(--text-muted);
@@ -96,6 +133,8 @@
     </style>
 </head>
 <body>
+
+    <button id="theme-toggle" class="theme-toggle-btn">🍁 切換楓葉版</button>
 
     <div class="top-nav">
         <div class="header">
@@ -123,6 +162,19 @@
     <script>
         // 設定著作權年份
         document.getElementById('current-year').innerText = new Date().getFullYear();
+
+        // 👑 主題切換邏輯
+        const themeBtn = document.getElementById('theme-toggle');
+        themeBtn.addEventListener('click', () => {
+            const root = document.documentElement;
+            if (root.getAttribute('data-theme') === 'maple') {
+                root.removeAttribute('data-theme');
+                themeBtn.innerText = '🍁 切換楓葉版';
+            } else {
+                root.setAttribute('data-theme', 'maple');
+                themeBtn.innerText = '🌌 切換太空版';
+            }
+        });
 
         let fullData = null;
 
@@ -192,13 +244,26 @@
                 fullData = json_data;
                 document.getElementById('update-time').innerText = "⏱️ 雷達更新：" + json_data.last_updated;
                 const container = document.getElementById('main-container');
+                
                 for (const [poolName, stocks] of Object.entries(json_data.pools)) {
                     const section = document.createElement('div');
                     section.className = 'pool-section';
                     section.innerHTML = `<div class="pool-title">${poolName}</div>`;
                     const grid = document.createElement('div');
                     grid.className = 'grid-container';
-                    stocks.forEach(s => {
+                    
+                    // 👑 汪洋大魚專屬雙重排序：法人買超(大->小) -> 股價(高->低)
+                    let displayStocks = stocks;
+                    if (poolName === "🌊 汪洋大魚") {
+                        displayStocks = stocks.sort((a, b) => {
+                            if (b.inst_buy !== a.inst_buy) {
+                                return b.inst_buy - a.inst_buy;
+                            }
+                            return b.close - a.close;
+                        });
+                    }
+
+                    displayStocks.forEach(s => {
                         grid.innerHTML += createCard(s, poolName === "🌊 汪洋大魚");
                     });
                     section.appendChild(grid);
