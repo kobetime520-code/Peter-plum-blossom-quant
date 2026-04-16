@@ -201,17 +201,17 @@
             </details>
 
             <details class="collapsible-section">
-                <summary>📜 查看本日 (4/15) 戰情室終極更新項目</summary>
+                <summary>📜 查看 4/15~4/16 戰情室終極進化日誌</summary>
                 <div class="log-content">
-                    <b>✅ 4/15 戰情室與雷達引擎 (V6.8 系列) 終極大升級：</b>
+                    <b>✅ 雷達引擎與指揮艙 (V6.9 終極完全體) 升級總覽：</b>
                     <ul>
-                        <li><b>🐅 猛虎收編 (新魚池)：</b>引擎實裝「戰歷追蹤記憶模組」，連續三日上榜大魚將自動收編至【三日成猛虎水池】。</li>
-                        <li><b>⚡ 光速引擎防護盾：</b>導入全市場「分批進擊批量下載」技術與 API 限流防護，全域掃描壓縮至 3~5 分鐘。</li>
-                        <li><b>🌗 雙棲指揮艙：</b>前端實裝深海太空(暗)與日照淺秋楓(亮)無縫雙主題切換。</li>
-                        <li><b>🎯 模擬自動導航：</b>四大核心池支援手動推演；汪洋大魚池全自動依 5MA 計算停利與防守線。</li>
-                        <li><b>🌊 聲納雙重排序：</b>大魚池全面套用「法人買賣超 > 股價」降冪排序；頂部新增全域代碼搜索框。</li>
-                        <li><b>💌 戰情室許願池：</b>底部實裝功能許願池，一鍵直連指揮官信箱，並新增新手選股指南。</li>
-                        <li><b>🔭 核心防線擴編：</b>自選水域擴大防線，正式收編 2493(揚博)、3450(聯鈞)、2313(華通)。</li>
+                        <li><b>🐅 猛虎自動收編 (新魚池)：</b> 引擎導入戰歷追蹤記憶模組，連續三日上榜汪洋大魚，系統將自動收編至【三日成猛虎水池】以供貼身監控。</li>
+                        <li><b>⚡ 光速引擎與快取防護：</b> 導入「分批批量下載」與「極致快取 (Cache Reuse)」技術，大幅降低 API 消耗並閃避限流，全域掃描壓縮至 3~5 分鐘。</li>
+                        <li><b>🌗 雙棲指揮艙介面：</b> 前端實裝「深海太空(暗)」與「日照淺秋楓(亮)」無縫雙主題切換。</li>
+                        <li><b>🎯 模擬自動導航：</b> 核心魚池與猛虎池全面支援手動推演；汪洋大魚池全自動依 5MA 基準計算停利損防守線。</li>
+                        <li><b>🌊 聲納全域搜索與排序：</b> 頂部新增全域代碼搜索框；汪洋大魚池全面套用「法人買賣超 > 股價」降冪排序。</li>
+                        <li><b>💌 戰情室許願池：</b> 底部實裝功能許願池，一鍵直連指揮官信箱，並新增新手選股指南。</li>
+                        <li><b>🔭 核心防線擴編：</b> 觀察水域正式擴大防線，收編 2493(揚博)、3450(聯鈞)、2313(華通)。</li>
                     </ul>
                 </div>
             </details>
@@ -228,7 +228,7 @@
             </details>
         </div>
         
-        <input type="text" id="global-search" class="search-box" placeholder="🛸 啟動聲納：輸入汪洋大魚代碼進行探測...">
+        <input type="text" id="global-search" class="search-box" placeholder="🛸 啟動聲納：輸入股票代碼開啟模擬探測...">
     </div>
 
     <div id="search-result-container" class="pool-section" style="display:none;">
@@ -338,7 +338,13 @@
             .then(res => res.json())
             .then(json_data => {
                 fullData = json_data;
-                document.getElementById('update-time').innerText = "⏱️ 雷達更新：" + json_data.last_updated;
+                // 如果後端有傳 api_cost_estimate，則附加在更新時間後
+                let updateText = "⏱️ 雷達更新：" + json_data.last_updated;
+                if(json_data.api_cost_estimate) {
+                    updateText += " | 🔋 " + json_data.api_cost_estimate;
+                }
+                document.getElementById('update-time').innerText = updateText;
+                
                 const container = document.getElementById('main-container');
                 
                 for (const [poolName, stocks] of Object.entries(json_data.pools)) {
