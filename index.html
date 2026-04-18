@@ -26,6 +26,7 @@
             --watch-border: rgba(255, 255, 255, 0.1);
             --card-shadow: rgba(0, 0, 0, 0.4);
             --log-bg: rgba(100, 255, 218, 0.05);
+            --note-bg: rgba(255, 215, 0, 0.05);
         }
 
         /* =========================================
@@ -49,6 +50,7 @@
             --watch-border: rgba(0, 0, 0, 0.1);
             --card-shadow: rgba(0, 0, 0, 0.12);
             --log-bg: rgba(211, 84, 0, 0.05);
+            --note-bg: rgba(211, 84, 0, 0.03);
         }
 
         body {
@@ -81,25 +83,59 @@
             box-shadow: 0 0 15px var(--card-shadow); text-align: center; transition: 0.3s ease;
         }
 
-        .header { text-align: center; }
+        .header { text-align: center; width: 100%; }
         .header h1 { margin: 0; letter-spacing: 2px; text-shadow: 0 0 10px var(--panel-border); font-size: 28px; }
         .update-time { font-size: 12px; color: var(--neon-cyan); opacity: 0.8; margin-top: 5px; margin-bottom: 15px; }
 
-        /* 👑 折疊日誌與指南區 */
+        /* 🚨 系統公告橫幅樣式 */
+        .system-alert {
+            background: var(--note-bg);
+            border: 1px solid var(--neon-gold);
+            border-radius: 8px;
+            padding: 12px 20px;
+            margin: 10px auto 20px;
+            max-width: 800px;
+            color: var(--neon-gold);
+            font-weight: bold;
+            font-size: 15px;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
+            animation: pulse-border 2s infinite;
+        }
+        @keyframes pulse-border {
+            0% { box-shadow: 0 0 5px rgba(255, 215, 0, 0.2); }
+            50% { box-shadow: 0 0 15px rgba(255, 215, 0, 0.5); }
+            100% { box-shadow: 0 0 5px rgba(255, 215, 0, 0.2); }
+        }
+
+        /* 👑 折疊區塊通用的樣式 */
         .collapsible-section {
             width: 100%; max-width: 800px; margin: 10px auto;
             background: var(--log-bg); border: 1px solid var(--panel-border);
             border-radius: 8px; font-size: 13px; color: var(--text-muted);
-            transition: 0.3s ease;
+            transition: 0.3s ease; overflow: hidden;
         }
         .collapsible-section summary {
             font-weight: bold; color: var(--neon-gold); cursor: pointer; padding: 10px 15px;
             display: flex; align-items: center; justify-content: center; letter-spacing: 1px;
+            list-style: none;
         }
+        .collapsible-section summary::-webkit-details-marker { display: none; }
+        
         .log-content { padding: 15px; line-height: 1.8; text-align: left; border-top: 1px dashed var(--panel-border); }
         .log-content b { color: var(--neon-cyan); }
         .log-content ul { margin: 10px 0; padding-left: 20px; }
         .log-content li { margin-bottom: 8px; }
+
+        /* 🏹 實戰筆記專屬樣式 */
+        .practical-note { border-color: var(--neon-gold); background: var(--note-bg); }
+        .practical-note summary { color: var(--neon-gold); font-size: 15px; }
+        .note-step { margin-bottom: 15px; padding-left: 10px; border-left: 2px solid var(--neon-gold); }
+        .note-date { font-weight: bold; color: var(--neon-gold); margin-right: 10px; font-family: monospace; }
 
         /* 🌠 許願池樣式 */
         .wish-well { margin-top: 15px; }
@@ -173,45 +209,52 @@
         <div class="header">
             <h1>🌌 匹夫有責｜彼夫有責楓葉戰情室</h1>
             <div class="update-time" id="update-time">衛星同步中...</div>
+
+            <div class="system-alert">
+                🏖️ 【網頁提前通知】4/20 ~ 4/24 暫停更新 — 彼夫有擇大腦休息中，系統進入靜默觀測期！
+            </div>
             
+            <details class="collapsible-section practical-note" open>
+                <summary>🛠️ 6155 鈞寶｜實戰操盤筆記彙整</summary>
+                <div class="log-content">
+                    <div class="note-step"><span class="note-date">03/20</span> <b>初始進場：</b>於 46.65 佈局底倉 1 張，建立初步觀察部位。</div>
+                    <div class="note-step"><span class="note-date">04/10</span> <b>策略加碼：</b>回測支撐後於 41.35 進場加碼單 1 張，擴大部位。</div>
+                    <div class="note-step"><span class="note-date">04/16</span> <b>戰術操作：</b>壓回 48.00 再次加碼 1 張。當日噴發後於 51.20 執行當沖沖掉 1 張，靈活鎖定價差。</div>
+                    <div class="note-step"><span class="note-date">04/17</span> <b>獲利調節：</b>盤勢呈現開高走低，於 51.20 順勢獲利入袋 1 張部位。</div>
+                    <div class="note-step"><span class="note-date">04/17</span> <b>心態法則：</b>尾盤收 50.60，目前留手 1 張底倉。心態保持冷靜，不急於頻繁進出。</div>
+                    <div class="note-step"><span class="note-date">04/20-24</span> <b>後市展望：</b>暫不對 6155 進行動作。進入靜默觀測期，靜待題材業績發酵，並同步觀測 <b>TACO 動向</b>。</div>
+                </div>
+            </details>
+
+            <details class="collapsible-section">
+                <summary>📜 4/15 - 4/17 系統進化史 (History)</summary>
+                <div class="log-content">
+                    <b>✅ 04/17 V6.9.1 升級：</b>
+                    <ul>
+                        <li><b>實戰指南：</b>新增「6155 實戰操盤筆記」，整合進場、加碼、當沖與獲利入袋之完整邏輯。</li>
+                        <li><b>穩定修正：</b>修復 6155 部分標的數據顯示異常，確保「無資料」不再發生。</li>
+                    </ul>
+                    <b>✅ 04/16 V6.8 升級：</b>
+                    <ul>
+                        <li><b>猛虎記憶：</b>新增「🐅 三日成猛虎水池」，自動追蹤連續三天籌碼流入強勢股。</li>
+                        <li><b>極致下載：</b>導入「分批批量下載」技術，將全台股掃描縮短至 3 分鐘內。</li>
+                    </ul>
+                    <b>✅ 04/15 V6.7 升級：</b>
+                    <ul>
+                        <li><b>雙棲指揮艙：</b>實裝太空(暗)與淺楓(亮)雙主題。</li>
+                        <li><b>智慧模擬：</b>新增 Beta User 模擬倉功能與全域代碼搜索功能。</li>
+                    </ul>
+                </div>
+            </details>
+
             <details class="collapsible-section">
                 <summary>🌊 汪洋大魚每日選股邏輯 (必讀)</summary>
                 <div class="log-content">
-                    這是系統每日針對全台股進行的「聲納掃描」，旨在打撈出具備<b>右側發動潛力</b>的標的。其選股邏輯嚴守三道濾網：
+                    這是系統每日針對全台股進行的「聲納掃描」，嚴守三道濾網：
                     <ul>
-                        <li><b>1. 動能門檻：</b>成交量必須 > 1,000 張。確保流動性充足，不是冷門殭屍股。</li>
-                        <li><b>2. 趨勢門檻：</b>股價必須站穩「海浪30日月線 (30MA)」。這是多空的生命線，站上才具備多頭動能。</li>
-                        <li><b>3. 籌碼門檻：</b>30日法人買賣超必須 > 0。有真金白銀的專業大戶背書，提高勝率。</li>
-                    </ul>
-                    當上述條件滿足且股價 > 5MA 時，雷達將亮起 <b>🚀 買入加碼</b> 訊號。
-                </div>
-            </details>
-
-            <details class="collapsible-section">
-                <summary>💡 Beta User 指揮官選股方針</summary>
-                <div class="log-content">
-                    對於初次接觸本系統的指揮官，建議遵循以下實戰紀律：
-                    <ul>
-                        <li><b>🎯 優先專注：</b>觀察「🚀 買入加碼」且「30日法人買賣超」數字龐大的個股。</li>
-                        <li><b>🐅 鎖定猛虎：</b>密切關注「三日成猛虎水池」，這是籌碼連續流入的終極強勢指標。</li>
-                        <li><b>🛠️ 風險推演：</b>善用卡片下方的<b>「Beta user 模擬倉」</b>，系統會自動生成「+50% 獲利」與「-10% 停損」參考點。</li>
-                        <li><b>🔭 長線守護：</b>四大核心魚池是我們長期觀測的優質水域，適合在拉回支撐時佈局。</li>
-                    </ul>
-                </div>
-            </details>
-
-            <details class="collapsible-section">
-                <summary>📜 查看 4/15~4/16 戰情室終極進化日誌</summary>
-                <div class="log-content">
-                    <b>✅ 雷達引擎與指揮艙 (V6.9 終極完全體) 升級總覽：</b>
-                    <ul>
-                        <li><b>🐅 猛虎自動收編 (新魚池)：</b> 引擎導入戰歷追蹤記憶模組，連續三日上榜汪洋大魚，系統將自動收編至【三日成猛虎水池】以供貼身監控。</li>
-                        <li><b>⚡ 光速引擎與快取防護：</b> 導入「分批批量下載」與「極致快取 (Cache Reuse)」技術，大幅降低 API 消耗並閃避限流，全域掃描壓縮至 3~5 分鐘。</li>
-                        <li><b>🌗 雙棲指揮艙介面：</b> 前端實裝「深海太空(暗)」與「日照淺秋楓(亮)」無縫雙主題切換。</li>
-                        <li><b>🎯 模擬自動導航：</b> 核心魚池與猛虎池全面支援手動推演；汪洋大魚池全自動依 5MA 基準計算停利損防守線。</li>
-                        <li><b>🌊 聲納全域搜索與排序：</b> 頂部新增全域代碼搜索框；汪洋大魚池全面套用「法人買賣超 > 股價」降冪排序。</li>
-                        <li><b>💌 戰情室許願池：</b> 底部實裝功能許願池，一鍵直連指揮官信箱，並新增新手選股指南。</li>
-                        <li><b>🔭 核心防線擴編：</b> 觀察水域正式擴大防線，收編 2493(揚博)、3450(聯鈞)、2313(華通)。</li>
+                        <li><b>1. 動能：</b>成交量 > 1,000 張。確保流動性。</li>
+                        <li><b>2. 趨勢：</b>股價站穩「海浪30日月線 (30MA)」。</li>
+                        <li><b>3. 籌碼：</b>30日法人買賣超 > 0。專業大戶背書。</li>
                     </ul>
                 </div>
             </details>
@@ -221,7 +264,7 @@
                 <div class="log-content">
                     <div class="wish-well">
                         <b>有什麼想看的新指標或新功能嗎？請在此投下你的願望：</b>
-                        <textarea id="wish-text" class="wish-input" placeholder="例如：希望加入融資變化、或是增加外資連續買超天數..."></textarea>
+                        <textarea id="wish-text" class="wish-input" placeholder="例如：希望加入融亡變化..."></textarea>
                         <button class="wish-btn" onclick="sendWish()">投下願望瓶</button>
                     </div>
                 </div>
@@ -258,7 +301,6 @@
             }
         });
 
-        // 👑 許願瓶傳送邏輯
         function sendWish() {
             const wish = document.getElementById('wish-text').value;
             if (wish.trim()) {
@@ -338,7 +380,6 @@
             .then(res => res.json())
             .then(json_data => {
                 fullData = json_data;
-                // 如果後端有傳 api_cost_estimate，則附加在更新時間後
                 let updateText = "⏱️ 雷達更新：" + json_data.last_updated;
                 if(json_data.api_cost_estimate) {
                     updateText += " | 🔋 " + json_data.api_cost_estimate;
