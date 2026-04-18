@@ -229,10 +229,10 @@
             <details class="collapsible-section">
                 <summary>📜 4/15 - 4/17 系統進化史 (History)</summary>
                 <div class="log-content">
-                    <b>✅ 04/17 V6.9.1 升級：</b>
+                    <b>✅ 04/17 V6.9.2 升級：</b>
                     <ul>
+                        <li><b>黃金陣列：</b>重新編排戰情室視覺動線，【🌟 彼神黃金魚池】提升至全域首位展示。</li>
                         <li><b>實戰指南：</b>新增「6155 實戰操盤筆記」，整合進場、加碼、當沖與獲利入袋之完整邏輯。</li>
-                        <li><b>穩定修正：</b>修復 6155 部分標的數據顯示異常，確保「無資料」不再發生。</li>
                     </ul>
                     <b>✅ 04/16 V6.8 升級：</b>
                     <ul>
@@ -264,7 +264,7 @@
                 <div class="log-content">
                     <div class="wish-well">
                         <b>有什麼想看的新指標或新功能嗎？請在此投下你的願望：</b>
-                        <textarea id="wish-text" class="wish-input" placeholder="例如：希望加入融亡變化..."></textarea>
+                        <textarea id="wish-text" class="wish-input" placeholder="例如：希望加入融資變化..."></textarea>
                         <button class="wish-btn" onclick="sendWish()">投下願望瓶</button>
                     </div>
                 </div>
@@ -388,26 +388,56 @@
                 
                 const container = document.getElementById('main-container');
                 
-                for (const [poolName, stocks] of Object.entries(json_data.pools)) {
-                    const section = document.createElement('div');
-                    section.className = 'pool-section';
-                    section.innerHTML = `<div class="pool-title">${poolName}</div>`;
-                    const grid = document.createElement('div');
-                    grid.className = 'grid-container';
-                    
-                    let displayStocks = stocks;
-                    if (poolName === "🌊 汪洋大魚") {
-                        displayStocks = stocks.sort((a, b) => {
-                            if (b.inst_buy !== a.inst_buy) return b.inst_buy - a.inst_buy;
-                            return b.close - a.close;
-                        });
-                    }
+                // 🏆 絕對排序陣列：定義強制呈現順序
+                const displayOrder = [
+                    "🌟 彼神黃金魚池",
+                    "🔥 姊夫爆發小魚池",
+                    "🍁 楓大永動魚池",
+                    "🔭 自選觀察水域",
+                    "🐅 三日成猛虎水池",
+                    "🌊 汪洋大魚"
+                ];
 
-                    displayStocks.forEach(s => {
-                        grid.innerHTML += createCard(s, poolName === "🌊 汪洋大魚");
-                    });
-                    section.appendChild(grid);
-                    container.appendChild(section);
+                // 1. 依照指定順序渲染
+                displayOrder.forEach(poolName => {
+                    if (json_data.pools[poolName] && json_data.pools[poolName].length > 0) {
+                        const stocks = json_data.pools[poolName];
+                        const section = document.createElement('div');
+                        section.className = 'pool-section';
+                        section.innerHTML = `<div class="pool-title">${poolName}</div>`;
+                        const grid = document.createElement('div');
+                        grid.className = 'grid-container';
+                        
+                        let displayStocks = stocks;
+                        if (poolName === "🌊 汪洋大魚") {
+                            displayStocks = stocks.sort((a, b) => {
+                                if (b.inst_buy !== a.inst_buy) return b.inst_buy - a.inst_buy;
+                                return b.close - a.close;
+                            });
+                        }
+
+                        displayStocks.forEach(s => {
+                            grid.innerHTML += createCard(s, poolName === "🌊 汪洋大魚");
+                        });
+                        section.appendChild(grid);
+                        container.appendChild(section);
+                    }
+                });
+
+                // 2. 捕捉未來可能新增的其他魚池 (防呆機制)
+                for (const [poolName, stocks] of Object.entries(json_data.pools)) {
+                    if (!displayOrder.includes(poolName) && stocks.length > 0) {
+                        const section = document.createElement('div');
+                        section.className = 'pool-section';
+                        section.innerHTML = `<div class="pool-title">${poolName}</div>`;
+                        const grid = document.createElement('div');
+                        grid.className = 'grid-container';
+                        stocks.forEach(s => {
+                            grid.innerHTML += createCard(s, false);
+                        });
+                        section.appendChild(grid);
+                        container.appendChild(section);
+                    }
                 }
             })
             .catch(e => { console.error(e); });
