@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>全域雷達｜匹夫有責｜彼夫有責楓葉戰情室</title>
+    <title>全域雷達｜匹夫有責｜彼夫有責全域戰情室</title>
     <style>
         /* =========================================
-           1. 預設：太空深海風格 (Deep Ocean Space)
+           1. 預設主題：深海太空版 (Deep Ocean Space)
            ========================================= */
         :root {
             --ocean-bg: radial-gradient(circle at top, #0A192F 0%, #020C1B 100%);
@@ -31,28 +31,29 @@
         }
 
         /* =========================================
-           2. 切換：加拿大淡楓葉風格 (Light Maple)
+           2. 切換主題：輕淡海洋絢爛版 (Brilliant Light Ocean)
            ========================================= */
-        [data-theme="maple"] {
-            --ocean-bg: linear-gradient(135deg, #FFF6E5 0%, #FAD7A1 100%);
+        [data-theme="light-ocean"] {
+            /* 模擬陽光穿透淺海的波光粼粼漸層 */
+            --ocean-bg: linear-gradient(135deg, #E0F2F1 0%, #B2EBF2 50%, #81D4FA 100%);
             --panel-bg: rgba(255, 255, 255, 0.75);
-            --panel-border: rgba(211, 84, 0, 0.3);
-            --text-main: #3E2723;
-            --text-muted: #795548;
-            --neon-cyan: #D35400; 
-            --neon-green: #2E7D32; 
-            --neon-red: #C62828; 
-            --neon-gold: #E67E22;
+            --panel-border: rgba(0, 138, 162, 0.3);
+            --text-main: #003B46; /* 深邃海藍色文字，高對比度 */
+            --text-muted: #006064;
+            --neon-cyan: #00838F; /* 絢爛的主色調青藍色 */
+            --neon-green: #00897B; 
+            --neon-red: #D32F2F; 
+            --neon-gold: #F57F17; /* 陽光般的金橙色亮點 */
             --title-bg: rgba(255, 255, 255, 0.6);
-            --badge-bg: rgba(255, 255, 255, 0.6);
+            --badge-bg: rgba(0, 131, 143, 0.1);
             --sim-bg: rgba(255, 255, 255, 0.5);
             --input-bg: rgba(255, 255, 255, 0.8);
             --watch-bg: rgba(0, 0, 0, 0.03);
             --watch-border: rgba(0, 0, 0, 0.1);
-            --card-shadow: rgba(0, 0, 0, 0.12);
-            --log-bg: rgba(211, 84, 0, 0.05);
-            --note-bg: rgba(211, 84, 0, 0.03);
-            --ind-badge-bg: rgba(0, 0, 0, 0.08);
+            --card-shadow: rgba(0, 96, 100, 0.15);
+            --log-bg: rgba(0, 131, 143, 0.05);
+            --note-bg: rgba(245, 127, 23, 0.05);
+            --ind-badge-bg: rgba(0, 131, 143, 0.1);
         }
 
         body {
@@ -157,13 +158,13 @@
 </head>
 <body>
 
-    <button id="theme-toggle" class="theme-toggle-btn">🍁 切換柔和楓葉版</button>
+    <button id="theme-toggle" class="theme-toggle-btn">✨ 切換輕淡海洋版</button>
 
     <div class="top-nav">
         <div class="header">
-            <h1>🌌 彼夫有責楓葉戰情室 <span class="version-badge">V6.9.10</span></h1>
+            <h1>🌌 彼夫有責全域戰情室 <span class="version-badge">V6.9.11</span></h1>
             <div class="update-time" id="update-time">衛星同步中...</div>
-            <div class="system-alert">🏖️ 【事前停更通知】4/20 ~ 4/24 暫停更新 — 彼夫有擇大腦休息中！</div>
+            <div class="system-alert">🏖️ 【網頁提前通知】4/20 ~ 4/24 暫停更新 — 彼夫有擇大腦休息中！</div>
 
             <details class="info-section practical-note" open>
                 <summary>🛠️ 6155 鈞寶｜實戰操盤筆記彙整</summary>
@@ -178,8 +179,12 @@
             </details>
 
             <details class="info-section">
-                <summary>📜 4/15 - 4/18 系統進化史 (History)</summary>
+                <summary>📜 4/15 - 4/19 系統進化史 (History)</summary>
                 <div class="log-content">
+                    <b>✅ 04/19 V6.9.11 升級：</b>
+                    <ul>
+                        <li><b>雙棲視界：</b>導入「輕淡海洋絢爛版」新主題，提供深海與淺海的高對比視覺切換。</li>
+                    </ul>
                     <b>✅ 04/18 V6.9.10 升級：</b>
                     <ul>
                         <li><b>體驗升級：</b>全魚池導入摺疊展開架構，大幅提升盯盤專注度。</li>
@@ -188,7 +193,6 @@
                     <b>✅ 04/17 V6.9.4 升級：</b>
                     <ul>
                         <li><b>產業雷達：</b>汪洋大魚池實裝「產業別」自動分群顯示功能，並全域加入產業標籤。</li>
-                        <li><b>黃金陣列：</b>重新編排視覺動線，【🌟 彼神黃金魚池】提升至全域首位展示。</li>
                     </ul>
                 </div>
             </details>
@@ -230,21 +234,22 @@
     <div id="main-container"></div>
 
     <footer class="footer-copyright">
-        <p><span class="copyright-symbol">©</span> <span id="current-year"></span> 彼夫有擇楓葉戰情室. All Rights Reserved.</p>
+        <p><span class="copyright-symbol">©</span> <span id="current-year"></span> 彼夫有責全域戰情室. All Rights Reserved.</p>
         <p style="opacity: 0.6; margin-top: 10px;">⚠️ 本系統僅供量化投資模擬推演，投資有賺有賠，入市請謹慎評估。</p>
     </footer>
 
     <script>
         document.getElementById('current-year').innerText = new Date().getFullYear();
 
+        // 🎯 核心主題切換邏輯更新 (maple -> light-ocean)
         const themeBtn = document.getElementById('theme-toggle');
         themeBtn.addEventListener('click', () => {
             const root = document.documentElement;
-            if (root.getAttribute('data-theme') === 'maple') {
+            if (root.getAttribute('data-theme') === 'light-ocean') {
                 root.removeAttribute('data-theme');
-                themeBtn.innerText = '🍁 切換柔和楓葉版';
+                themeBtn.innerText = '✨ 切換輕淡海洋版';
             } else {
-                root.setAttribute('data-theme', 'maple');
+                root.setAttribute('data-theme', 'light-ocean');
                 themeBtn.innerText = '🌌 切換深海太空版';
             }
         });
@@ -338,7 +343,6 @@
                 const container = document.getElementById('main-container');
                 const displayOrder = ["🌟 彼神黃金魚池", "🐅 三日成猛虎水池", "🔥 姊夫爆發小魚池", "🍁 楓大永動魚池", "🔭 自選觀察水域", "🌊 汪洋大魚"];
 
-                // 🎯 核心與順序魚池生成 (強制使用 details 摺疊標籤)
                 displayOrder.forEach(poolName => {
                     if (json_data.pools[poolName] && json_data.pools[poolName].length > 0) {
                         const stocks = json_data.pools[poolName];
@@ -346,7 +350,6 @@
                         const section = document.createElement('details');
                         section.className = 'pool-section';
                         
-                        // 🌟 預設只展開彼神與猛虎池
                         if (poolName === "🌟 彼神黃金魚池" || poolName === "🐅 三日成猛虎水池") {
                             section.open = true;
                         }
@@ -376,7 +379,6 @@
                     }
                 });
 
-                // 🎯 防呆機制：未來新增的其他魚池也強制使用 details 摺疊標籤
                 for (const [poolName, stocks] of Object.entries(json_data.pools)) {
                     if (!displayOrder.includes(poolName) && stocks.length > 0) {
                         const section = document.createElement('details');
@@ -392,7 +394,6 @@
             })
             .catch(e => { console.error(e); });
 
-        // 搜尋邏輯
         document.getElementById('global-search').addEventListener('input', (e) => {
             const code = e.target.value.trim();
             const searchGrid = document.getElementById('search-grid');
