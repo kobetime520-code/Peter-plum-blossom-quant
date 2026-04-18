@@ -27,6 +27,7 @@
             --card-shadow: rgba(0, 0, 0, 0.4);
             --log-bg: rgba(100, 255, 218, 0.05);
             --note-bg: rgba(255, 215, 0, 0.05);
+            --ind-badge-bg: rgba(255, 255, 255, 0.1);
         }
 
         /* =========================================
@@ -51,6 +52,7 @@
             --card-shadow: rgba(0, 0, 0, 0.12);
             --log-bg: rgba(211, 84, 0, 0.05);
             --note-bg: rgba(211, 84, 0, 0.03);
+            --ind-badge-bg: rgba(0, 0, 0, 0.08);
         }
 
         body {
@@ -87,24 +89,12 @@
         .header h1 { margin: 0; letter-spacing: 2px; text-shadow: 0 0 10px var(--panel-border); font-size: 28px; }
         .update-time { font-size: 12px; color: var(--neon-cyan); opacity: 0.8; margin-top: 5px; margin-bottom: 15px; }
 
-        /* 🚨 系統公告橫幅樣式 */
         .system-alert {
-            background: var(--note-bg);
-            border: 1px solid var(--neon-gold);
-            border-radius: 8px;
-            padding: 12px 20px;
-            margin: 10px auto 20px;
-            max-width: 800px;
-            color: var(--neon-gold);
-            font-weight: bold;
-            font-size: 15px;
-            letter-spacing: 1px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            box-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
-            animation: pulse-border 2s infinite;
+            background: var(--note-bg); border: 1px solid var(--neon-gold); border-radius: 8px;
+            padding: 12px 20px; margin: 10px auto 20px; max-width: 800px;
+            color: var(--neon-gold); font-weight: bold; font-size: 15px; letter-spacing: 1px;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.2); animation: pulse-border 2s infinite;
         }
         @keyframes pulse-border {
             0% { box-shadow: 0 0 5px rgba(255, 215, 0, 0.2); }
@@ -112,81 +102,76 @@
             100% { box-shadow: 0 0 5px rgba(255, 215, 0, 0.2); }
         }
 
-        /* 👑 折疊區塊通用的樣式 */
         .collapsible-section {
-            width: 100%; max-width: 800px; margin: 10px auto;
-            background: var(--log-bg); border: 1px solid var(--panel-border);
-            border-radius: 8px; font-size: 13px; color: var(--text-muted);
+            width: 100%; max-width: 800px; margin: 10px auto; background: var(--log-bg);
+            border: 1px solid var(--panel-border); border-radius: 8px; font-size: 13px; color: var(--text-muted);
             transition: 0.3s ease; overflow: hidden;
         }
         .collapsible-section summary {
             font-weight: bold; color: var(--neon-gold); cursor: pointer; padding: 10px 15px;
-            display: flex; align-items: center; justify-content: center; letter-spacing: 1px;
-            list-style: none;
+            display: flex; align-items: center; justify-content: center; letter-spacing: 1px; list-style: none;
         }
         .collapsible-section summary::-webkit-details-marker { display: none; }
-        
         .log-content { padding: 15px; line-height: 1.8; text-align: left; border-top: 1px dashed var(--panel-border); }
         .log-content b { color: var(--neon-cyan); }
         .log-content ul { margin: 10px 0; padding-left: 20px; }
         .log-content li { margin-bottom: 8px; }
 
-        /* 🏹 實戰筆記專屬樣式 */
         .practical-note { border-color: var(--neon-gold); background: var(--note-bg); }
         .practical-note summary { color: var(--neon-gold); font-size: 15px; }
         .note-step { margin-bottom: 15px; padding-left: 10px; border-left: 2px solid var(--neon-gold); }
         .note-date { font-weight: bold; color: var(--neon-gold); margin-right: 10px; font-family: monospace; }
 
-        /* 🌠 許願池樣式 */
         .wish-well { margin-top: 15px; }
         .wish-input {
             width: 100%; background: var(--input-bg); border: 1px solid var(--panel-border);
             border-radius: 6px; color: var(--text-main); padding: 10px; font-size: 14px;
             resize: vertical; min-height: 80px; outline: none; margin-bottom: 10px;
         }
-        .wish-btn {
-            background: var(--neon-cyan); color: #000; border: none; padding: 8px 20px;
-            border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.3s;
-        }
-        .wish-btn:hover { filter: brightness(1.2); transform: scale(1.05); }
+        .wish-btn { background: var(--neon-cyan); color: #000; border: none; padding: 8px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.3s; }
 
         .pool-section { margin-bottom: 50px; max-width: 1400px; margin-left: auto; margin-right: auto; }
         .pool-title { 
-            font-size: 20px; font-weight: bold; color: var(--neon-cyan);
-            background: var(--title-bg); padding: 12px 20px; 
-            border-left: 4px solid var(--neon-cyan); margin-bottom: 20px; 
-            border-radius: 0 8px 8px 0;
+            font-size: 20px; font-weight: bold; color: var(--neon-cyan); background: var(--title-bg); 
+            padding: 12px 20px; border-left: 4px solid var(--neon-cyan); margin-bottom: 20px; border-radius: 0 8px 8px 0;
         }
+        
+        /* 🏷️ 產業分隔線樣式 */
+        .industry-section-title { 
+            width: 100%; color: var(--neon-gold); font-size: 17px; font-weight: bold; 
+            margin-top: 25px; margin-bottom: 15px; border-bottom: 1px dashed var(--panel-border); 
+            padding-bottom: 8px; grid-column: 1 / -1; letter-spacing: 1px;
+        }
+        
         .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 25px; }
 
         .card { 
-            background: var(--panel-bg); backdrop-filter: blur(10px);
-            border-radius: 15px; padding: 22px; border: 1px solid var(--panel-border);
-            border-top: 4px solid var(--text-muted); box-shadow: 0 10px 30px var(--card-shadow);
-            transition: 0.4s ease; position: relative;
+            background: var(--panel-bg); backdrop-filter: blur(10px); border-radius: 15px; padding: 22px; 
+            border: 1px solid var(--panel-border); border-top: 4px solid var(--text-muted); 
+            box-shadow: 0 10px 30px var(--card-shadow); transition: 0.4s ease; position: relative;
         }
         .card.is-buy { border-top-color: var(--neon-green); }
 
         .stock-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .stock-id { font-size: 26px; font-weight: bold; color: var(--neon-cyan); }
-        .stock-name { font-size: 18px; color: var(--text-main); margin-left: 10px; }
+        .stock-name { font-size: 18px; color: var(--text-main); margin-left: 10px; display: inline-flex; align-items: center;}
+        
+        /* 🏷️ 產業小標籤 */
+        .industry-badge {
+            background: var(--ind-badge-bg); color: var(--text-main); font-size: 11px; font-weight: normal;
+            padding: 2px 6px; border-radius: 4px; margin-left: 8px; border: 1px solid var(--panel-border);
+        }
+        
         .inst-badge { background: var(--badge-bg); padding: 4px 10px; border-radius: 4px; font-size: 12px; color: var(--neon-gold); border: 1px solid var(--panel-border); }
 
         .data-row { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 8px; color: var(--text-muted); }
         .data-row b { color: var(--text-main); font-size: 16px; }
         .highlight { color: var(--neon-cyan) !important; font-size: 20px !important; }
 
-        .sim-panel {
-            margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--panel-border);
-            background: var(--sim-bg); border-radius: 8px; padding: 12px;
-        }
+        .sim-panel { margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--panel-border); background: var(--sim-bg); border-radius: 8px; padding: 12px; }
         .sim-title { font-size: 12px; color: var(--neon-gold); margin-bottom: 10px; font-weight: bold; text-align: center; }
         .sim-input-group { display: flex; gap: 10px; margin-bottom: 10px; }
-        .sim-input {
-            width: 85%; background: var(--input-bg); border: 1px solid var(--panel-border);
-            border-radius: 4px; color: var(--neon-cyan); padding: 5px; font-size: 13px; outline: none;
-        }
-        
+        .sim-input { width: 85%; background: var(--input-bg); border: 1px solid var(--panel-border); border-radius: 4px; color: var(--neon-cyan); padding: 5px; font-size: 13px; outline: none; }
         .sim-result { font-size: 12px; border-top: 1px dashed var(--panel-border); padding-top: 10px; line-height: 1.6; }
         .result-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
 
@@ -194,11 +179,7 @@
         .action-box.buy { background: rgba(0,255,0,0.1); color: var(--neon-green); border: 1px solid var(--neon-green); }
         .action-box.watch { background: var(--watch-bg); color: var(--text-muted); border: 1px solid var(--watch-border); }
 
-        .footer-copyright {
-            text-align: center; padding: 40px 20px; margin-top: 60px;
-            border-top: 1px solid var(--panel-border); color: var(--text-muted);
-            font-size: 12px; line-height: 1.8; letter-spacing: 1px;
-        }
+        .footer-copyright { text-align: center; padding: 40px 20px; margin-top: 60px; border-top: 1px solid var(--panel-border); color: var(--text-muted); font-size: 12px; line-height: 1.8; letter-spacing: 1px; }
     </style>
 </head>
 <body>
@@ -229,9 +210,10 @@
             <details class="collapsible-section">
                 <summary>📜 4/15 - 4/17 系統進化史 (History)</summary>
                 <div class="log-content">
-                    <b>✅ 04/17 V6.9.2 升級：</b>
+                    <b>✅ 04/17 V6.9.4 升級：</b>
                     <ul>
-                        <li><b>黃金陣列：</b>重新編排戰情室視覺動線，【🌟 彼神黃金魚池】提升至全域首位展示。</li>
+                        <li><b>產業雷達：</b>汪洋大魚池實裝「產業別」自動分群顯示功能。</li>
+                        <li><b>黃金陣列：</b>重新編排視覺動線，【🌟 彼神黃金魚池】提升至全域首位展示。</li>
                         <li><b>實戰指南：</b>新增「6155 實戰操盤筆記」，整合進場、加碼、當沖與獲利入袋之完整邏輯。</li>
                     </ul>
                     <b>✅ 04/16 V6.8 升級：</b>
@@ -330,6 +312,7 @@
         function createCard(s, isWangYang = false) {
             const isBuy = s.action === '買入加碼';
             const instText = s.inst_buy > 0 ? '+' + s.inst_buy : s.inst_buy;
+            const indText = s.industry ? s.industry : '未分類'; // 防呆保護
 
             let simHtml = '';
             if (!isWangYang) {
@@ -363,7 +346,10 @@
             return `
                 <div class="card ${isBuy ? 'is-buy' : ''}">
                     <div class="stock-header">
-                        <div><span class="stock-id">${s.stock_id}</span><span class="stock-name">${s.stock_name}</span></div>
+                        <div>
+                            <span class="stock-id">${s.stock_id}</span>
+                            <span class="stock-name">${s.stock_name} <span class="industry-badge">${indText}</span></span>
+                        </div>
                         <div class="inst-badge">30日法人買賣超 ${instText}</div>
                     </div>
                     <div class="data-row"><span>現價</span><b class="highlight">${s.close}</b></div>
@@ -387,18 +373,8 @@
                 document.getElementById('update-time').innerText = updateText;
                 
                 const container = document.getElementById('main-container');
-                
-                // 🏆 絕對排序陣列：定義強制呈現順序
-                const displayOrder = [
-                    "🌟 彼神黃金魚池",
-                    "🔥 姊夫爆發小魚池",
-                    "🍁 楓大永動魚池",
-                    "🔭 自選觀察水域",
-                    "🐅 三日成猛虎水池",
-                    "🌊 汪洋大魚"
-                ];
+                const displayOrder = ["🌟 彼神黃金魚池", "🔥 姊夫爆發小魚池", "🍁 楓大永動魚池", "🔭 自選觀察水域", "🐅 三日成猛虎水池", "🌊 汪洋大魚"];
 
-                // 1. 依照指定順序渲染
                 displayOrder.forEach(poolName => {
                     if (json_data.pools[poolName] && json_data.pools[poolName].length > 0) {
                         const stocks = json_data.pools[poolName];
@@ -408,23 +384,40 @@
                         const grid = document.createElement('div');
                         grid.className = 'grid-container';
                         
-                        let displayStocks = stocks;
                         if (poolName === "🌊 汪洋大魚") {
-                            displayStocks = stocks.sort((a, b) => {
+                            // 1. 內部排序: 法人 > 股價
+                            let sortedStocks = stocks.sort((a, b) => {
                                 if (b.inst_buy !== a.inst_buy) return b.inst_buy - a.inst_buy;
                                 return b.close - a.close;
                             });
-                        }
+                            
+                            // 2. 將股票依據產業別分組
+                            const industryGroups = {};
+                            sortedStocks.forEach(s => {
+                                const ind = s.industry || "未分類產業";
+                                if (!industryGroups[ind]) industryGroups[ind] = [];
+                                industryGroups[ind].push(s);
+                            });
 
-                        displayStocks.forEach(s => {
-                            grid.innerHTML += createCard(s, poolName === "🌊 汪洋大魚");
-                        });
+                            // 3. 依序印出產業標題與該產業的卡片
+                            for (const [ind, indStocks] of Object.entries(industryGroups)) {
+                                grid.innerHTML += `<div class="industry-section-title">🏷️ 【${ind}】族群</div>`;
+                                indStocks.forEach(s => {
+                                    grid.innerHTML += createCard(s, true);
+                                });
+                            }
+                        } else {
+                            // 其他魚池照舊直出
+                            stocks.forEach(s => {
+                                grid.innerHTML += createCard(s, false);
+                            });
+                        }
+                        
                         section.appendChild(grid);
                         container.appendChild(section);
                     }
                 });
 
-                // 2. 捕捉未來可能新增的其他魚池 (防呆機制)
                 for (const [poolName, stocks] of Object.entries(json_data.pools)) {
                     if (!displayOrder.includes(poolName) && stocks.length > 0) {
                         const section = document.createElement('div');
@@ -432,9 +425,7 @@
                         section.innerHTML = `<div class="pool-title">${poolName}</div>`;
                         const grid = document.createElement('div');
                         grid.className = 'grid-container';
-                        stocks.forEach(s => {
-                            grid.innerHTML += createCard(s, false);
-                        });
+                        stocks.forEach(s => { grid.innerHTML += createCard(s, false); });
                         section.appendChild(grid);
                         container.appendChild(section);
                     }
