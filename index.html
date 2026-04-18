@@ -72,13 +72,14 @@
         .search-box { background: var(--panel-bg); border: 1px solid var(--neon-cyan); border-radius: 30px; padding: 10px 25px; width: 100%; max-width: 400px; color: var(--text-main); font-size: 16px; outline: none; box-shadow: 0 0 15px var(--card-shadow); text-align: center; transition: 0.3s ease; }
 
         .header { text-align: center; width: 100%; }
-        .header h1 { margin: 0; letter-spacing: 2px; text-shadow: 0 0 10px var(--panel-border); font-size: 28px; }
+        .header h1 { margin: 0; letter-spacing: 2px; text-shadow: 0 0 10px var(--panel-border); font-size: 28px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .version-badge { font-size: 14px; background: var(--neon-cyan); color: #000; padding: 3px 8px; border-radius: 6px; font-weight: bold; vertical-align: middle; box-shadow: 0 0 10px rgba(100,255,218,0.5); }
         .update-time { font-size: 12px; color: var(--neon-cyan); opacity: 0.8; margin-top: 5px; margin-bottom: 15px; }
 
         .system-alert { background: var(--note-bg); border: 1px solid var(--neon-gold); border-radius: 8px; padding: 12px 20px; margin: 10px auto 20px; max-width: 800px; color: var(--neon-gold); font-weight: bold; font-size: 15px; letter-spacing: 1px; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 0 10px rgba(255, 215, 0, 0.2); animation: pulse-border 2s infinite; }
         @keyframes pulse-border { 0% { box-shadow: 0 0 5px rgba(255, 215, 0, 0.2); } 50% { box-shadow: 0 0 15px rgba(255, 215, 0, 0.5); } 100% { box-shadow: 0 0 5px rgba(255, 215, 0, 0.2); } }
 
-        /* 👑 頂部指南與歷史區塊專用樣式 (修復回歸) */
+        /* 👑 頂部指南與歷史區塊專用樣式 */
         .info-section {
             width: 100%; max-width: 800px; margin: 10px auto; background: var(--log-bg);
             border: 1px solid var(--panel-border); border-radius: 8px; font-size: 13px; color: var(--text-muted);
@@ -95,37 +96,31 @@
         .log-content ul { margin: 10px 0; padding-left: 20px; }
         .log-content li { margin-bottom: 8px; }
 
-        /* 🏹 實戰筆記專屬樣式 */
         .practical-note { border-color: var(--neon-gold); background: var(--note-bg); }
         .practical-note summary { color: var(--neon-gold); font-size: 15px; }
         .note-step { margin-bottom: 15px; padding-left: 10px; border-left: 2px solid var(--neon-gold); }
         .note-date { font-weight: bold; color: var(--neon-gold); margin-right: 10px; font-family: monospace; }
 
-        /* 🌠 許願池樣式 */
         .wish-well { margin-top: 15px; }
-        .wish-input {
-            width: 100%; background: var(--input-bg); border: 1px solid var(--panel-border);
-            border-radius: 6px; color: var(--text-main); padding: 10px; font-size: 14px;
-            resize: vertical; min-height: 80px; outline: none; margin-bottom: 10px;
-        }
+        .wish-input { width: 100%; background: var(--input-bg); border: 1px solid var(--panel-border); border-radius: 6px; color: var(--text-main); padding: 10px; font-size: 14px; resize: vertical; min-height: 80px; outline: none; margin-bottom: 10px; }
         .wish-btn { background: var(--neon-cyan); color: #000; border: none; padding: 8px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.3s; }
 
-        /* 🐟 下方魚池區塊專用樣式 */
+        /* 🐟 下方魚池區塊專用樣式 (強制摺疊機制) */
         .pool-section { margin-bottom: 30px; max-width: 1400px; margin-left: auto; margin-right: auto; transition: 0.3s ease; }
-        .pool-section summary { list-style: none; cursor: pointer; outline: none; }
+        .pool-section summary { list-style: none; cursor: pointer; outline: none; display: block; }
         .pool-section summary::-webkit-details-marker { display: none; }
 
         .pool-title { 
             font-size: 20px; font-weight: bold; color: var(--neon-cyan); background: var(--title-bg); 
-            padding: 12px 20px; border-left: 4px solid var(--neon-cyan); border-radius: 0 8px 8px 0;
-            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 20px; border-left: 4px solid var(--neon-cyan); border-radius: 8px;
+            display: flex; justify-content: space-between; align-items: center; transition: 0.3s ease;
         }
-        .pool-title::after { content: '▼'; font-size: 12px; opacity: 0.5; transition: 0.3s; }
+        .pool-title:hover { filter: brightness(1.2); }
+        .pool-title::after { content: '▼'; font-size: 14px; opacity: 0.8; transition: transform 0.3s ease; }
         details[open].pool-section .pool-title::after { transform: rotate(180deg); }
 
         .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 25px; padding: 20px 0; }
 
-        /* 🏷️ 產業分隔線樣式 */
         .industry-section-title { width: 100%; color: var(--neon-gold); font-size: 17px; font-weight: bold; margin-top: 25px; margin-bottom: 15px; border-bottom: 1px dashed var(--panel-border); padding-bottom: 8px; grid-column: 1 / -1; letter-spacing: 1px; }
 
         /* 🃏 卡片樣式 */
@@ -166,9 +161,9 @@
 
     <div class="top-nav">
         <div class="header">
-            <h1>🌌 匹夫有責｜彼夫有責楓葉戰情室</h1>
+            <h1>🌌 彼夫有責楓葉戰情室 <span class="version-badge">V6.9.10</span></h1>
             <div class="update-time" id="update-time">衛星同步中...</div>
-            <div class="system-alert">🏖️ 【網頁提前通知】4/20 ~ 4/24 暫停更新 — 彼夫有擇大腦休息中！</div>
+            <div class="system-alert">🏖️ 【事前停更通知】4/20 ~ 4/24 暫停更新 — 彼夫有擇大腦休息中！</div>
 
             <details class="info-section practical-note" open>
                 <summary>🛠️ 6155 鈞寶｜實戰操盤筆記彙整</summary>
@@ -185,20 +180,15 @@
             <details class="info-section">
                 <summary>📜 4/15 - 4/18 系統進化史 (History)</summary>
                 <div class="log-content">
-                    <b>✅ 04/18 V6.9.8 升級：</b>
+                    <b>✅ 04/18 V6.9.10 升級：</b>
                     <ul>
-                        <li><b>彈性試算：</b>實裝卡片「彈性比例模擬倉」，支援自由填寫停利損%數，右側交易精準推演。</li>
-                        <li><b>版面淨化：</b>全魚池導入摺疊展開架構，大幅提升盯盤專注度與網頁流暢度。</li>
+                        <li><b>體驗升級：</b>全魚池導入摺疊展開架構，大幅提升盯盤專注度。</li>
+                        <li><b>彈性試算：</b>實裝卡片「彈性比例模擬倉」，支援自由填寫停利損%數。</li>
                     </ul>
                     <b>✅ 04/17 V6.9.4 升級：</b>
                     <ul>
                         <li><b>產業雷達：</b>汪洋大魚池實裝「產業別」自動分群顯示功能，並全域加入產業標籤。</li>
                         <li><b>黃金陣列：</b>重新編排視覺動線，【🌟 彼神黃金魚池】提升至全域首位展示。</li>
-                    </ul>
-                    <b>✅ 04/16 V6.8 升級：</b>
-                    <ul>
-                        <li><b>猛虎記憶：</b>新增「🐅 三日成猛虎水池」，自動追蹤連續三天籌碼流入強勢股。</li>
-                        <li><b>極致下載：</b>導入「分批批量下載」技術，將全台股掃描縮短至 3 分鐘內。</li>
                     </ul>
                 </div>
             </details>
@@ -348,6 +338,7 @@
                 const container = document.getElementById('main-container');
                 const displayOrder = ["🌟 彼神黃金魚池", "🐅 三日成猛虎水池", "🔥 姊夫爆發小魚池", "🍁 楓大永動魚池", "🔭 自選觀察水域", "🌊 汪洋大魚"];
 
+                // 🎯 核心與順序魚池生成 (強制使用 details 摺疊標籤)
                 displayOrder.forEach(poolName => {
                     if (json_data.pools[poolName] && json_data.pools[poolName].length > 0) {
                         const stocks = json_data.pools[poolName];
@@ -355,6 +346,7 @@
                         const section = document.createElement('details');
                         section.className = 'pool-section';
                         
+                        // 🌟 預設只展開彼神與猛虎池
                         if (poolName === "🌟 彼神黃金魚池" || poolName === "🐅 三日成猛虎水池") {
                             section.open = true;
                         }
@@ -383,9 +375,24 @@
                         container.appendChild(section);
                     }
                 });
+
+                // 🎯 防呆機制：未來新增的其他魚池也強制使用 details 摺疊標籤
+                for (const [poolName, stocks] of Object.entries(json_data.pools)) {
+                    if (!displayOrder.includes(poolName) && stocks.length > 0) {
+                        const section = document.createElement('details');
+                        section.className = 'pool-section';
+                        section.innerHTML = `<summary><div class="pool-title">${poolName}</div></summary>`;
+                        const grid = document.createElement('div');
+                        grid.className = 'grid-container';
+                        stocks.forEach(s => grid.innerHTML += createCard(s, false));
+                        section.appendChild(grid);
+                        container.appendChild(section);
+                    }
+                }
             })
             .catch(e => { console.error(e); });
 
+        // 搜尋邏輯
         document.getElementById('global-search').addEventListener('input', (e) => {
             const code = e.target.value.trim();
             const searchGrid = document.getElementById('search-grid');
