@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>全域雷達｜匹夫有責｜彼夫有責全域戰情室</title>
+    <title>測試雷達引擎區</title>
     <style>
         /* =========================================
            1. 預設主題：深海太空版 (Deep Ocean Space)
@@ -168,7 +168,7 @@
 
     <div class="top-nav">
         <div class="header">
-            <h1>🌌 彼夫有責全域戰情室 <span class="version-badge">V6.9.12</span></h1>
+            <h1>🌌 測試雷達引擎區 <span class="version-badge">V6.9.12</span></h1>
             <div class="update-time" id="update-time">衛星同步中...</div>
             <div class="system-alert">🏖️ 【網頁提前通知】4/20 ~ 4/24 暫停更新 — 彼夫有擇大腦休息中！</div>
 
@@ -249,7 +249,7 @@
     <script>
         document.getElementById('current-year').innerText = new Date().getFullYear();
 
-        // 🎯 核心主題切換邏輯更新 (maple -> light-ocean)
+        // 🎯 核心主題切換邏輯
         const themeBtn = document.getElementById('theme-toggle');
         themeBtn.addEventListener('click', () => {
             const root = document.documentElement;
@@ -277,24 +277,27 @@
 
         let fullData = null;
 
-        function updateSim(sid) {
-            const price = parseFloat(document.getElementById(`price-${sid}`).value) || 0;
-            const targetPct = parseFloat(document.getElementById(`target-pct-${sid}`).value) || 0;
-            const stopPct = parseFloat(document.getElementById(`stop-pct-${sid}`).value) || 0;
+        // 🛠️ 修正 1：改用傳入的 uniqueId，避免搜尋區與主畫面 ID 撞名
+        function updateSim(uniqueId) {
+            const price = parseFloat(document.getElementById(`price-${uniqueId}`).value) || 0;
+            const targetPct = parseFloat(document.getElementById(`target-pct-${uniqueId}`).value) || 0;
+            const stopPct = parseFloat(document.getElementById(`stop-pct-${uniqueId}`).value) || 0;
 
             if (price > 0) {
-                document.getElementById(`profit-${sid}`).innerText = (price * (1 + targetPct/100)).toFixed(2);
-                document.getElementById(`loss-${sid}`).innerText = (price * (1 - stopPct/100)).toFixed(2);
+                document.getElementById(`profit-${uniqueId}`).innerText = (price * (1 + targetPct/100)).toFixed(2);
+                document.getElementById(`loss-${uniqueId}`).innerText = (price * (1 - stopPct/100)).toFixed(2);
             } else {
-                document.getElementById(`profit-${sid}`).innerText = '--';
-                document.getElementById(`loss-${sid}`).innerText = '--';
+                document.getElementById(`profit-${uniqueId}`).innerText = '--';
+                document.getElementById(`loss-${uniqueId}`).innerText = '--';
             }
         }
 
-        function createCard(s, isWangYang = false) {
+        // 🛠️ 修正 2：增加 prefix 參數，讓搜尋跟主畫面的 ID 徹底分開
+        function createCard(s, isWangYang = false, prefix = "main-") {
             const isBuy = s.action === '買入加碼';
             const instText = s.inst_buy > 0 ? '+' + s.inst_buy : s.inst_buy;
             const indText = s.industry || '未分類';
+            const uniqueId = prefix + s.stock_id; // 產生專屬 ID：如 search-6155 或 main-6155
 
             let simHtml = `
                 <div class="sim-panel">
@@ -302,24 +305,24 @@
                     <div class="sim-input-grid">
                         <div class="sim-input-box">
                             <span class="sim-input-label">持股價位</span>
-                            <input type="number" id="price-${s.stock_id}" class="sim-input" placeholder="0.0" oninput="updateSim('${s.stock_id}')">
+                            <input type="number" id="price-${uniqueId}" class="sim-input" placeholder="0.0" oninput="updateSim('${uniqueId}')">
                         </div>
                         <div class="sim-input-box">
                             <span class="sim-input-label">持股股數</span>
-                            <input type="number" id="shares-${s.stock_id}" class="sim-input" placeholder="1000">
+                            <input type="number" id="shares-${uniqueId}" class="sim-input" placeholder="1000">
                         </div>
                         <div class="sim-input-box">
                             <span class="sim-input-label">停利比例 (%)</span>
-                            <input type="number" id="target-pct-${s.stock_id}" class="sim-input" value="50" oninput="updateSim('${s.stock_id}')">
+                            <input type="number" id="target-pct-${uniqueId}" class="sim-input" value="50" oninput="updateSim('${uniqueId}')">
                         </div>
                         <div class="sim-input-box">
                             <span class="sim-input-label">停損比例 (%)</span>
-                            <input type="number" id="stop-pct-${s.stock_id}" class="sim-input" value="10" oninput="updateSim('${s.stock_id}')">
+                            <input type="number" id="stop-pct-${uniqueId}" class="sim-input" value="10" oninput="updateSim('${uniqueId}')">
                         </div>
                     </div>
                     <div class="sim-result">
-                        <div class="result-row"><span>🎯 模擬停利點參考</span><b id="profit-${s.stock_id}" style="color: var(--neon-cyan);">--</b></div>
-                        <div class="result-row"><span>✂️ 模擬停損點參考</span><b id="loss-${s.stock_id}" style="color: var(--neon-red);">--</b></div>
+                        <div class="result-row"><span>🎯 模擬停利點參考</span><b id="profit-${uniqueId}" style="color: var(--neon-cyan);">--</b></div>
+                        <div class="result-row"><span>✂️ 模擬停損點參考</span><b id="loss-${uniqueId}" style="color: var(--neon-red);">--</b></div>
                     </div>
                 </div>
             `;
@@ -378,13 +381,13 @@
                             for (const [ind, indStocks] of Object.entries(industryGroups)) {
                                 const indDetails = document.createElement('details');
                                 indDetails.className = 'industry-details';
-                                // 💡 這裡不加上 .open = true，因此各產業一律預設折起
                                 indDetails.innerHTML = `<summary><div class="industry-section-title">🏷️ 【${ind}】族群 (${indStocks.length} 檔) <span class="ind-arrow">▼</span></div></summary>`;
                                 
                                 const indGrid = document.createElement('div');
                                 indGrid.className = 'grid-container';
                                 indGrid.style.paddingTop = "5px";
-                                indStocks.forEach(s => indGrid.innerHTML += createCard(s, true));
+                                // 🛠️ 修正 3：加入 'main-' 前綴
+                                indStocks.forEach(s => indGrid.innerHTML += createCard(s, true, 'main-'));
                                 
                                 indDetails.appendChild(indGrid);
                                 section.appendChild(indDetails);
@@ -393,7 +396,8 @@
                             // 其他一般魚池
                             const grid = document.createElement('div');
                             grid.className = 'grid-container';
-                            stocks.forEach(s => grid.innerHTML += createCard(s, false));
+                            // 🛠️ 修正 4：加入 'main-' 前綴
+                            stocks.forEach(s => grid.innerHTML += createCard(s, false, 'main-'));
                             section.appendChild(grid);
                         }
                         
@@ -401,6 +405,7 @@
                     }
                 });
 
+                // 其他不在自訂順序內的魚池
                 for (const [poolName, stocks] of Object.entries(json_data.pools)) {
                     if (!displayOrder.includes(poolName) && stocks.length > 0) {
                         const section = document.createElement('details');
@@ -408,7 +413,8 @@
                         section.innerHTML = `<summary><div class="pool-title">${poolName}</div></summary>`;
                         const grid = document.createElement('div');
                         grid.className = 'grid-container';
-                        stocks.forEach(s => grid.innerHTML += createCard(s, false));
+                        // 🛠️ 修正 5：加入 'main-' 前綴
+                        stocks.forEach(s => grid.innerHTML += createCard(s, false, 'main-'));
                         section.appendChild(grid);
                         container.appendChild(section);
                     }
@@ -426,7 +432,8 @@
                 for (const stocks of Object.values(fullData.pools)) {
                     const match = stocks.find(s => s.stock_id === code);
                     if (match) {
-                        searchGrid.innerHTML = createCard(match, false);
+                        // 🛠️ 修正 6：搜尋結果專用前綴 'search-'
+                        searchGrid.innerHTML = createCard(match, false, 'search-');
                         found = true;
                         break;
                     }
