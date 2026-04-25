@@ -26,6 +26,7 @@
             --watch-border: rgba(255, 255, 255, 0.1);
             --card-shadow: rgba(0, 0, 0, 0.4);
             --log-bg: rgba(100, 255, 218, 0.05);
+            --note-bg: rgba(255, 215, 0, 0.05);
             --ind-badge-bg: rgba(255, 255, 255, 0.1);
         }
 
@@ -47,6 +48,7 @@
             --watch-border: rgba(0, 0, 0, 0.1);
             --card-shadow: rgba(0, 96, 100, 0.15);
             --log-bg: rgba(0, 131, 143, 0.05);
+            --note-bg: rgba(245, 127, 23, 0.05);
             --ind-badge-bg: rgba(0, 131, 143, 0.1);
         }
 
@@ -64,6 +66,27 @@
         .version-badge { font-size: 14px; background: var(--neon-cyan); color: #000; padding: 3px 8px; border-radius: 6px; font-weight: bold; vertical-align: middle; }
         .update-time { font-size: 12px; color: var(--neon-cyan); opacity: 0.8; margin-top: 5px; margin-bottom: 15px; }
 
+        /* 🚨 系統公告與筆記區 (已復原) */
+        .system-alert { background: var(--note-bg); border: 1px solid var(--neon-gold); border-radius: 8px; padding: 12px 20px; margin: 10px auto 20px; max-width: 800px; color: var(--neon-gold); font-weight: bold; font-size: 15px; letter-spacing: 1px; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 0 10px rgba(255, 215, 0, 0.2); animation: pulse-border 2s infinite; }
+        @keyframes pulse-border { 0% { box-shadow: 0 0 5px rgba(255, 215, 0, 0.2); } 50% { box-shadow: 0 0 15px rgba(255, 215, 0, 0.5); } 100% { box-shadow: 0 0 5px rgba(255, 215, 0, 0.2); } }
+
+        .info-section { width: 100%; max-width: 800px; margin: 10px auto; background: var(--log-bg); border: 1px solid var(--panel-border); border-radius: 8px; font-size: 13px; color: var(--text-muted); transition: 0.3s ease; overflow: hidden; }
+        .info-section summary { font-weight: bold; color: var(--neon-gold); cursor: pointer; padding: 10px 15px; display: flex; align-items: center; justify-content: center; letter-spacing: 1px; list-style: none; outline: none; }
+        .info-section summary::-webkit-details-marker { display: none; }
+        .log-content { padding: 15px; line-height: 1.8; text-align: left; border-top: 1px dashed var(--panel-border); }
+        .log-content b { color: var(--neon-cyan); }
+        .log-content ul { margin: 10px 0; padding-left: 20px; }
+        .log-content li { margin-bottom: 8px; }
+        .practical-note { border-color: var(--neon-gold); background: var(--note-bg); }
+        .practical-note summary { color: var(--neon-gold); font-size: 15px; }
+        .note-step { margin-bottom: 15px; padding-left: 10px; border-left: 2px solid var(--neon-gold); }
+        .note-date { font-weight: bold; color: var(--neon-gold); margin-right: 10px; font-family: monospace; }
+        
+        .wish-well { margin-top: 15px; }
+        .wish-input { width: 100%; background: var(--input-bg); border: 1px solid var(--panel-border); border-radius: 6px; color: var(--text-main); padding: 10px; font-size: 14px; resize: vertical; min-height: 80px; outline: none; margin-bottom: 10px; }
+        .wish-btn { background: var(--neon-cyan); color: #000; border: none; padding: 8px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+
+        /* 🐟 魚池與產業摺疊區 */
         .pool-section { margin-bottom: 30px; max-width: 1400px; margin-left: auto; margin-right: auto; }
         .pool-section summary { list-style: none; cursor: pointer; outline: none; }
         .pool-title { font-size: 20px; font-weight: bold; color: var(--neon-cyan); background: var(--title-bg); padding: 12px 20px; border-left: 4px solid var(--neon-cyan); border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
@@ -72,13 +95,13 @@
 
         .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 25px; padding: 20px 0; }
         
-        /* 🏷️ 產業分隔線與摺疊樣式 (復原區) */
         .industry-details { margin-top: 15px; border-bottom: 1px dashed var(--panel-border); padding-bottom: 10px; transition: 0.3s; }
         .industry-details summary { list-style: none; cursor: pointer; outline: none; display: flex; justify-content: space-between; align-items: center; }
         .industry-section-title { color: var(--neon-gold); font-size: 17px; font-weight: bold; letter-spacing: 1px; padding: 10px 5px; margin: 0; }
         .ind-arrow { font-size: 12px; opacity: 0.6; transition: transform 0.3s; color: var(--neon-cyan); }
         .industry-details[open] .ind-arrow { transform: rotate(180deg); }
 
+        /* 🃏 卡片與模擬倉 */
         .card { background: var(--panel-bg); backdrop-filter: blur(10px); border-radius: 15px; padding: 22px; border: 1px solid var(--panel-border); border-top: 4px solid var(--text-muted); box-shadow: 0 10px 30px var(--card-shadow); transition: 0.4s ease; position: relative; }
         .card.is-buy { border-top-color: var(--neon-green); }
         .stock-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
@@ -108,8 +131,55 @@
 
     <div class="top-nav">
         <div class="header">
-            <h1>🌌 彼夫有擇全域戰情室 <span class="version-badge">V7.0.4</span></h1>
+            <h1>🌌 彼夫有擇全域戰情室 <span class="version-badge">V7.0.5</span></h1>
             <div id="update-time" class="update-time">衛星同步中...</div>
+            
+            <div class="system-alert">⚡ 核心引擎 V7 正式上線｜雙軌架構巡航中</div>
+
+            <details class="info-section practical-note">
+                <summary>🛠️ 6155 鈞寶｜實戰操盤筆記彙整</summary>
+                <div class="log-content">
+                    <div class="note-step"><span class="note-date">03/20</span> <b>初始進場：</b>於 46.65 佈局底倉 1 張。</div>
+                    <div class="note-step"><span class="note-date">04/10</span> <b>策略加碼：</b>41.35 進場加碼單 1 張。</div>
+                    <div class="note-step"><span class="note-date">04/16</span> <b>戰術操作：</b>壓回 48.00 加碼 1 張。當日於 51.20 執行當沖沖掉 1 張。</div>
+                    <div class="note-step"><span class="note-date">04/17</span> <b>獲利調節：</b>於 51.20 順勢獲利入袋 1 張部位。</div>
+                    <div class="note-step"><span class="note-date">04/25</span> <b>後市展望：</b>暫不動作。進入靜默觀測期，同步觀測 TACO 動向。</div>
+                </div>
+            </details>
+
+            <details class="info-section">
+                <summary>📜 改版歷程細節</summary>
+                <div class="log-content">
+                    <b>✅ V7.0.5 系統修復：</b>
+                    <ul>
+                        <li><b>面板回歸：</b>修復系統公告、實戰筆記與許願池遺失的嚴重 Bug。</li>
+                        <li><b>穩定架構：</b>結合 V7.0.4 的產業摺疊與測試員水域順序調整，達最終穩定狀態。</li>
+                    </ul>
+                </div>
+            </details>
+
+            <details class="info-section">
+                <summary>🌊 汪洋大魚每日選股邏輯</summary>
+                <div class="log-content">
+                    <ul>
+                        <li><b>1. 動能：</b>成交量 > 1,000 張。</li>
+                        <li><b>2. 趨勢：</b>股價站穩海浪 30MA。</li>
+                        <li><b>3. 籌碼：</b>30日法人買賣超 > 0。</li>
+                    </ul>
+                </div>
+            </details>
+
+            <details class="info-section">
+                <summary>🌠 戰情室許願池 (功能提案)</summary>
+                <div class="log-content">
+                    <div class="wish-well">
+                        <b>有什麼想看的新指標或新功能嗎？請在此投下你的願望：</b>
+                        <textarea id="wish-text" class="wish-input" placeholder="例如：希望加入融資變化..."></textarea>
+                        <button class="wish-btn" onclick="sendWish()">投下願望瓶</button>
+                    </div>
+                </div>
+            </details>
+            
             <input type="text" id="global-search" class="search-box" placeholder="🛸 啟動聲納：輸入代碼開啟模擬探測...">
         </div>
     </div>
@@ -141,6 +211,20 @@
                 themeBtn.innerText = '🌌 切換深海太空版';
             }
         });
+
+        // 🎯 許願池功能也加回來了！
+        function sendWish() {
+            const wish = document.getElementById('wish-text').value;
+            if (wish.trim()) {
+                const email = "wangjeff0226@hotmail.com";
+                const subject = encodeURIComponent("🚀 彼夫有擇戰情室 - Beta User 許願提案");
+                const body = encodeURIComponent("指揮官你好，以下是我的戰情室功能提案：\n\n" + wish);
+                window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+                document.getElementById('wish-text').value = '';
+            } else {
+                alert('請輸入你的願望再送出喔！');
+            }
+        }
 
         let fullData = null;
 
@@ -215,7 +299,7 @@
                         
                         section.innerHTML = `<summary><div class="pool-title">${poolName}</div></summary>`;
                         
-                        // 🌊 災難復原：把汪洋大魚的「產業分類摺疊」加回來！
+                        // 🌊 汪洋大魚的「產業分類摺疊」
                         if (poolName === "🌊 汪洋大魚") {
                             let sortedStocks = stocks.sort((a, b) => (b.inst_buy - a.inst_buy) || (b.close - a.close));
                             const industryGroups = {};
