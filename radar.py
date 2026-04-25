@@ -70,28 +70,44 @@ def download_yf_data_single(sid, market_map, retries=3):
 
 def calculate_stock_data(sid, name, industry, df_prices, df_inst, force_show=False):
     try:
+        # 處理無股價資料防呆
         if df_prices is None or df_prices.empty or len(df_prices) < 2:
-            if force_show: return {"stock_id": sid, "stock_name": name, "industry": industry, "close": "無資料", "volume": 0, "inst_buy": 0, "ma5": 0, "ma30": 0, "action": "靜候觀察", "target_price": 0, "stop_loss": 0}
+            if force_show: return {"stock_id": sid, "stock_name": name, "industry": industry, "close": "無資料", "volume": 0, "inst_buy": 0, "foreign_buy": 0, "trust_buy": 0, "ma5": 0, "ma30": 0, "action": "靜候觀察", "target_price": 0, "stop_loss": 0}
             return None
 
         df_prices = df_prices.dropna(subset=['Close', 'Volume'])
         if df_prices.empty: return None
 
+        # 計算量價與均線
         latest = df_prices.iloc[-1]
         close_price = round(float(latest['Close']), 2)
         ma5 = round(float(df_prices['Close'].rolling(window=5).mean().iloc[-1]), 2) if len(df_prices) >= 5 else close_price
         ma30 = round(float(df_prices['Close'].rolling(window=30).mean().iloc[-1]), 2) if len(df_prices) >= 30 else close_price
         vol_lots = int(float(latest['Volume']) / 1000) if pd.notna(latest['Volume']) else 0
 
+        # 🎯 V7.1 籌碼細分核心邏輯
         inst_buy_30d = 0
+        foreign_buy_30d = 0
+        trust_buy_30d = 0
+        
         if not df_inst.empty:
             df_inst['net_buy'] = df_inst.get('buy', 0) - df_inst.get('sell', 0)
             inst_buy_30d = int(df_inst['net_buy'].sum() / 1000)
+            
+            # 透過 name 欄位拆解外資與投信
+            if 'name' in df_inst.columns:
+                mask_foreign = df_inst['name'].astype(str).str.contains('外資|外陸資|Foreign', case=False, na=False)
+                mask_trust = df_inst['name'].astype(str).str.contains('投信|Investment_Trust|Trust', case=False, na=False)
+                
+                foreign_buy_30d = int(df_inst[mask_foreign]['net_buy'].sum() / 1000)
+                trust_buy_30d = int(df_inst[mask_trust]['net_buy'].sum() / 1000)
 
         action = "買入加碼" if close_price >= ma5 and inst_buy_30d > 0 else "靜候觀察"
-        return {"stock_id": sid, "stock_name": name, "industry": industry, "close": close_price, "volume": vol_lots, "inst_buy": inst_buy_30d, "ma5": ma5, "ma30": ma30, "action": action, "target_price": round(close_price * 1.5, 2), "stop_loss": round(close_price * 0.9, 2)}
+        
+        # 將外資與投信資料打包進回傳的 JSON 裡
+        return {"stock_id": sid, "stock_name": name, "industry": industry, "close": close_price, "volume": vol_lots, "inst_buy": inst_buy_30d, "foreign_buy": foreign_buy_30d, "trust_buy": trust_buy_30d, "ma5": ma5, "ma30": ma30, "action": action, "target_price": round(close_price * 1.5, 2), "stop_loss": round(close_price * 0.9, 2)}
     except:
-        if force_show: return {"stock_id": sid, "stock_name": name, "industry": industry, "close": "計算異常", "volume": 0, "inst_buy": 0, "ma5": 0, "ma30": 0, "action": "靜候觀察", "target_price": 0, "stop_loss": 0}
+        if force_show: return {"stock_id": sid, "stock_name": name, "industry": industry, "close": "計算異常", "volume": 0, "inst_buy": 0, "foreign_buy": 0, "trust_buy": 0, "ma5": 0, "ma30": 0, "action": "靜候觀察", "target_price": 0, "stop_loss": 0}
         return None
 
 def main():
