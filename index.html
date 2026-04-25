@@ -71,6 +71,14 @@
         details[open] .pool-title::after { transform: rotate(180deg); }
 
         .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 25px; padding: 20px 0; }
+        
+        /* 🏷️ 產業分隔線與摺疊樣式 (復原區) */
+        .industry-details { margin-top: 15px; border-bottom: 1px dashed var(--panel-border); padding-bottom: 10px; transition: 0.3s; }
+        .industry-details summary { list-style: none; cursor: pointer; outline: none; display: flex; justify-content: space-between; align-items: center; }
+        .industry-section-title { color: var(--neon-gold); font-size: 17px; font-weight: bold; letter-spacing: 1px; padding: 10px 5px; margin: 0; }
+        .ind-arrow { font-size: 12px; opacity: 0.6; transition: transform 0.3s; color: var(--neon-cyan); }
+        .industry-details[open] .ind-arrow { transform: rotate(180deg); }
+
         .card { background: var(--panel-bg); backdrop-filter: blur(10px); border-radius: 15px; padding: 22px; border: 1px solid var(--panel-border); border-top: 4px solid var(--text-muted); box-shadow: 0 10px 30px var(--card-shadow); transition: 0.4s ease; position: relative; }
         .card.is-buy { border-top-color: var(--neon-green); }
         .stock-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
@@ -81,7 +89,6 @@
         .data-row b { color: var(--text-main); font-size: 16px; }
         .highlight { color: var(--neon-cyan) !important; font-size: 20px !important; }
 
-        /* 🚀 戰術標籤樣式 */
         .action-box { margin-top: 15px; padding: 10px; text-align: center; font-weight: bold; border-radius: 6px; font-size: 15px; }
         .action-box.buy { background: rgba(0,255,0,0.1); color: var(--neon-green); border: 1px solid var(--neon-green); }
         .action-box.watch { background: var(--watch-bg); color: var(--text-muted); border: 1px solid var(--watch-border); }
@@ -101,7 +108,7 @@
 
     <div class="top-nav">
         <div class="header">
-            <h1>🌌 彼夫有擇全域戰情室 <span class="version-badge">V7.0.2</span></h1>
+            <h1>🌌 彼夫有擇全域戰情室 <span class="version-badge">V7.0.4</span></h1>
             <div id="update-time" class="update-time">衛星同步中...</div>
             <input type="text" id="global-search" class="search-box" placeholder="🛸 啟動聲納：輸入代碼開啟模擬探測...">
         </div>
@@ -194,24 +201,56 @@
                 document.getElementById('update-time').innerText = "⏱️ 雷達更新：" + json_data.last_updated;
                 const container = document.getElementById('main-container');
                 
-                // 🎯 核心排序：測試員觀察水域 維持第二順位
-                const displayOrder = ["🌟 彼神黃金魚池", "測試員觀察水域", "🐅 三日成猛虎水池", "🔥 姊夫爆發小魚池", "🍁 楓大永動魚池", "🔭 自選觀察水域", "🌊 汪洋大魚"];
+                // 🎯 核心排序與精確匹配
+                const displayOrder = ["🌟 彼神黃金魚池", "🔭 測試員觀察水域", "🐅 三日成猛虎水池", "🔥 姊夫爆發小魚池", "🍁 楓大永動魚池", "🌊 汪洋大魚"];
 
                 displayOrder.forEach(poolName => {
                     if (json_data.pools[poolName] && json_data.pools[poolName].length > 0) {
+                        const stocks = json_data.pools[poolName];
                         const section = document.createElement('details');
                         section.className = 'pool-section';
-                        if (poolName === "🌟 彼神黃金魚池" || poolName === "測試員觀察水域") section.open = true;
+                        
+                        // 預設展開
+                        if (poolName === "🌟 彼神黃金魚池" || poolName === "🔭 測試員觀察水域") section.open = true;
+                        
                         section.innerHTML = `<summary><div class="pool-title">${poolName}</div></summary>`;
-                        const grid = document.createElement('div');
-                        grid.className = 'grid-container';
-                        json_data.pools[poolName].forEach(s => grid.innerHTML += createCard(s, false, 'main-'));
-                        section.appendChild(grid);
+                        
+                        // 🌊 災難復原：把汪洋大魚的「產業分類摺疊」加回來！
+                        if (poolName === "🌊 汪洋大魚") {
+                            let sortedStocks = stocks.sort((a, b) => (b.inst_buy - a.inst_buy) || (b.close - a.close));
+                            const industryGroups = {};
+                            sortedStocks.forEach(s => {
+                                const ind = s.industry || "未分類產業";
+                                if (!industryGroups[ind]) industryGroups[ind] = [];
+                                industryGroups[ind].push(s);
+                            });
+                            
+                            for (const [ind, indStocks] of Object.entries(industryGroups)) {
+                                const indDetails = document.createElement('details');
+                                indDetails.className = 'industry-details';
+                                indDetails.innerHTML = `<summary><div class="industry-section-title">🏷️ 【${ind}】族群 (${indStocks.length} 檔) <span class="ind-arrow">▼</span></div></summary>`;
+                                
+                                const indGrid = document.createElement('div');
+                                indGrid.className = 'grid-container';
+                                indGrid.style.paddingTop = "5px";
+                                indStocks.forEach(s => indGrid.innerHTML += createCard(s, true, 'main-'));
+                                
+                                indDetails.appendChild(indGrid);
+                                section.appendChild(indDetails);
+                            }
+                        } else {
+                            // 其他魚池的一般渲染
+                            const grid = document.createElement('div');
+                            grid.className = 'grid-container';
+                            stocks.forEach(s => grid.innerHTML += createCard(s, false, 'main-'));
+                            section.appendChild(grid);
+                        }
+                        
                         container.appendChild(section);
                     }
                 });
 
-                // 🛠️ 防遺漏迴圈：顯示其餘自定義水域
+                // 🛠️ 防遺漏迴圈
                 for (const [poolName, stocks] of Object.entries(json_data.pools)) {
                     if (!displayOrder.includes(poolName) && stocks.length > 0) {
                         const section = document.createElement('details');
