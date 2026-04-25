@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🌌自動巡航｜彼夫有擇模擬選股戰情室</title>
+    <title>測試DEBUG V7.0.5</title>
     <style>
         /* =========================================
            1. 核心主題設定
@@ -131,7 +131,7 @@
 
     <div class="top-nav">
         <div class="header">
-            <h1>🌌 彼夫有擇全域戰情室 <span class="version-badge">V7.0.5</span></h1>
+            <h1>🌌 測試DEBUG V7.0.5 <span class="version-badge">V7.0.5</span></h1>
             <div id="update-time" class="update-time">衛星同步中...</div>
             
             <div class="system-alert">⚡ 核心引擎 V7 正式上線｜雙軌架構巡航中</div>
@@ -244,6 +244,15 @@
 function createCard(s, isWangYang = false, prefix = "main-") {
             const isBuy = s.action === '買入加碼';
             const instText = s.inst_buy > 0 ? '+' + s.inst_buy : s.inst_buy;
+            
+            // 🎯 V7.1 籌碼拆解：加入防呆，若讀到舊資料也不會報錯
+            const foreignText = (s.foreign_buy !== undefined) ? (s.foreign_buy > 0 ? '+' + s.foreign_buy : s.foreign_buy) : '--';
+            const trustText = (s.trust_buy !== undefined) ? (s.trust_buy > 0 ? '+' + s.trust_buy : s.trust_buy) : '--';
+            
+            // 🔥 V7.1 戰術特效：投信認養標籤
+            const isTrustBuying = s.trust_buy > 0;
+            const trustBadge = isTrustBuying ? `<span style="color:var(--neon-red); font-size:12px; font-weight:bold; margin-left:8px;">🔥 投信認養</span>` : '';
+
             const indText = s.industry || '未分類';
             const uniqueId = prefix + s.stock_id;
 
@@ -252,10 +261,16 @@ function createCard(s, isWangYang = false, prefix = "main-") {
                     <div class="stock-header">
                         <div>
                             <span class="stock-id">${s.stock_id}</span>
-                            <span class="stock-name">${s.stock_name} <span class="industry-badge">${indText}</span></span>
+                            <span class="stock-name">${s.stock_name} <span class="industry-badge">${indText}</span>${trustBadge}</span>
                         </div>
-                        <div class="inst-badge" style="color:var(--neon-gold); font-size:12px;">30日法人 ${instText}</div>
+                        <div class="inst-badge" style="color:var(--text-muted); font-size:12px;">總法人 ${instText}</div>
                     </div>
+                    
+                    <div class="data-row" style="background: rgba(255,215,0,0.05); padding: 6px 10px; border-radius: 6px; border-left: 3px solid var(--neon-gold); margin-bottom: 12px;">
+                        <span style="font-size: 13px; color: var(--text-muted);">30日外資 <b style="color: var(--text-main);">${foreignText}</b></span>
+                        <span style="font-size: 13px; color: var(--text-muted);">30日投信 <b style="color: ${isTrustBuying ? 'var(--neon-red)' : 'var(--text-main)'}; font-size: 15px;">${trustText}</b></span>
+                    </div>
+
                     <div class="data-row"><span>現價</span><b class="highlight">${s.close}</b></div>
                     <div class="data-row"><span>成交量</span><b>${s.volume.toLocaleString()}</b></div>
                     <div class="data-row"><span>5MA/30MA</span><b>${s.ma5}/${s.ma30}</b></div>
