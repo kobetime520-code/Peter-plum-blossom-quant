@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>全域雷達｜匹夫有責｜彼夫有責全域戰情室</title>
+    <title>測試雷達引擎區</title>
     <style>
         /* =========================================
            1. 預設主題：深海太空版 (Deep Ocean Space)
@@ -168,9 +168,9 @@
 
     <div class="top-nav">
         <div class="header">
-            <h1>🌌 彼夫有責全域戰情室 <span class="version-badge">V6.9.12</span></h1>
+            <h1>🌌 測試雷達引擎區 <span class="version-badge">V6.9.12</span></h1>
             <div class="update-time" id="update-time">衛星同步中...</div>
-            <div class="system-alert">🏖️ 【網頁提前通知】4/20 ~ 4/24 暫停更新 — 彼夫有擇大腦休息中！</div>
+            <div class="system-alert">🏖️ 【網頁提前通知】4/20 ~ 4/24 自動測試更新中 — 彼夫有擇大腦出國中！</div>
 
             <details class="info-section practical-note">
                 <summary>🛠️ 6155 鈞寶｜實戰操盤筆記彙整</summary>
@@ -352,7 +352,7 @@
                 document.getElementById('update-time').innerText = "⏱️ 雷達更新：" + json_data.last_updated + (json_data.api_cost_estimate ? " | 🔋 " + json_data.api_cost_estimate : "");
                 
                 const container = document.getElementById('main-container');
-                const displayOrder = ["🌟 彼神黃金魚池", "🐅 三日成猛虎水池", "🔥 姊夫爆發小魚池", "🍁 楓大永動魚池", "🔭 自選觀察水域", "🌊 汪洋大魚"];
+                const displayOrder = ["🌟 彼神黃金魚池", "🐅 三日成猛虎水池", "🔥 姊夫爆發小魚池", "🍁 楓大永動魚池", "🔭 測試員觀察水域", "🌊 汪洋大魚"];
 
                 displayOrder.forEach(poolName => {
                     if (json_data.pools[poolName] && json_data.pools[poolName].length > 0) {
