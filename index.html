@@ -6,7 +6,7 @@
     <title>全域雷達｜彼夫有擇量化戰情室 V7</title>
     <style>
         /* =========================================
-           1. 核心變數與主題設定
+           1. 核心主題設定
            ========================================= */
         :root {
             --ocean-bg: radial-gradient(circle at top, #0A192F 0%, #020C1B 100%);
@@ -26,7 +26,6 @@
             --watch-border: rgba(255, 255, 255, 0.1);
             --card-shadow: rgba(0, 0, 0, 0.4);
             --log-bg: rgba(100, 255, 218, 0.05);
-            --note-bg: rgba(255, 215, 0, 0.05);
             --ind-badge-bg: rgba(255, 255, 255, 0.1);
         }
 
@@ -48,7 +47,6 @@
             --watch-border: rgba(0, 0, 0, 0.1);
             --card-shadow: rgba(0, 96, 100, 0.15);
             --log-bg: rgba(0, 131, 143, 0.05);
-            --note-bg: rgba(245, 127, 23, 0.05);
             --ind-badge-bg: rgba(0, 131, 143, 0.1);
         }
 
@@ -58,46 +56,43 @@
             transition: background 0.6s ease, color 0.6s ease; 
         }
 
-        /* UI 元件樣式 */
         .theme-toggle-btn { position: fixed; top: 20px; right: 20px; z-index: 1000; background: var(--panel-bg); color: var(--neon-cyan); border: 1px solid var(--neon-cyan); padding: 8px 16px; border-radius: 20px; cursor: pointer; font-weight: bold; transition: 0.3s ease; backdrop-filter: blur(5px); box-shadow: 0 4px 15px var(--card-shadow); font-size: 14px; }
         .top-nav { max-width: 1200px; margin: 0 auto 30px; display: flex; flex-direction: column; align-items: center; gap: 15px; border-bottom: 1px solid var(--panel-border); padding-bottom: 20px; }
         .search-box { background: var(--panel-bg); border: 1px solid var(--neon-cyan); border-radius: 30px; padding: 10px 25px; width: 100%; max-width: 400px; color: var(--text-main); font-size: 16px; outline: none; box-shadow: 0 0 15px var(--card-shadow); text-align: center; transition: 0.3s ease; }
         .header { text-align: center; width: 100%; }
-        .header h1 { margin: 0; letter-spacing: 2px; text-shadow: 0 0 10px var(--panel-border); font-size: 28px; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        .version-badge { font-size: 14px; background: var(--neon-cyan); color: #000; padding: 3px 8px; border-radius: 6px; font-weight: bold; vertical-align: middle; box-shadow: 0 0 10px rgba(100,255,218,0.5); }
+        .header h1 { margin: 0; letter-spacing: 2px; text-shadow: 0 0 10px var(--panel-border); font-size: 28px; }
+        .version-badge { font-size: 14px; background: var(--neon-cyan); color: #000; padding: 3px 8px; border-radius: 6px; font-weight: bold; vertical-align: middle; }
         .update-time { font-size: 12px; color: var(--neon-cyan); opacity: 0.8; margin-top: 5px; margin-bottom: 15px; }
-        .system-alert { background: var(--note-bg); border: 1px solid var(--neon-gold); border-radius: 8px; padding: 12px 20px; margin: 10px auto 20px; max-width: 800px; color: var(--neon-gold); font-weight: bold; font-size: 15px; letter-spacing: 1px; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 0 10px rgba(255, 215, 0, 0.2); animation: pulse-border 2s infinite; }
-        @keyframes pulse-border { 0% { box-shadow: 0 0 5px rgba(255, 215, 0, 0.2); } 50% { box-shadow: 0 0 15px rgba(255, 215, 0, 0.5); } 100% { box-shadow: 0 0 5px rgba(255, 215, 0, 0.2); } }
 
-        /* 區塊樣式 */
-        .info-section { width: 100%; max-width: 800px; margin: 10px auto; background: var(--log-bg); border: 1px solid var(--panel-border); border-radius: 8px; font-size: 13px; color: var(--text-muted); transition: 0.3s ease; overflow: hidden; }
-        .info-section summary { font-weight: bold; color: var(--neon-gold); cursor: pointer; padding: 10px 15px; display: flex; align-items: center; justify-content: center; letter-spacing: 1px; list-style: none; outline: none; }
-        .log-content { padding: 15px; line-height: 1.8; text-align: left; border-top: 1px dashed var(--panel-border); }
         .pool-section { margin-bottom: 30px; max-width: 1400px; margin-left: auto; margin-right: auto; }
         .pool-section summary { list-style: none; cursor: pointer; outline: none; }
         .pool-title { font-size: 20px; font-weight: bold; color: var(--neon-cyan); background: var(--title-bg); padding: 12px 20px; border-left: 4px solid var(--neon-cyan); border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
         .pool-title::after { content: '▼'; font-size: 14px; transition: 0.3s; }
         details[open] .pool-title::after { transform: rotate(180deg); }
 
-        /* 卡片網格 */
         .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 25px; padding: 20px 0; }
         .card { background: var(--panel-bg); backdrop-filter: blur(10px); border-radius: 15px; padding: 22px; border: 1px solid var(--panel-border); border-top: 4px solid var(--text-muted); box-shadow: 0 10px 30px var(--card-shadow); transition: 0.4s ease; position: relative; }
         .card.is-buy { border-top-color: var(--neon-green); }
         .stock-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .stock-id { font-size: 26px; font-weight: bold; color: var(--neon-cyan); }
-        .industry-badge { background: var(--ind-badge-bg); color: var(--text-main); font-size: 11px; padding: 2px 6px; border-radius: 4px; margin-left: 8px; }
+        .industry-badge { background: var(--ind-badge-bg); color: var(--text-main); font-size: 11px; padding: 2px 6px; border-radius: 4px; }
+        
         .data-row { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 8px; color: var(--text-muted); }
         .data-row b { color: var(--text-main); font-size: 16px; }
         .highlight { color: var(--neon-cyan) !important; font-size: 20px !important; }
 
-        /* 模擬面板 */
-        .sim-panel { margin-top: 15px; padding: 12px; background: var(--sim-bg); border-radius: 8px; border-top: 1px solid var(--panel-border); }
+        /* 🚀 戰術標籤樣式 */
+        .action-box { margin-top: 15px; padding: 10px; text-align: center; font-weight: bold; border-radius: 6px; font-size: 15px; }
+        .action-box.buy { background: rgba(0,255,0,0.1); color: var(--neon-green); border: 1px solid var(--neon-green); }
+        .action-box.watch { background: var(--watch-bg); color: var(--text-muted); border: 1px solid var(--watch-border); }
+
+        .sim-panel { margin-top: 15px; padding: 12px; background: var(--sim-bg); border-radius: 8px; border-top: 1px dashed var(--panel-border); }
         .sim-input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
         .sim-input { width: 100%; background: var(--input-bg); border: 1px solid var(--panel-border); border-radius: 4px; color: var(--neon-cyan); padding: 5px; font-size: 13px; outline: none; }
         .sim-result { font-size: 12px; border-top: 1px dashed var(--panel-border); padding-top: 10px; }
         .result-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
 
-        .footer-copyright { text-align: center; padding: 40px 20px; border-top: 1px solid var(--panel-border); color: var(--text-muted); font-size: 12px; }
+        .footer-copyright { text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 12px; }
     </style>
 </head>
 <body>
@@ -106,23 +101,10 @@
 
     <div class="top-nav">
         <div class="header">
-            <h1>🌌 彼夫有擇全域戰情室 <span class="version-badge">V7.0.1</span></h1>
-            <div class="update-time" id="update-time">衛星同步中...</div>
-            <div class="system-alert">⚡ 核心引擎 V7.0.1 正式上線｜第二水域編制完成</div>
-
-            <details class="info-section">
-                <summary>📜 改版歷程細節</summary>
-                <div class="log-content">
-                    <b>✅ V7.0.1 戰略更新：</b>
-                    <ul>
-                        <li><b>排名調整：</b>「測試員觀察水域」正式列入核心編制，晉升為第二順位。</li>
-                        <li><b>偵測強化：</b>修復非預設魚池可能消失的渲染 Bug。</li>
-                    </ul>
-                </div>
-            </details>
+            <h1>🌌 彼夫有擇全域戰情室 <span class="version-badge">V7.0.2</span></h1>
+            <div id="update-time" class="update-time">衛星同步中...</div>
+            <input type="text" id="global-search" class="search-box" placeholder="🛸 啟動聲納：輸入代碼開啟模擬探測...">
         </div>
-        
-        <input type="text" id="global-search" class="search-box" placeholder="🛸 啟動聲納：輸入代碼開啟模擬探測...">
     </div>
 
     <div id="search-result-container" class="pool-section" style="display:none;">
@@ -186,14 +168,19 @@
                     <div class="data-row"><span>現價</span><b class="highlight">${s.close}</b></div>
                     <div class="data-row"><span>成交量</span><b>${s.volume.toLocaleString()}</b></div>
                     <div class="data-row"><span>5MA/30MA</span><b>${s.ma5}/${s.ma30}</b></div>
+                    
+                    <div class="action-box ${isBuy ? 'buy' : 'watch'}">
+                        ${isBuy ? '🚀 買入加碼' : '📡 靜候觀察'}
+                    </div>
+
                     <div class="sim-panel">
                         <div class="sim-input-grid">
                             <input type="number" id="price-${uniqueId}" class="sim-input" placeholder="持股價" oninput="updateSim('${uniqueId}')">
                             <input type="number" id="target-pct-${uniqueId}" class="sim-input" value="50" oninput="updateSim('${uniqueId}')">
                         </div>
                         <div class="sim-result">
-                            <div class="result-row"><span>🎯 停利參考</span><b id="profit-${uniqueId}" style="color: var(--neon-cyan);">--</b></div>
-                            <div class="result-row"><span>✂️ 停損參考</span><b id="loss-${uniqueId}" style="color: var(--neon-red);">--</b></div>
+                            <div class="result-row"><span>🎯 停利點</span><b id="profit-${uniqueId}" style="color: var(--neon-cyan);">--</b></div>
+                            <div class="result-row"><span>✂️ 停損點</span><b id="loss-${uniqueId}" style="color: var(--neon-red);">--</b></div>
                         </div>
                     </div>
                 </div>
@@ -207,7 +194,7 @@
                 document.getElementById('update-time').innerText = "⏱️ 雷達更新：" + json_data.last_updated;
                 const container = document.getElementById('main-container');
                 
-                // 🎯 這裡設定了排序：測試員觀察水域 放在第 2 位
+                // 🎯 核心排序：測試員觀察水域 維持第二順位
                 const displayOrder = ["🌟 彼神黃金魚池", "測試員觀察水域", "🐅 三日成猛虎水池", "🔥 姊夫爆發小魚池", "🍁 楓大永動魚池", "🔭 自選觀察水域", "🌊 汪洋大魚"];
 
                 displayOrder.forEach(poolName => {
@@ -224,7 +211,7 @@
                     }
                 });
 
-                // 🛠️ 防呆迴圈：顯示所有不在自訂順序中的其他水域
+                // 🛠️ 防遺漏迴圈：顯示其餘自定義水域
                 for (const [poolName, stocks] of Object.entries(json_data.pools)) {
                     if (!displayOrder.includes(poolName) && stocks.length > 0) {
                         const section = document.createElement('details');
