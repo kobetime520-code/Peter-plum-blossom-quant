@@ -21,12 +21,12 @@ logger.setLevel(logging.CRITICAL)
 FINMIND_TOKEN = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJkYXRlIjoiMjAyNi0wNC0xMiAxNjo1Nzo0OSIsInVzZXJfaWQiOiJQZXRlckplZmYwMjI2IiwiZW1haWwiOiJrb2JldGltZTUyMEBnbWFpbC5jb20iLCJpcCI6Ijk0LjE1Ni4yMDUuMjQzIn0.UuDTYEvzoHk_qdW6mBElD_OfM3fVezky7X9dEFId3zg"
 HISTORY_FILE = "ocean_history.json"
 
-# --- 2. 魚池設定區 (🎯 已將 2409 替換為 2049 上銀) ---
+# --- 2. 魚池設定區  ---
 POOL_SETTINGS = {
-    "🔥 姊夫爆發小魚池": ["6155", "3357", "2049", "4576", "2323"],
+    "🔥 姊夫爆發小魚池": ["6155", "3357", "2493", "3037", "2323"],
     "🍁 楓大永動魚池": ["2308", "00923", "00910", "2327", "1785"],
     "🌟 彼神黃金魚池": ["3028", "2484", "3221", "8182", "8289"],
-    "🔭 測試員觀察水域": ["3673", "5289", "5292", "6770", "4749"],
+    "🔭 測試員觀察水域": ["2330","3673", "5289", "5292", "6770", "4749"],
     "🐅 三日成猛虎水池": []
 }
 
