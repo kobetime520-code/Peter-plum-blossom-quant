@@ -1,0 +1,40 @@
+name: Daily Radar Auto-Run
+
+on:
+  schedule:
+    # 正式排程：台灣時間晚上 5:37 執行 (UTC 上午 09:37)
+    - cron: '37 09 * * 1-5' 
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+        - name: 1. 檢索倉庫代碼
+          uses: actions/checkout@v4
+
+        - name: 2. 建立 Python 環境
+          uses: actions/setup-python@v5
+          with:
+            python-version: '3.10'
+
+        - name: 3. 安裝雷達必備套件
+          run: |
+            python -m pip install --upgrade pip
+            pip install yfinance pandas requests FinMind beautifulsoup4
+
+        - name: 4. 啟動彼夫有擇戰情室核心引擎
+          run: python radar.py
+
+        - name: 5. 自動上傳最新戰報 JSON
+          run: |
+            git config --local user.email "action@github.com"
+            git config --local user.name "GitHub Action Bot"
+            git add plum_blossom_data.json ocean_history.json
+            # 如果資料有變動才 Commit，沒變動就忽略
+            git commit -m "🤖 自動更新：全域戰情室雷達掃描完成" || echo "No changes to commit"
+            git push
