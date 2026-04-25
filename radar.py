@@ -200,15 +200,33 @@ def main():
                         added_market_sids.add(sid)
         except: continue
 
+# 🎯 V7 核心升級：Date-Lock 日期防呆機制與向下相容
     today_ocean_sids = [s['stock_id'] for s in market_pool]
     new_history = {}
+    
     for sid in today_ocean_sids:
-        count = history.get(sid, 0) + 1
-        new_history[sid] = count
+        # 讀取舊資料，若無資料則給予預設值
+        old_data = history.get(sid, {"count": 0, "last_date": ""})
+        
+        # 🛡️ 向下相容機制：如果讀到 V6 的舊格式 (純數字 int)，自動升級為 V7 字典格式
+        if isinstance(old_data, int):
+            old_data = {"count": old_data, "last_date": ""}
+            
+        count = old_data["count"]
+        last_date = old_data["last_date"]
+        
+        # ⏳ 日期比對：只有當今天尚未被記錄過時，才允許 count + 1
+        if last_date != today_str:
+            count += 1
+            
+        # 寫入 V7 新結構
+        new_history[sid] = {"count": count, "last_date": today_str}
+        
+        # 判斷是否晉升猛虎池
         if count >= 3 and sid not in POOL_SETTINGS["🐅 三日成猛虎水池"]:
             POOL_SETTINGS["🐅 三日成猛虎水池"].append(sid)
+            
     with open(HISTORY_FILE, 'w', encoding='utf-8') as f: json.dump(new_history, f, ensure_ascii=False, indent=2)
-
     final_data_structure = {}
     for pool_name, tickers in POOL_SETTINGS.items():
         if pool_name == "🐅 三日成猛虎水池" and not tickers: continue
