@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>全域雷達｜彼夫有擇量化戰情室 V7</title>
+    <title>測試DEBUG V7.0.5</title>
     <style>
         /* =========================================
            1. 核心主題設定
@@ -131,7 +131,7 @@
 
     <div class="top-nav">
         <div class="header">
-            <h1>🌌 彼夫有擇全域戰情室 <span class="version-badge">V7.0.5</span></h1>
+            <h1>🌌 測試DEBUG V7.0.5 <span class="version-badge">V7.0.5</span></h1>
             <div id="update-time" class="update-time">衛星同步中...</div>
             
             <div class="system-alert">⚡ 核心引擎 V7 正式上線｜雙軌架構巡航中</div>
@@ -241,7 +241,7 @@
             }
         }
 
-        function createCard(s, isWangYang = false, prefix = "main-") {
+function createCard(s, isWangYang = false, prefix = "main-") {
             const isBuy = s.action === '買入加碼';
             const instText = s.inst_buy > 0 ? '+' + s.inst_buy : s.inst_buy;
             const indText = s.industry || '未分類';
@@ -265,13 +265,28 @@
                     </div>
 
                     <div class="sim-panel">
+                        <div style="font-size: 12px; color: var(--neon-gold); margin-bottom: 10px; font-weight: bold; text-align: center;">🛠️ Beta user 模擬倉</div>
                         <div class="sim-input-grid">
-                            <input type="number" id="price-${uniqueId}" class="sim-input" placeholder="持股價" oninput="updateSim('${uniqueId}')">
-                            <input type="number" id="target-pct-${uniqueId}" class="sim-input" value="50" oninput="updateSim('${uniqueId}')">
+                            <div style="display: flex; flex-direction: column; gap: 4px;">
+                                <span style="font-size: 10px; color: var(--text-muted); padding-left: 2px;">持股價位</span>
+                                <input type="number" id="price-${uniqueId}" class="sim-input" placeholder="0.0" oninput="updateSim('${uniqueId}')">
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 4px;">
+                                <span style="font-size: 10px; color: var(--text-muted); padding-left: 2px;">持股股數</span>
+                                <input type="number" id="shares-${uniqueId}" class="sim-input" placeholder="1000">
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 4px;">
+                                <span style="font-size: 10px; color: var(--text-muted); padding-left: 2px;">停利比例 (%)</span>
+                                <input type="number" id="target-pct-${uniqueId}" class="sim-input" value="50" oninput="updateSim('${uniqueId}')">
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 4px;">
+                                <span style="font-size: 10px; color: var(--text-muted); padding-left: 2px;">停損比例 (%)</span>
+                                <input type="number" id="stop-pct-${uniqueId}" class="sim-input" value="10" oninput="updateSim('${uniqueId}')">
+                            </div>
                         </div>
                         <div class="sim-result">
-                            <div class="result-row"><span>🎯 停利點</span><b id="profit-${uniqueId}" style="color: var(--neon-cyan);">--</b></div>
-                            <div class="result-row"><span>✂️ 停損點</span><b id="loss-${uniqueId}" style="color: var(--neon-red);">--</b></div>
+                            <div class="result-row"><span>🎯 模擬停利點參考</span><b id="profit-${uniqueId}" style="color: var(--neon-cyan);">--</b></div>
+                            <div class="result-row"><span>✂️ 模擬停損點參考</span><b id="loss-${uniqueId}" style="color: var(--neon-red);">--</b></div>
                         </div>
                     </div>
                 </div>
