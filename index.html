@@ -66,7 +66,6 @@
         .version-badge { font-size: 14px; background: var(--neon-cyan); color: #000; padding: 3px 8px; border-radius: 6px; font-weight: bold; vertical-align: middle; }
         .update-time { font-size: 12px; color: var(--neon-cyan); opacity: 0.8; margin-top: 5px; margin-bottom: 15px; }
 
-        /* 🚨 系統公告與筆記區 */
         .system-alert { background: var(--note-bg); border: 1px solid var(--neon-gold); border-radius: 8px; padding: 12px 20px; margin: 10px auto 20px; max-width: 800px; color: var(--neon-gold); font-weight: bold; font-size: 15px; letter-spacing: 1px; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 0 10px rgba(255, 215, 0, 0.2); animation: pulse-border 2s infinite; }
         @keyframes pulse-border { 0% { box-shadow: 0 0 5px rgba(255, 215, 0, 0.2); } 50% { box-shadow: 0 0 15px rgba(255, 215, 0, 0.5); } 100% { box-shadow: 0 0 5px rgba(255, 215, 0, 0.2); } }
 
@@ -77,12 +76,7 @@
         .log-content b { color: var(--neon-cyan); }
         .log-content ul { margin: 10px 0; padding-left: 20px; }
         .log-content li { margin-bottom: 8px; }
-        
-        .wish-well { margin-top: 15px; }
-        .wish-input { width: 100%; background: var(--input-bg); border: 1px solid var(--panel-border); border-radius: 6px; color: var(--text-main); padding: 10px; font-size: 14px; resize: vertical; min-height: 80px; outline: none; margin-bottom: 10px; }
-        .wish-btn { background: var(--neon-cyan); color: #000; border: none; padding: 8px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.3s; }
 
-        /* 🐟 魚池與產業摺疊區 */
         .pool-section { margin-bottom: 30px; max-width: 1400px; margin-left: auto; margin-right: auto; }
         .pool-section summary { list-style: none; cursor: pointer; outline: none; }
         .pool-title { font-size: 20px; font-weight: bold; color: var(--neon-cyan); background: var(--title-bg); padding: 12px 20px; border-left: 4px solid var(--neon-cyan); border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
@@ -97,7 +91,6 @@
         .ind-arrow { font-size: 12px; opacity: 0.6; transition: transform 0.3s; color: var(--neon-cyan); }
         .industry-details[open] .ind-arrow { transform: rotate(180deg); }
 
-        /* 🃏 卡片與模擬倉 */
         .card { background: var(--panel-bg); backdrop-filter: blur(10px); border-radius: 15px; padding: 22px; border: 1px solid var(--panel-border); border-top: 4px solid var(--text-muted); box-shadow: 0 10px 30px var(--card-shadow); transition: 0.4s ease; position: relative; }
         .card.is-buy { border-top-color: var(--neon-green); }
         .stock-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
@@ -126,48 +119,42 @@
     <button id="theme-toggle" class="theme-toggle-btn">✨ 切換輕淡海洋版</button>
 
     <div class="top-nav">
-        <div class="header">
-            <h1>🌌 彼夫有擇模擬選股戰情室 <span class="version-badge">V7.3 混合引擎版</span></h1>
+        <header class="header">
+            <h1>🌌自動巡航｜彼夫有擇模擬選股戰情室 <span class="version-badge">V7.3 混合引擎版</span></h1>
             <div id="update-time" class="update-time">衛星同步中...</div>
-            
             <div class="system-alert">⚡ 核心引擎 V7.3 正式上線｜FinMind 混合雙軌巡航中</div>
+        </header>
 
-            <details class="info-section">
-                <summary>📜 改版歷程細節</summary>
-                <div class="log-content">
-                    <b>✅ V7.3 混合引擎升級：</b>
-                    <ul>
-                        <li><b>精準數據源：</b>導入 FinMind 精確股價，徹底解決 Yahoo 數據在週末或除權息後的均線偏離問題。</li>
-                        <li><b>混合掃描架構：</b>採用 Yahoo 快速粗篩 + FinMind 深度精濾，在 600 次 API 限額內達到最高精確度。</li>
-                        <li><b>籌碼透視：</b>維持外資、投信獨立拆解，並優化「🔥 投信認養」標籤穩定性。</li>
-                    </ul>
-                </div>
-            </details>
+        <details class="info-section">
+            <summary>📜 改版歷程細節</summary>
+            <div class="log-content">
+                <b>✅ V7.3 混合引擎升級：</b>
+                <ul>
+                    <li><b>精準數據源：</b>導入 FinMind 精確數據。</li>
+                    <li><b>混合掃描架構：</b>Yahoo 快速粗篩 + FinMind 深度精濾。</li>
+                </ul>
+            </div>
+        </details>
 
-            <details class="info-section">
-                <summary>🌊 汪洋大魚每日選股邏輯</summary>
-                <div class="log-content">
-                    <ul>
-                        <li><b>1. 動能：</b>成交量 > 1,000 張。</li>
-                        <li><b>2. 趨勢：</b>股價站穩海浪 30MA。</li>
-                        <li><b>3. 籌碼：</b>30日法人買賣超 > 0。</li>
-                    </ul>
-                </div>
-            </details>
+        <details class="info-section">
+            <summary>🌊 汪洋大魚 & 🐅 三日成虎 選股邏輯</summary>
+            <div class="log-content">
+                <b>🌊 汪洋大魚 (第一階段初選)：</b>
+                <ul>
+                    <li><b>1. 動能：</b>當日成交量 > 1,000 張。</li>
+                    <li><b>2. 趨勢：</b>股價站穩 30 日均線 (30MA)。</li>
+                    <li><b>3. 籌碼：</b>近 30 日三大法人合計呈現「淨買超」。</li>
+                </ul>
+                <hr style="border: 0; border-top: 1px dashed var(--panel-border); margin: 15px 0;">
+                <b>🐅 三日成猛虎 (第二階段晉升)：</b>
+                <ul>
+                    <li><b>1. 持續力：</b>連續 3 個交易日皆符合「汪洋大魚」入池標準。</li>
+                    <li><b>2. 戰略意義：</b>代表籌碼與趨勢具備極強的延續性，為主力的波段進貨特徵。</li>
+                </ul>
+            </div>
+        </details>
 
-            <details class="info-section">
-                <summary>🌠 戰情室許願池 (功能提案)</summary>
-                <div class="log-content">
-                    <div class="wish-well">
-                        <b>有什麼想看的新指標或新功能嗎？請在此投下你的願望：</b>
-                        <textarea id="wish-text" class="wish-input" placeholder="例如：希望加入融資變化..."></textarea>
-                        <button class="wish-btn" onclick="sendWish()">投下願望瓶</button>
-                    </div>
-                </div>
-            </details>
-            
-            <input type="text" id="global-search" class="search-box" placeholder="🛸 啟動聲納：輸入代碼開啟模擬探測...">
-        </div>
+        <input type="text" id="global-search" class="search-box" placeholder="🛸 啟動聲納：輸入代碼開啟模擬探測...">
     </div>
 
     <div id="search-result-container" class="pool-section" style="display:none;">
@@ -177,65 +164,49 @@
         </details>
     </div>
 
-    <div id="main-container"></div>
+    <main id="main-container"></main>
 
     <footer class="footer-copyright">
         <p>© <span id="current-year"></span> 彼夫有擇全域戰情室. All Rights Reserved.</p>
     </footer>
 
     <script>
+        // 1. 初始化與主題切換
         document.getElementById('current-year').innerText = new Date().getFullYear();
-
         const themeBtn = document.getElementById('theme-toggle');
+
         themeBtn.addEventListener('click', () => {
-            const root = document.documentElement;
-            if (root.getAttribute('data-theme') === 'light-ocean') {
-                root.removeAttribute('data-theme');
-                themeBtn.innerText = '✨ 切換輕淡海洋版';
-            } else {
-                root.setAttribute('data-theme', 'light-ocean');
-                themeBtn.innerText = '🌌 切換深海太空版';
-            }
+            const isLight = document.documentElement.getAttribute('data-theme') === 'light-ocean';
+            document.documentElement.setAttribute('data-theme', isLight ? '' : 'light-ocean');
+            themeBtn.innerText = isLight ? '✨ 切換輕淡海洋版' : '🌌 切換深海太空版';
         });
 
-        // 🎯 許願池功能也加回來了！
-        function sendWish() {
-            const wish = document.getElementById('wish-text').value;
-            if (wish.trim()) {
-                const email = "wangjeff0226@hotmail.com";
-                const subject = encodeURIComponent("🚀 彼夫有擇戰情室 - Beta User 許願提案");
-                const body = encodeURIComponent("指揮官你好，以下是我的戰情室功能提案：\n\n" + wish);
-                window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
-                document.getElementById('wish-text').value = '';
-            } else {
-                alert('請輸入你的願望再送出喔！');
-            }
-        }
-
-        let fullData = null;
-
+        // 2. 模擬倉計算邏輯
         function updateSim(uniqueId) {
             const price = parseFloat(document.getElementById(`price-${uniqueId}`).value) || 0;
             const targetPct = parseFloat(document.getElementById(`target-pct-${uniqueId}`).value) || 0;
             const stopPct = parseFloat(document.getElementById(`stop-pct-${uniqueId}`).value) || 0;
+            
+            const profitEl = document.getElementById(`profit-${uniqueId}`);
+            const lossEl = document.getElementById(`loss-${uniqueId}`);
+
             if (price > 0) {
-                document.getElementById(`profit-${uniqueId}`).innerText = (price * (1 + targetPct/100)).toFixed(2);
-                document.getElementById(`loss-${uniqueId}`).innerText = (price * (1 - stopPct/100)).toFixed(2);
+                profitEl.innerText = (price * (1 + targetPct/100)).toFixed(2);
+                lossEl.innerText = (price * (1 - stopPct/100)).toFixed(2);
             } else {
-                document.getElementById(`profit-${uniqueId}`).innerText = '--';
-                document.getElementById(`loss-${uniqueId}`).innerText = '--';
+                profitEl.innerText = '--';
+                lossEl.innerText = '--';
             }
         }
 
+        // 3. 卡片生成模板
         function createCard(s, isWangYang = false, prefix = "main-") {
             const isBuy = s.action === '買入加碼';
             const instText = s.inst_buy > 0 ? '+' + s.inst_buy : s.inst_buy;
             
-            // 🎯 V7.1 籌碼拆解：加入防呆，若讀到舊資料也不會報錯
             const foreignText = (s.foreign_buy !== undefined) ? (s.foreign_buy > 0 ? '+' + s.foreign_buy : s.foreign_buy) : '--';
             const trustText = (s.trust_buy !== undefined) ? (s.trust_buy > 0 ? '+' + s.trust_buy : s.trust_buy) : '--';
             
-            // 🔥 V7.1 戰術特效：投信認養標籤
             const isTrustBuying = s.trust_buy > 0;
             const trustBadge = isTrustBuying ? `<span style="color:var(--neon-red); font-size:12px; font-weight:bold; margin-left:8px;">🔥 投信認養</span>` : '';
 
@@ -261,8 +232,13 @@
                     <div class="data-row"><span>成交量</span><b>${s.volume.toLocaleString()}</b></div>
                     <div class="data-row"><span>5MA/30MA</span><b>${s.ma5}/${s.ma30}</b></div>
                     
-                    <div class="action-box ${isBuy ? 'buy' : 'watch'}">
-                        ${isBuy ? '🚀 買入加碼' : '📡 靜候觀察'}
+                    <div style="display: flex; gap: 10px; margin-top: 15px;">
+                        <div class="action-box ${isBuy ? 'buy' : 'watch'}" style="flex: 1; margin-top: 0;">
+                            ${isBuy ? '🚀 買入加碼' : '📡 靜候觀察'}
+                        </div>
+                        <a href="https://tw.stock.yahoo.com/quote/${s.stock_id}/news" target="_blank" style="text-decoration: none; display: flex; align-items: center; justify-content: center; padding: 0 15px; background: rgba(100, 255, 218, 0.05); color: var(--neon-cyan); border: 1px solid var(--panel-border); border-radius: 6px; font-weight: bold; font-size: 14px; transition: 0.3s; white-space: nowrap;">
+                            📰 查新聞
+                        </a>
                     </div>
 
                     <div class="sim-panel">
@@ -294,14 +270,22 @@
             `;
         }
 
+        // 4. 數據讀取與渲染
+        let fullData = null;
         fetch('plum_blossom_data.json?t=' + new Date().getTime())
             .then(res => res.json())
             .then(json_data => {
                 fullData = json_data;
-                document.getElementById('update-time').innerText = "⏱️ 雷達更新：" + json_data.last_updated;
-                const container = document.getElementById('main-container');
                 
-                // 🎯 核心排序與精確匹配
+                // 更新時間顯示
+                const updateTimeEl = document.getElementById('update-time');
+                if(updateTimeEl && json_data.last_updated) {
+                    updateTimeEl.innerText = "⏱️ 雷達更新：" + json_data.last_updated;
+                }
+
+                const container = document.getElementById('main-container');
+                if (!container) return; 
+                
                 const displayOrder = ["🌟 彼神黃金魚池", "🔭 測試員觀察水域", "🐅 三日成猛虎水池", "🔥 姊夫爆發小魚池", "🍁 楓大永動魚池", "🌊 汪洋大魚"];
 
                 displayOrder.forEach(poolName => {
@@ -310,12 +294,10 @@
                         const section = document.createElement('details');
                         section.className = 'pool-section';
                         
-                        // 預設展開
                         if (poolName === "🌟 彼神黃金魚池" || poolName === "🔭 測試員觀察水域") section.open = true;
                         
                         section.innerHTML = `<summary><div class="pool-title">${poolName}</div></summary>`;
                         
-                        // 🌊 汪洋大魚的「產業分類摺疊」
                         if (poolName === "🌊 汪洋大魚") {
                             let sortedStocks = stocks.sort((a, b) => (b.inst_buy - a.inst_buy) || (b.close - a.close));
                             const industryGroups = {};
@@ -339,7 +321,6 @@
                                 section.appendChild(indDetails);
                             }
                         } else {
-                            // 其他魚池的一般渲染
                             const grid = document.createElement('div');
                             grid.className = 'grid-container';
                             stocks.forEach(s => grid.innerHTML += createCard(s, false, 'main-'));
@@ -350,7 +331,7 @@
                     }
                 });
 
-                // 🛠️ 防遺漏迴圈
+                // 防遺漏迴圈
                 for (const [poolName, stocks] of Object.entries(json_data.pools)) {
                     if (!displayOrder.includes(poolName) && stocks.length > 0) {
                         const section = document.createElement('details');
@@ -363,28 +344,37 @@
                         container.appendChild(section);
                     }
                 }
+            })
+            .catch(err => {
+                console.error("JSON 讀取失敗:", err);
+                document.getElementById('update-time').innerText = "❌ 數據載入失敗，請檢查 JSON 檔案";
             });
 
-        document.getElementById('global-search').addEventListener('input', (e) => {
-            const code = e.target.value.trim();
-            const searchGrid = document.getElementById('search-grid');
-            const searchContainer = document.getElementById('search-result-container');
-            if (code.length >= 2 && fullData) {
-                searchGrid.innerHTML = '';
-                let found = false;
-                for (const stocks of Object.values(fullData.pools)) {
-                    const match = stocks.find(s => s.stock_id === code);
-                    if (match) {
-                        searchGrid.innerHTML = createCard(match, false, 'search-');
-                        found = true;
-                        break;
+        // 5. 搜尋功能綁定 (完整實作版)
+        const searchInput = document.getElementById('global-search');
+        if(searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                const code = e.target.value.trim();
+                const searchGrid = document.getElementById('search-grid');
+                const searchContainer = document.getElementById('search-result-container');
+                
+                if (code.length >= 2 && fullData) {
+                    searchGrid.innerHTML = '';
+                    let found = false;
+                    for (const stocks of Object.values(fullData.pools)) {
+                        const match = stocks.find(s => s.stock_id === code);
+                        if (match) {
+                            searchGrid.innerHTML = createCard(match, false, 'search-');
+                            found = true;
+                            break;
+                        }
                     }
+                    searchContainer.style.display = found ? 'block' : 'none';
+                } else {
+                    searchContainer.style.display = 'none';
                 }
-                searchContainer.style.display = found ? 'block' : 'none';
-            } else {
-                searchContainer.style.display = 'none';
-            }
-        });
+            });
+        }
     </script>
 </body>
 </html>
