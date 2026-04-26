@@ -66,6 +66,7 @@
         .version-badge { font-size: 14px; background: var(--neon-cyan); color: #000; padding: 3px 8px; border-radius: 6px; font-weight: bold; vertical-align: middle; }
         .update-time { font-size: 12px; color: var(--neon-cyan); opacity: 0.8; margin-top: 5px; margin-bottom: 15px; }
 
+        /* 🚨 系統公告與筆記區 */
         .system-alert { background: var(--note-bg); border: 1px solid var(--neon-gold); border-radius: 8px; padding: 12px 20px; margin: 10px auto 20px; max-width: 800px; color: var(--neon-gold); font-weight: bold; font-size: 15px; letter-spacing: 1px; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 0 10px rgba(255, 215, 0, 0.2); animation: pulse-border 2s infinite; }
         @keyframes pulse-border { 0% { box-shadow: 0 0 5px rgba(255, 215, 0, 0.2); } 50% { box-shadow: 0 0 15px rgba(255, 215, 0, 0.5); } 100% { box-shadow: 0 0 5px rgba(255, 215, 0, 0.2); } }
 
@@ -76,15 +77,12 @@
         .log-content b { color: var(--neon-cyan); }
         .log-content ul { margin: 10px 0; padding-left: 20px; }
         .log-content li { margin-bottom: 8px; }
-        .practical-note { border-color: var(--neon-gold); background: var(--note-bg); }
-        .practical-note summary { color: var(--neon-gold); font-size: 15px; }
-        .note-step { margin-bottom: 15px; padding-left: 10px; border-left: 2px solid var(--neon-gold); }
-        .note-date { font-weight: bold; color: var(--neon-gold); margin-right: 10px; font-family: monospace; }
         
         .wish-well { margin-top: 15px; }
         .wish-input { width: 100%; background: var(--input-bg); border: 1px solid var(--panel-border); border-radius: 6px; color: var(--text-main); padding: 10px; font-size: 14px; resize: vertical; min-height: 80px; outline: none; margin-bottom: 10px; }
         .wish-btn { background: var(--neon-cyan); color: #000; border: none; padding: 8px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.3s; }
 
+        /* 🐟 魚池與產業摺疊區 */
         .pool-section { margin-bottom: 30px; max-width: 1400px; margin-left: auto; margin-right: auto; }
         .pool-section summary { list-style: none; cursor: pointer; outline: none; }
         .pool-title { font-size: 20px; font-weight: bold; color: var(--neon-cyan); background: var(--title-bg); padding: 12px 20px; border-left: 4px solid var(--neon-cyan); border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
@@ -99,6 +97,7 @@
         .ind-arrow { font-size: 12px; opacity: 0.6; transition: transform 0.3s; color: var(--neon-cyan); }
         .industry-details[open] .ind-arrow { transform: rotate(180deg); }
 
+        /* 🃏 卡片與模擬倉 */
         .card { background: var(--panel-bg); backdrop-filter: blur(10px); border-radius: 15px; padding: 22px; border: 1px solid var(--panel-border); border-top: 4px solid var(--text-muted); box-shadow: 0 10px 30px var(--card-shadow); transition: 0.4s ease; position: relative; }
         .card.is-buy { border-top-color: var(--neon-green); }
         .stock-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
@@ -128,30 +127,19 @@
 
     <div class="top-nav">
         <div class="header">
-            <h1>🌌 彼夫有擇模擬選股戰情室 V7.2.5 <span class="version-badge">V7.2.5</span></h1>
+            <h1>🌌 彼夫有擇模擬選股戰情室 <span class="version-badge">V7.3 混合引擎版</span></h1>
             <div id="update-time" class="update-time">衛星同步中...</div>
             
-            <div class="system-alert">⚡ 核心引擎 V7 正式上線｜雙軌架構巡航中</div>
-
-            <details class="info-section practical-note">
-                <summary>🛠️ 6155 鈞寶｜實戰操盤筆記彙整</summary>
-                <div class="log-content">
-                    <div class="note-step"><span class="note-date">03/20</span> <b>初始進場：</b>於 46.65 佈局底倉 1 張。</div>
-                    <div class="note-step"><span class="note-date">04/10</span> <b>策略加碼：</b>41.35 進場加碼單 1 張。</div>
-                    <div class="note-step"><span class="note-date">04/16</span> <b>戰術操作：</b>壓回 48.00 加碼 1 張。當日於 51.20 執行當沖沖掉 1 張。</div>
-                    <div class="note-step"><span class="note-date">04/17</span> <b>獲利調節：</b>於 51.20 順勢獲利入袋 1 張部位。</div>
-                    <div class="note-step"><span class="note-date">04/25</span> <b>後市展望：</b>暫不動作。進入靜默觀測期，同步觀測 TACO 動向。</div>
-                </div>
-            </details>
+            <div class="system-alert">⚡ 核心引擎 V7.3 正式上線｜FinMind 混合雙軌巡航中</div>
 
             <details class="info-section">
                 <summary>📜 改版歷程細節</summary>
                 <div class="log-content">
-                    <b>✅ V7.2.5 系統修復：</b>
+                    <b>✅ V7.3 混合引擎升級：</b>
                     <ul>
-                        <li><b>面板回歸：</b>修復系統公告、實戰筆記與許願池遺失的嚴重 Bug。</li>
-                        <li><b>穩定架構：</b>結合 V7.0.4 的產業摺疊與測試員水域順序調整，達最終穩定狀態。</li>
-                        <li><b>籌碼精煉：</b>新增外資與投信獨立偵測，並過濾自營商雜訊，實裝「🔥 投信認養」戰術標籤。</li>
+                        <li><b>精準數據源：</b>導入 FinMind 精確股價，徹底解決 Yahoo 數據在週末或除權息後的均線偏離問題。</li>
+                        <li><b>混合掃描架構：</b>採用 Yahoo 快速粗篩 + FinMind 深度精濾，在 600 次 API 限額內達到最高精確度。</li>
+                        <li><b>籌碼透視：</b>維持外資、投信獨立拆解，並優化「🔥 投信認養」標籤穩定性。</li>
                     </ul>
                 </div>
             </details>
@@ -210,7 +198,7 @@
             }
         });
 
-        // 🎯 許願池功能
+        // 🎯 許願池功能也加回來了！
         function sendWish() {
             const wish = document.getElementById('wish-text').value;
             if (wish.trim()) {
@@ -243,7 +231,7 @@
             const isBuy = s.action === '買入加碼';
             const instText = s.inst_buy > 0 ? '+' + s.inst_buy : s.inst_buy;
             
-            // 🎯 V7.1 籌碼拆解：保留外資與投信，維持版面清爽
+            // 🎯 V7.1 籌碼拆解：加入防呆，若讀到舊資料也不會報錯
             const foreignText = (s.foreign_buy !== undefined) ? (s.foreign_buy > 0 ? '+' + s.foreign_buy : s.foreign_buy) : '--';
             const trustText = (s.trust_buy !== undefined) ? (s.trust_buy > 0 ? '+' + s.trust_buy : s.trust_buy) : '--';
             
