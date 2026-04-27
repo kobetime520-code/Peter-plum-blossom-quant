@@ -221,7 +221,7 @@ def main():
         chunk = exact_tickers[i:i+chunk_size]
         print(f"    📦 載入進度: {i+1} ~ {min(i+chunk_size, len(exact_tickers))} 檔...")
         try:
-            data = yf.download(chunk, period="60d", progress=False, group_by='ticker', threads=True)
+            data = yf.download(chunk, period="60d", progress=False, group_by='ticker', threads=False)
 
             if not data.empty:
                 is_multi = isinstance(data.columns, pd.MultiIndex)
