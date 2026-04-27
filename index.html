@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🌌自動巡航｜彼夫有擇模擬選股戰情室</title>
+    <title>Test V7 Claude | 戰情室系統</title>
     <style>
         /* =========================================
            1. 核心主題設定
@@ -120,14 +120,20 @@
 
     <div class="top-nav">
         <header class="header">
-            <h1>🌌自動巡航｜彼夫有擇模擬選股戰情室 <span class="version-badge">V7.3 混合引擎版</span></h1>
+            <h1>Test V7 Claude <span class="version-badge">V7.4 快取降載版</span></h1>
             <div id="update-time" class="update-time">衛星同步中...</div>
-            <div class="system-alert">⚡ 核心引擎 V7.3 正式上線｜FinMind 混合雙軌巡航中</div>
+            <div class="system-alert">⚡ 核心引擎 V7.4 降載上線｜導入本地快取與戰術縮圈</div>
         </header>
 
         <details class="info-section">
             <summary>📜 改版歷程細節</summary>
             <div class="log-content">
+                <b>✅ V7.4 快取降載與戰術縮圈：</b>
+                <ul>
+                    <li><b>API 防呆快取：</b>導入本地 <code>finmind_cache.json</code> 機制，同日內重複測試執行不再重複消耗 API 額度。</li>
+                    <li><b>戰術性縮圈：</b>第一階段粗篩成交量門檻由 1,000 張提升至 <b>1,500 張</b>，過濾冷門股並大幅降低 API 負載。</li>
+                </ul>
+                <hr style="border: 0; border-top: 1px dashed var(--panel-border); margin: 15px 0;">
                 <b>✅ V7.3 混合引擎升級：</b>
                 <ul>
                     <li><b>精準數據源：</b>導入 FinMind 精確數據。</li>
@@ -141,7 +147,7 @@
             <div class="log-content">
                 <b>🌊 汪洋大魚 (第一階段初選)：</b>
                 <ul>
-                    <li><b>1. 動能：</b>當日成交量 > 1,000 張。</li>
+                    <li><b>1. 動能：</b>當日成交量 <b>>= 1,500 張</b> (V7.4 戰術縮圈)。</li>
                     <li><b>2. 趨勢：</b>股價站穩 30 日均線 (30MA)。</li>
                     <li><b>3. 籌碼：</b>近 30 日三大法人合計呈現「淨買超」。</li>
                 </ul>
@@ -294,7 +300,7 @@
                         const section = document.createElement('details');
                         section.className = 'pool-section';
                         
-                        if (poolName === "🌟 彼神黃金魚池" || poolName === "🔭 測試員觀察水域") section.open = true;
+                        // 🟢 V7.4 變更：移除了「彼神」與「測試員」的預設展開條件，改為全數摺疊
                         
                         section.innerHTML = `<summary><div class="pool-title">${poolName}</div></summary>`;
                         
