@@ -28,7 +28,7 @@ jobs:
             pip install yfinance pandas requests FinMind beautifulsoup4
 
         - name: 4. 啟動彼夫有擇戰情室核心引擎
-          run: python radar.py
+          run: python -u radar.py
 
         - name: 5. 自動上傳最新戰報 JSON
           run: |
