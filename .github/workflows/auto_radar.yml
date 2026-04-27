@@ -2,8 +2,8 @@ name: Daily Radar Auto-Run
 
 on:
   schedule:
-    # 正式排程：台灣時間晚上 5:37 執行 (UTC 上午 09:37)
-    - cron: '37 09 * * 1-5' 
+    # 正式排程：台灣時間晚上 8:39 執行 (UTC 上午 12:39)
+    - cron: '39 12 * * 1-5' 
   workflow_dispatch:
 
 permissions:
