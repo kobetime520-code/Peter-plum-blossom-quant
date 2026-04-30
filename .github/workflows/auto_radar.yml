@@ -1,10 +1,8 @@
 name: Daily Radar Auto-Run
 
 on:
-  schedule:
-    # 正式排程：台灣時間晚上 8:39 執行 (UTC 上午 12:39)
-    - cron: '39 12 * * 1-5' 
   workflow_dispatch:
+    # 已停用自動排程，改由 Moly (moly.py) 每天晚上 20:30 手動觸發
 
 permissions:
   contents: write
