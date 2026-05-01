@@ -79,9 +79,10 @@
 
         .pool-section { margin-bottom: 30px; max-width: 1400px; margin-left: auto; margin-right: auto; }
         .pool-section summary { list-style: none; cursor: pointer; outline: none; }
-        .pool-title { font-size: 20px; font-weight: bold; color: var(--neon-cyan); background: var(--title-bg); padding: 12px 20px; border-left: 4px solid var(--neon-cyan); border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
-        .pool-title::after { content: '▼'; font-size: 14px; transition: 0.3s; }
+        .pool-title { font-size: 20px; font-weight: bold; color: var(--neon-cyan); background: var(--title-bg); padding: 12px 20px; border-left: 4px solid var(--neon-cyan); border-radius: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px; }
+        .pool-title::after { content: '▼'; font-size: 14px; transition: 0.3s; flex-shrink: 0; }
         details[open] .pool-title::after { transform: rotate(180deg); }
+        .pool-desc { font-size: 12px; font-weight: normal; color: var(--text-muted); width: 100%; padding: 4px 0 0 0; border-top: 1px dashed var(--panel-border); margin-top: 4px; letter-spacing: 0.5px; line-height: 1.6; }
 
         .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 25px; padding: 20px 0; }
         
@@ -304,15 +305,24 @@
                 
                 const displayOrder = ["🌟 彼神黃金魚池", "🔭 測試員觀察水域", "🐅 三日成猛虎水池", "🔥 姊夫爆發小魚池", "🍁 楓大永動魚池", "🌊 汪洋大魚"];
 
+                const poolDescriptions = {
+                    "🌟 彼神黃金魚池": "敬愛的股市大哥的選股題材",
+                    "🔭 測試員觀察水域": "此社群測試員的個人愛股",
+                    "🔥 姊夫爆發小魚池": "Jeff 個人觀察與持股",
+                    "🍁 楓大永動魚池": "Maple 從 2023 年學習股市後，持續買進、只進不出的永動機｜Stock Never Die，一張不賣，奇蹟自來 🌱",
+                    "🐅 三日成猛虎水池": "連續 3 日出現於汪洋大魚且符合買入訊號，自動晉升的強勢輪動股",
+                    "🌊 汪洋大魚": "全市場每日掃描，量能＋趨勢＋MA5＋三大法人四關篩選後符合條件的強勢股"
+                };
+
                 displayOrder.forEach(poolName => {
                     if (json_data.pools[poolName] && json_data.pools[poolName].length > 0) {
                         const stocks = json_data.pools[poolName];
                         const section = document.createElement('details');
                         section.className = 'pool-section';
-                        
-                        // 🟢 V7.4 變更：移除了「彼神」與「測試員」的預設展開條件，改為全數摺疊
-                        
-                        section.innerHTML = `<summary><div class="pool-title">${poolName}</div></summary>`;
+
+                        const desc = poolDescriptions[poolName] || '';
+                        const descHtml = desc ? `<div class="pool-desc">💬 ${desc}</div>` : '';
+                        section.innerHTML = `<summary><div class="pool-title"><span>${poolName}</span>${descHtml}</div></summary>`;
                         
                         if (poolName === "🌊 汪洋大魚") {
                             let sortedStocks = stocks.sort((a, b) => (b.inst_buy - a.inst_buy) || (b.close - a.close));
