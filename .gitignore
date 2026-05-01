@@ -3,6 +3,7 @@ finmind_cache.json
 finmind_info_cache.json
 
 # === 本地執行日誌與報告 ===
+log_report.json
 morning_report.log
 晨報/
 

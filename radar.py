@@ -29,6 +29,7 @@ CACHE_FILE = "finmind_cache.json"
 INFO_CACHE_FILE = "finmind_info_cache.json"   # 🆕 V7.5：TaiwanStockInfo 獨立快取
 INFO_CACHE_EXPIRY_DAYS = 7                    # 🆕 V7.5：股票基本資料 7 天更新一次
 CACHE_TTL_HOURS = 30                          # 🆕 V7.8：FinMind 快取有效期（30 小時，確保昨日資料今日仍可命中）
+LOG_REPORT_FILE = "log_report.json"           # 🆕 V7.9：維運日誌輸出路徑（供 Zoey 儀表板讀取）
 
 # --- 2. 魚池設定區 ---
 POOL_SETTINGS = {
@@ -43,7 +44,9 @@ POOL_SETTINGS = {
 # 🎯 V7.4 全域快取與 API 計數器
 # =====================================================================
 _finmind_cache: dict = {}
-_api_calls_count: int = 0
+_api_calls_count: int = 0      # FinMind API 實際呼叫次數（快取未命中）
+_cache_hits_count: int = 0     # 🆕 V7.9：快取命中次數
+_stocks_processed_count: int = 0  # 🆕 V7.9：成功處理的股票檔數
 
 
 def _save_cache_to_disk():
@@ -55,6 +58,23 @@ def _save_cache_to_disk():
         pass  # 寫盤失敗不中斷主流程
 
 
+def _write_log_report(taiwan_time, stocks_processed=0, status="Success"):
+    """🆕 V7.9：產出維運日誌 log_report.json（供 Zoey 儀表板讀取）"""
+    try:
+        report = {
+            "last_update": taiwan_time.strftime("%Y-%m-%d %H:%M:%S"),
+            "api_usage_count": _api_calls_count,
+            "stocks_processed": stocks_processed,
+            "cache_hits": _cache_hits_count,
+            "status": status,
+        }
+        with open(LOG_REPORT_FILE, 'w', encoding='utf-8') as f:
+            json.dump(report, f, ensure_ascii=False, indent=2)
+        print(f"  - 📝 維運日誌已寫出：{LOG_REPORT_FILE}")
+    except Exception as e:
+        print(f"  - ⚠️ 維運日誌寫出失敗：{e}")
+
+
 def fetch_finmind(dataset, start_date, end_date, data_id, retries=2):
     """
     發送 FinMind API 請求，內建本地快取機制。
@@ -63,7 +83,7 @@ def fetch_finmind(dataset, start_date, end_date, data_id, retries=2):
     🆕 V7.7：重試邏輯完整封裝於函式內（retries=2），API 失敗或回傳非 success
              時自動等待 1 秒後重試，外部呼叫端無需再重複呼叫。
     """
-    global _finmind_cache, _api_calls_count
+    global _finmind_cache, _api_calls_count, _cache_hits_count
 
     cache_key = f"{dataset}_{data_id}_{start_date}_{end_date}"
 
@@ -73,8 +93,10 @@ def fetch_finmind(dataset, start_date, end_date, data_id, retries=2):
             entry = _finmind_cache[cache_key]
             # 🆕 V7.8：相容新格式 {ts, data} 與舊格式 list
             if isinstance(entry, dict) and "data" in entry:
+                _cache_hits_count += 1  # 🆕 V7.9
                 return pd.DataFrame(entry["data"])
             elif isinstance(entry, list):
+                _cache_hits_count += 1  # 🆕 V7.9
                 return pd.DataFrame(entry)
         except Exception:
             _finmind_cache.pop(cache_key, None)
@@ -242,9 +264,17 @@ def calculate_stock_data(sid, name, industry, df_prices, df_inst, force_show=Fal
 
 
 def main():
-    global _finmind_cache, _api_calls_count
+    global _finmind_cache, _api_calls_count, _cache_hits_count, _stocks_processed_count
 
-    print("🌊 啟動彼我還楓姊夫戰情室 (V7.8 持久化快取版：24h TTL＋即時寫盤＋自動清理)...")
+    # 🆕 V7.9：例假日檢查（台灣時間，週六=5、週日=6 自動跳出）
+    _check_time = datetime.utcnow() + timedelta(hours=8)
+    if _check_time.weekday() >= 5:
+        day_name = "週六" if _check_time.weekday() == 5 else "週日"
+        print(f"📅 今日為 {day_name}（{_check_time.strftime('%Y-%m-%d')}），例假日不執行，Radar 休息。")
+        _write_log_report(_check_time, status="Skipped-Holiday")
+        return
+
+    print("🌊 啟動彼我還楓姊夫戰情室 (V7.9 維運日誌版：例假日過濾＋log_report 自動產出)...")
 
     # ── 載入本地快取（含 TTL 清理） ─────────────────────────────────────
     # 🆕 V7.8：啟動時自動清除超過 CACHE_TTL_HOURS 的過期資料
@@ -563,8 +593,14 @@ def main():
     _save_cache_to_disk()
     print(f"  - 💾 快取最終寫盤完成，共 {len(_finmind_cache)} 筆（下次執行可直接命中）")
 
-    print(f"\n🎉 掃描完成！本次共消耗 FinMind API {_api_calls_count} 次（快取命中不計入）")
-    print(f"   V7.6 儀表板數據：產業 {len(industry_dist)} 類、魚池多空 {buy_n}/{watch_n}")
+    # 🆕 V7.9：統計成功處理股票檔數（魚池 + 汪洋大魚）
+    _stocks_processed_count = sum(len(v) for v in final_data_structure.values())
+
+    # 🆕 V7.9：產出維運日誌 log_report.json
+    _write_log_report(taiwan_time, stocks_processed=_stocks_processed_count, status="Success")
+
+    print(f"\n🎉 掃描完成！本次共消耗 FinMind API {_api_calls_count} 次（快取命中 {_cache_hits_count} 次）")
+    print(f"   V7.9 儀表板數據：產業 {len(industry_dist)} 類、魚池多空 {buy_n}/{watch_n}、處理 {_stocks_processed_count} 檔")
 
 
 if __name__ == "__main__":
