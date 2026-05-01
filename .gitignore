@@ -1,0 +1,18 @@
+# === 快取檔案（私人資料，不推上 GitHub）===
+finmind_cache.json
+finmind_info_cache.json
+
+# === 本地執行日誌與報告 ===
+morning_report.log
+晨報/
+
+# === Python ===
+__pycache__/
+*.py[cod]
+*.pyo
+.env
+
+# === 系統與編輯器 ===
+.DS_Store
+Thumbs.db
+*.xlsx

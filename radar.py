@@ -28,6 +28,7 @@ HISTORY_FILE = "ocean_history.json"
 CACHE_FILE = "finmind_cache.json"
 INFO_CACHE_FILE = "finmind_info_cache.json"   # 🆕 V7.5：TaiwanStockInfo 獨立快取
 INFO_CACHE_EXPIRY_DAYS = 7                    # 🆕 V7.5：股票基本資料 7 天更新一次
+CACHE_TTL_HOURS = 24                          # 🆕 V7.8：FinMind 快取有效期（24 小時）
 
 # --- 2. 魚池設定區 ---
 POOL_SETTINGS = {
@@ -45,6 +46,15 @@ _finmind_cache: dict = {}
 _api_calls_count: int = 0
 
 
+def _save_cache_to_disk():
+    """🆕 V7.8：即時將記憶體快取寫入 finmind_cache.json（持久化）"""
+    try:
+        with open(CACHE_FILE, 'w', encoding='utf-8') as f:
+            json.dump(_finmind_cache, f, ensure_ascii=False)
+    except Exception:
+        pass  # 寫盤失敗不中斷主流程
+
+
 def fetch_finmind(dataset, start_date, end_date, data_id, retries=2):
     """
     發送 FinMind API 請求，內建本地快取機制。
@@ -60,7 +70,12 @@ def fetch_finmind(dataset, start_date, end_date, data_id, retries=2):
     # ── 快取命中：直接回傳，不計入 API 次數 ──
     if cache_key in _finmind_cache:
         try:
-            return pd.DataFrame(_finmind_cache[cache_key])
+            entry = _finmind_cache[cache_key]
+            # 🆕 V7.8：相容新格式 {ts, data} 與舊格式 list
+            if isinstance(entry, dict) and "data" in entry:
+                return pd.DataFrame(entry["data"])
+            elif isinstance(entry, list):
+                return pd.DataFrame(entry)
         except Exception:
             _finmind_cache.pop(cache_key, None)
 
@@ -81,7 +96,12 @@ def fetch_finmind(dataset, start_date, end_date, data_id, retries=2):
             if res_data.get("msg") == "success":
                 data_list = res_data.get("data", [])
                 try:
-                    _finmind_cache[cache_key] = data_list
+                    # 🆕 V7.8：含時間戳的新格式，支援 TTL 清理
+                    _finmind_cache[cache_key] = {
+                        "ts": datetime.utcnow().isoformat(),
+                        "data": data_list
+                    }
+                    _save_cache_to_disk()  # 🆕 V7.8：即時寫盤，防止中途中斷遺失快取
                 except Exception:
                     pass
                 return pd.DataFrame(data_list)
@@ -224,14 +244,28 @@ def calculate_stock_data(sid, name, industry, df_prices, df_inst, force_show=Fal
 def main():
     global _finmind_cache, _api_calls_count
 
-    print("🌊 啟動彼我還楓姊夫戰情室 (V7.6 姊夫魚池整編版：手動白名單＋猛虎前三注入)...")
+    print("🌊 啟動彼我還楓姊夫戰情室 (V7.8 持久化快取版：24h TTL＋即時寫盤＋自動清理)...")
 
-    # ── 載入本地快取（籌碼資料） ──────────────────────────────────────
+    # ── 載入本地快取（含 TTL 清理） ─────────────────────────────────────
+    # 🆕 V7.8：啟動時自動清除超過 CACHE_TTL_HOURS 的過期資料
     try:
         if os.path.exists(CACHE_FILE):
             with open(CACHE_FILE, 'r', encoding='utf-8') as f:
-                _finmind_cache = json.load(f)
-            print(f"  - 📦 快取載入成功，共 {len(_finmind_cache)} 筆已快取資料")
+                raw_cache = json.load(f)
+            cutoff = datetime.utcnow() - timedelta(hours=CACHE_TTL_HOURS)
+            cleaned = {}
+            for k, v in raw_cache.items():
+                if isinstance(v, dict) and "ts" in v:
+                    try:
+                        if datetime.fromisoformat(v["ts"]) >= cutoff:
+                            cleaned[k] = v
+                    except Exception:
+                        pass
+                elif isinstance(v, list):
+                    cleaned[k] = v  # 舊格式：保留，下次命中時自動升級格式
+            _finmind_cache = cleaned
+            expired = len(raw_cache) - len(cleaned)
+            print(f"  - 📦 快取載入：{len(cleaned)} 筆有效（清除 {expired} 筆過期 >24h）")
         else:
             print("  - 📦 無現有快取，本次將從零建立")
     except Exception:
@@ -525,13 +559,9 @@ def main():
     with open("plum_blossom_data.json", 'w', encoding='utf-8') as f:
         json.dump(output, f, ensure_ascii=False, indent=2)
 
-    # ── 儲存快取至本地 ────────────────────────────────────────────────
-    try:
-        with open(CACHE_FILE, 'w', encoding='utf-8') as f:
-            json.dump(_finmind_cache, f, ensure_ascii=False, indent=2)
-        print(f"  - 💾 快取已儲存，共 {len(_finmind_cache)} 筆（下次執行可直接命中）")
-    except Exception:
-        print("  - ⚠️ 快取儲存失敗，不影響本次結果")
+    # ── 結束前最終寫盤（安全備援，即時寫盤已在每次 API 後執行）────────
+    _save_cache_to_disk()
+    print(f"  - 💾 快取最終寫盤完成，共 {len(_finmind_cache)} 筆（下次執行可直接命中）")
 
     print(f"\n🎉 掃描完成！本次共消耗 FinMind API {_api_calls_count} 次（快取命中不計入）")
     print(f"   V7.6 儀表板數據：產業 {len(industry_dist)} 類、魚池多空 {buy_n}/{watch_n}")
