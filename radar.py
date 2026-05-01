@@ -13,6 +13,8 @@ import requests
 import time
 import json
 import os
+import sys
+import subprocess
 import logging
 from datetime import datetime, timedelta
 import warnings
@@ -601,6 +603,15 @@ def main():
 
     print(f"\n🎉 掃描完成！本次共消耗 FinMind API {_api_calls_count} 次（快取命中 {_cache_hits_count} 次）")
     print(f"   V7.9 儀表板數據：產業 {len(industry_dist)} 類、魚池多空 {buy_n}/{watch_n}、處理 {_stocks_processed_count} 檔")
+
+    # 🆕 V7.9：本地執行時自動呼叫 git_sync.py 推送戰報
+    # GitHub Actions 環境由 auto_radar.yml Step 5 負責，不重複呼叫
+    if not os.environ.get("GITHUB_ACTIONS"):
+        try:
+            git_sync_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "git_sync.py")
+            subprocess.run([sys.executable, git_sync_path], check=False)
+        except Exception as e:
+            print(f"  ⚠️ git_sync.py 呼叫失敗（不影響本次結果）：{e}")
 
 
 if __name__ == "__main__":

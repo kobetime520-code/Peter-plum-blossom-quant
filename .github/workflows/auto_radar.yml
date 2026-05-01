@@ -32,7 +32,7 @@ jobs:
           run: |
             git config --local user.email "action@github.com"
             git config --local user.name "GitHub Action Bot"
-            git add plum_blossom_data.json ocean_history.json
+            git add plum_blossom_data.json ocean_history.json log_report.json
             # 如果資料有變動才 Commit，沒變動就忽略
             git commit -m "🤖 自動更新：全域戰情室雷達掃描完成" || echo "No changes to commit"
             git push
