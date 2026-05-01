@@ -45,11 +45,13 @@ _finmind_cache: dict = {}
 _api_calls_count: int = 0
 
 
-def fetch_finmind(dataset, start_date, end_date, data_id, retries=1):
+def fetch_finmind(dataset, start_date, end_date, data_id, retries=2):
     """
     發送 FinMind API 請求，內建本地快取機制。
     快取命中時直接回傳資料，不消耗 API 額度。
     快取 Key：{dataset}_{data_id}_{start_date}_{end_date}
+    🆕 V7.7：重試邏輯完整封裝於函式內（retries=2），API 失敗或回傳非 success
+             時自動等待 1 秒後重試，外部呼叫端無需再重複呼叫。
     """
     global _finmind_cache, _api_calls_count
 
@@ -62,7 +64,7 @@ def fetch_finmind(dataset, start_date, end_date, data_id, retries=1):
         except Exception:
             _finmind_cache.pop(cache_key, None)
 
-    # ── 快取未命中：呼叫 API ──
+    # ── 快取未命中：呼叫 API（含完整重試） ──
     url = "https://api.finmindtrade.com/api/v4/data"
     params = {
         "dataset": dataset,
@@ -84,7 +86,9 @@ def fetch_finmind(dataset, start_date, end_date, data_id, retries=1):
                     pass
                 return pd.DataFrame(data_list)
             else:
-                break
+                # API 回傳非 success，等待後重試（不直接 break）
+                if attempt < retries:
+                    time.sleep(1)
         except Exception:
             if attempt < retries:
                 time.sleep(1)
@@ -397,10 +401,7 @@ def main():
 
             # 三關全過：呼叫 FinMind 籌碼（僅 1 call，Yahoo 取代股價）
             yf_passed_filter += 1
-            df_i = fetch_finmind("TaiwanStockInstitutionalInvestorsBuySell", start_30d, today_str, sid)
-            if df_i.empty:
-                time.sleep(1)
-                df_i = fetch_finmind("TaiwanStockInstitutionalInvestorsBuySell", start_30d, today_str, sid)
+            df_i = fetch_finmind("TaiwanStockInstitutionalInvestorsBuySell", start_30d, today_str, sid)  # V7.7：重試由 fetch_finmind 內部處理
             time.sleep(0.2)
 
             ind = industry_map.get(sid, "未知產業")
@@ -470,16 +471,10 @@ def main():
                 # 若 Yahoo 備援也失敗，才退回 FinMind 股價（最後防線）
                 if df_price_to_use is None or df_price_to_use.empty:
                     print(f"      - Yahoo 備援失敗，改用 FinMind 股價（{sid}）...")
-                    df_price_to_use = fetch_finmind("TaiwanStockPrice", start_60d, today_str, sid)
-                    if df_price_to_use.empty:
-                        time.sleep(1)
-                        df_price_to_use = fetch_finmind("TaiwanStockPrice", start_60d, today_str, sid)
+                    df_price_to_use = fetch_finmind("TaiwanStockPrice", start_60d, today_str, sid)  # V7.7：重試由函式內部處理
 
             # 只抓籌碼（1 call，Yahoo 已取代股價）
-            df_i = fetch_finmind("TaiwanStockInstitutionalInvestorsBuySell", start_30d, today_str, sid)
-            if df_i.empty:
-                time.sleep(1)
-                df_i = fetch_finmind("TaiwanStockInstitutionalInvestorsBuySell", start_30d, today_str, sid)
+            df_i = fetch_finmind("TaiwanStockInstitutionalInvestorsBuySell", start_30d, today_str, sid)  # V7.7：重試由函式內部處理
 
             ind = industry_map.get(sid, "未分類")
             s_data = calculate_stock_data(sid, name_map.get(sid, sid), ind, df_price_to_use, df_i, force_show=True)
