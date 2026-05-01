@@ -136,6 +136,20 @@
             .dash-grid-2 { grid-template-columns: 1fr; }
             .pool-health-name { width: 90px; font-size: 11px; }
         }
+
+        /* =========================================
+           維運狀態列 (V7.9)
+           ========================================= */
+        .moly-status-bar { max-width: 1400px; margin: 0 auto 20px; background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 12px; padding: 14px 20px; backdrop-filter: blur(10px); display: flex; flex-wrap: wrap; align-items: center; gap: 8px 24px; }
+        .moly-bar-title { color: var(--neon-gold); font-size: 12px; font-weight: bold; letter-spacing: 1px; flex-shrink: 0; }
+        .moly-stat { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-muted); }
+        .moly-stat b { color: var(--text-main); }
+        .moly-status-badge { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+        .moly-status-badge.success { background: rgba(0,230,118,0.12); color: #00E676; border: 1px solid #00E676; }
+        .moly-status-badge.holiday { background: rgba(255,215,0,0.12); color: #FFD700; border: 1px solid #FFD700; }
+        .moly-status-badge.error { background: rgba(255,82,82,0.12); color: #FF5252; border: 1px solid #FF5252; }
+        .moly-divider { width: 1px; height: 20px; background: var(--panel-border); flex-shrink: 0; }
+        @media (max-width: 600px) { .moly-divider { display: none; } .moly-status-bar { gap: 10px 16px; } }
     </style>
 </head>
 <body>
@@ -144,14 +158,33 @@
 
     <div class="top-nav">
         <header class="header">
-            <h1>🌌 彼夫有擇模擬選股戰情室 <span class="version-badge">V7.6 Dashboard 2.0版</span></h1>
+            <h1>🌌 彼夫有擇模擬選股戰情室 <span class="version-badge">V7.9</span></h1>
             <div id="update-time" class="update-time">衛星同步中...</div>
-            <div class="system-alert">⚡ 核心引擎 V7.6 上線｜新增視覺化儀表板 Dashboard 2.0（多空佔比 / 產業熱力 / 魚池健康指數）</div>
+            <div class="system-alert">⚡ 核心引擎 V7.9 上線｜維運日誌 log_report.json + git_sync 自動推送 + 例假日智慧跳出</div>
         </header>
 
         <details class="info-section">
             <summary>📜 改版歷程細節</summary>
             <div class="log-content">
+                <b>🆕 V7.9 維運日誌 + 自動推送（2026-05-02）：</b>
+                <ul>
+                    <li><b>維運日誌 log_report.json：</b>每次掃描結束後自動產出，記錄 API 消耗次數、快取命中數、處理檔數、執行狀態，供前端儀表板即時讀取。</li>
+                    <li><b>git_sync.py 自動推送：</b>本地執行時掃描完畢自動呼叫 git_sync.py，精準 add 三個戰報（plum_blossom_data.json、ocean_history.json、log_report.json）→ commit → push，無需手動操作。</li>
+                    <li><b>例假日智慧跳出：</b>偵測非交易日自動跳出，log_report.json 記錄 <code>status: "Skipped-Holiday"</code>，不消耗 API 額度。</li>
+                </ul>
+                <hr style="border: 0; border-top: 1px dashed var(--panel-border); margin: 15px 0;">
+                <b>✅ V7.8 持久化快取 30h TTL（2026-05-01）：</b>
+                <ul>
+                    <li><b>即時寫盤：</b>每次 FinMind 呼叫成功後立即寫入 finmind_cache.json，程式中斷不會遺失快取。</li>
+                    <li><b>TTL 調整 24h → 30h：</b>確保昨日盤後快取在今日仍可命中，跨日測試不重複消耗 API。</li>
+                    <li><b>自動清理：</b>啟動時自動清除逾期快取項目，避免快取無限膨脹。</li>
+                </ul>
+                <hr style="border: 0; border-top: 1px dashed var(--panel-border); margin: 15px 0;">
+                <b>✅ V7.7 FinMind 重試封裝（2026-05-01）：</b>
+                <ul>
+                    <li><b>fetch_finmind 重試邏輯封裝：</b>統一封裝 API 呼叫與重試機制，消除 Token 重複消耗問題，失敗時最多重試 2 次再回傳空值。</li>
+                </ul>
+                <hr style="border: 0; border-top: 1px dashed var(--panel-border); margin: 15px 0;">
                 <b>📊 V7.6 Dashboard 2.0版（2026-05-01）：</b>
                 <ul>
                     <li><b>視覺化儀表板 Dashboard 2.0：</b>新增三大即時圖表區塊，資料來源為 <code>dashboard_stats</code> 欄位（由 radar.py 每日產出）。</li>
@@ -202,6 +235,21 @@
         </details>
 
         <input type="text" id="global-search" class="search-box" placeholder="🛸 啟動聲納：輸入代碼開啟模擬探測...">
+    </div>
+
+    <!-- ===== V7.9 維運狀態列 ===== -->
+    <div class="moly-status-bar" id="moly-status-bar" style="display:none;">
+        <div class="moly-bar-title">📡 Moly 維運狀態</div>
+        <div class="moly-divider"></div>
+        <div class="moly-stat">🕐 最後掃描：<b id="moly-last-update">--</b></div>
+        <div class="moly-divider"></div>
+        <div class="moly-stat">狀態：<span id="moly-status-badge" class="moly-status-badge">--</span></div>
+        <div class="moly-divider"></div>
+        <div class="moly-stat">⚡ API 消耗：<b id="moly-api-count">--</b> 次</div>
+        <div class="moly-divider"></div>
+        <div class="moly-stat">💾 快取命中：<b id="moly-cache-hits">--</b> 次</div>
+        <div class="moly-divider"></div>
+        <div class="moly-stat">📊 處理檔數：<b id="moly-stocks">--</b> 支</div>
     </div>
 
     <!-- ===== Dashboard 2.0 ===== -->
@@ -552,6 +600,33 @@
                 console.error("JSON 讀取失敗:", err);
                 document.getElementById('update-time').innerText = "❌ 數據載入失敗，請檢查 JSON 檔案";
             });
+
+        // 6. 維運日誌讀取（V7.9）
+        fetch('log_report.json?t=' + new Date().getTime())
+            .then(res => res.json())
+            .then(log => {
+                const bar = document.getElementById('moly-status-bar');
+                bar.style.display = 'flex';
+
+                document.getElementById('moly-last-update').innerText = log.last_update || '--';
+                document.getElementById('moly-api-count').innerText = log.api_usage_count ?? '--';
+                document.getElementById('moly-cache-hits').innerText = log.cache_hits ?? '--';
+                document.getElementById('moly-stocks').innerText = log.stocks_processed ?? '--';
+
+                const badge = document.getElementById('moly-status-badge');
+                const s = log.status || '';
+                if (s === 'Success') {
+                    badge.textContent = '✅ 掃描成功';
+                    badge.className = 'moly-status-badge success';
+                } else if (s === 'Skipped-Holiday') {
+                    badge.textContent = '🏖️ 例假日跳出';
+                    badge.className = 'moly-status-badge holiday';
+                } else {
+                    badge.textContent = '❌ ' + s;
+                    badge.className = 'moly-status-badge error';
+                }
+            })
+            .catch(() => {});
 
         // 5. 搜尋功能綁定 (完整實作版)
         const searchInput = document.getElementById('global-search');
