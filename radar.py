@@ -31,10 +31,10 @@ INFO_CACHE_EXPIRY_DAYS = 7                    # 🆕 V7.5：股票基本資料 7
 
 # --- 2. 魚池設定區 ---
 POOL_SETTINGS = {
-    "🔥 姊夫爆發小魚池": ["6155", "3357", "2493", "1514", "4967"],
+    "🔥 姊夫爆發小魚池": ["6155", "2323"],  # V7.6 手動白名單，運行中動態注入猛虎前三強
     "🍁 楓大永動魚池": ["2308", "00923", "00910", "2327", "1785"],
     "🌟 彼神黃金魚池": ["3028", "2484", "3221", "8182", "8289"],
-    "🔭 測試員觀察水域": ["2330", "2317", "2454", "2383", "3673", "5289", "5292", "3042", "4749"],
+    "🔭 測試員觀察水域": ["5289", "5292", "3042", "4749", "6770", "1711"],
     "🐅 三日成猛虎水池": []
 }
 
@@ -220,7 +220,7 @@ def calculate_stock_data(sid, name, industry, df_prices, df_inst, force_show=Fal
 def main():
     global _finmind_cache, _api_calls_count
 
-    print("🌊 啟動彼我還楓姊夫戰情室 (V7.5 API三劍客降載版：MA5預篩＋Yahoo替代股價＋Info七日快取)...")
+    print("🌊 啟動彼我還楓姊夫戰情室 (V7.6 姊夫魚池整編版：手動白名單＋猛虎前三注入)...")
 
     # ── 載入本地快取（籌碼資料） ──────────────────────────────────────
     try:
@@ -434,6 +434,13 @@ def main():
 
         if count >= 3 and sid not in POOL_SETTINGS["🐅 三日成猛虎水池"]:
             POOL_SETTINGS["🐅 三日成猛虎水池"].append(sid)
+
+    # 🆕 V7.6：自動將猛虎池前三強注入姊夫爆發小魚池（去重後）
+    tiger_top3 = POOL_SETTINGS["🐅 三日成猛虎水池"][:3]
+    for sid in tiger_top3:
+        if sid not in POOL_SETTINGS["🔥 姊夫爆發小魚池"]:
+            POOL_SETTINGS["🔥 姊夫爆發小魚池"].append(sid)
+    print(f"  - 🔥 姊夫魚池整編：手動白名單 + 猛虎前三 = {POOL_SETTINGS['🔥 姊夫爆發小魚池']}")
 
     with open(HISTORY_FILE, 'w', encoding='utf-8') as f:
         json.dump(new_history, f, ensure_ascii=False, indent=2)
