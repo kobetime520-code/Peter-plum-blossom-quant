@@ -559,4 +559,25 @@
             searchInput.addEventListener('input', (e) => {
                 const code = e.target.value.trim();
                 const searchGrid = document.getElementById('search-grid');
-         
+                const searchContainer = document.getElementById('search-result-container');
+                
+                if (code.length >= 2 && fullData) {
+                    searchGrid.innerHTML = '';
+                    let found = false;
+                    for (const stocks of Object.values(fullData.pools)) {
+                        const match = stocks.find(s => s.stock_id === code);
+                        if (match) {
+                            searchGrid.innerHTML = createCard(match, false, 'search-');
+                            found = true;
+                            break;
+                        }
+                    }
+                    searchContainer.style.display = found ? 'block' : 'none';
+                } else {
+                    searchContainer.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>
