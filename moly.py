@@ -3,35 +3,16 @@ import time
 import logging
 import json
 import os
-from datetime import date
 
 # 設定 Moly 的日誌格式
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - Moly 🌸 - %(message)s')
 
-# 台灣國定假日（需每年更新，格式：YYYY-MM-DD）
-TW_HOLIDAYS = {
-    # 2026 國定假日
-    "2026-01-01",  # 元旦
-    "2026-01-27", "2026-01-28", "2026-01-29", "2026-01-30",
-    "2026-01-31", "2026-02-02", "2026-02-03",  # 春節
-    "2026-02-28",  # 和平紀念日
-    "2026-04-03", "2026-04-04", "2026-04-05", "2026-04-06",  # 兒童節/清明
-    "2026-05-01",  # 勞動節
-    "2026-05-29", "2026-05-30", "2026-05-31",  # 端午節
-    "2026-09-25", "2026-09-26", "2026-09-27",  # 中秋節
-    "2026-10-10",  # 國慶日
-}
-
-def is_trading_day():
-    """判斷今日是否為交易日（排除週末與國定假日）"""
-    today = date.today()
-    if today.weekday() >= 5:  # 週六=5, 週日=6
-        logging.info(f"今日 {today} 為例假日，Moly 休息不執行。")
-        return False
-    if today.isoformat() in TW_HOLIDAYS:
-        logging.info(f"今日 {today} 為國定假日，Moly 休息不執行。")
-        return False
-    return True
+# ============================================================
+# 注意：假日判斷由上層 C:\Moly\moly_start.ps1 統一處理
+#   - 該 PS1 含 TWSE 公告之完整休市日清單（含補假）
+#   - PS1 過濾後才會啟動 moly.py
+# 因此此處不再重複實作 is_trading_day()，避免雙清單不同步。
+# ============================================================
 
 REPO     = "kobetime520-code/Peter-plum-blossom-quant"
 WORKFLOW = "auto_radar.yml"
@@ -99,8 +80,6 @@ def sync_local():
 
 def main():
     logging.info("=== Moly 自動排程助理啟動 ===")
-    if not is_trading_day():
-        return
     if trigger_radar():
         if wait_for_completion():
             sync_local()

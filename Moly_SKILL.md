@@ -105,20 +105,23 @@ git checkout -b main --track origin/main
 
 ---
 
-## Windows 工作排程器設定（每天自動喚醒 Moly）
+## Windows 工作排程器設定（每個工作日自動喚醒 Moly）
 
-### 目標：每天 08:30 自動在背景執行 moly.py
+### 目標：週一至週五（排除例假日與國定假日）晚上 20:30 自動執行 moly.py
 
-以**系統管理員**身份開啟 PowerShell，執行以下指令：
+**實際部署採兩層架構：**
+- 排程器設為**每日（Daily）20:30** 觸發 → 呼叫 `C:\Moly\moly_start.ps1`
+- PS1 內判斷週末／國定假日（依 TWSE 公告含補假），通過才啟動 `pythonw.exe moly.py`
 
+**註冊排程指令（已部署）：**
 \`\`\`powershell
-$action = New-ScheduledTaskAction -Execute "pythonw.exe" -Argument "moly.py" -WorkingDirectory "C:\Users\wangj\OneDrive\圖片\桌面\Team stock"
-$trigger = New-ScheduledTaskTrigger -Daily -At "08:30AM"
-$settings = New-ScheduledTaskSettingsSet -ExecutionTimeLimit (New-TimeSpan -Minutes 30) -RunOnlyIfNetworkAvailable -StartWhenAvailable
-Register-ScheduledTask -TaskName "Moly-DailySync" -Action $action -Trigger $trigger -Settings $settings -Description "彼夫有責戰情室 — Moly 每日自動同步與觸發雷達" -RunLevel Highest -Force
+$action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-ExecutionPolicy Bypass -NonInteractive -File C:\Moly\moly_start.ps1"
+$trigger = New-ScheduledTaskTrigger -Daily -At "08:30PM"
+$settings = New-ScheduledTaskSettingsSet -ExecutionTimeLimit (New-TimeSpan -Hours 1 -Minutes 30) -RunOnlyIfNetworkAvailable -StartWhenAvailable
+Register-ScheduledTask -TaskName "Moly-DailySync" -Action $action -Trigger $trigger -Settings $settings -Description "Moly 每日 20:30 觸發雷達" -Force
 \`\`\`
 
-> 使用 `pythonw.exe`（結尾有 w）可在背景靜默執行，不會彈出黑色視窗。
+> **單一資料源原則**：假日清單**只**維護在 `C:\Moly\moly_start.ps1`，每年依 TWSE 公告更新一次。`moly.py` 不再重複實作假日判斷，避免雙清單不同步。
 
 ### 確認排程已建立
 \`\`\`powershell
