@@ -144,14 +144,21 @@
 
     <div class="top-nav">
         <header class="header">
-            <h1>🌌 彼夫有擇模擬選股戰情室 <span class="version-badge">V7.5 API三劍客降載版</span></h1>
+            <h1>🌌 彼夫有擇模擬選股戰情室 <span class="version-badge">V7.6 Dashboard 2.0版</span></h1>
             <div id="update-time" class="update-time">衛星同步中...</div>
-            <div class="system-alert">⚡ 核心引擎 V7.5 上線｜API 消耗從 430 次驟降至 171 次（實測降幅 -60%）</div>
+            <div class="system-alert">⚡ 核心引擎 V7.6 上線｜新增視覺化儀表板 Dashboard 2.0（多空佔比 / 產業熱力 / 魚池健康指數）</div>
         </header>
 
         <details class="info-section">
             <summary>📜 改版歷程細節</summary>
             <div class="log-content">
+                <b>📊 V7.6 Dashboard 2.0版（2026-05-01）：</b>
+                <ul>
+                    <li><b>視覺化儀表板 Dashboard 2.0：</b>新增三大即時圖表區塊，資料來源為 <code>dashboard_stats</code> 欄位（由 radar.py 每日產出）。</li>
+                    <li><b>① 魚池多空佔比（Doughnut）：</b>統計全體命名魚池的「買入加碼 vs 靜候觀察」比例，快速掌握整體市場多空情緒。</li>
+                    <li><b>② 汪洋大魚產業熱力 TOP10（Horizontal Bar）：</b>顯示當日全市場掃描結果中強勢股最集中的前 10 大產業，一眼看出主流資金板塊。</li>
+                    <li><b>③ 各魚池健康指數（CSS Progress Bar）：</b>每個命名魚池的買入加碼佔比（%），搭配漸層色系呈現強弱分佈。</li>
+                </ul>
                 <b>🚀 V7.5 API 三劍客降載版（2026-05-01）：</b>
                 <ul>
                     <li><b>① Yahoo MA5 前置預篩：</b>在呼叫 FinMind 籌碼 API 之前，先以 Yahoo 已下載的資料判斷 <code>收盤 &gt;= MA5</code>。若不符合，action 邏輯必為「靜候觀察」，直接跳過 FinMind 呼叫。本次實測攔截 <b>65 支</b>冗餘請求。</li>
@@ -178,7 +185,7 @@
         <details class="info-section">
             <summary>🌊 汪洋大魚 & 🐅 三日成虎 選股邏輯</summary>
             <div class="log-content">
-                <b>🌊 汪洋大魚 (第一階段初選 — V7.5 三關篩選)：</b>
+                <b>🌊 汪洋大魚 (第一階段初選 — V7.6 三關篩選)：</b>
                 <ul>
                     <li><b>1. 動能：</b>當日成交量 <b>>= 1,500 張</b>（V7.4 戰術縮圈）。</li>
                     <li><b>2. 趨勢：</b>股價站穩 30 日均線（30MA）。</li>
@@ -552,25 +559,4 @@
             searchInput.addEventListener('input', (e) => {
                 const code = e.target.value.trim();
                 const searchGrid = document.getElementById('search-grid');
-                const searchContainer = document.getElementById('search-result-container');
-                
-                if (code.length >= 2 && fullData) {
-                    searchGrid.innerHTML = '';
-                    let found = false;
-                    for (const stocks of Object.values(fullData.pools)) {
-                        const match = stocks.find(s => s.stock_id === code);
-                        if (match) {
-                            searchGrid.innerHTML = createCard(match, false, 'search-');
-                            found = true;
-                            break;
-                        }
-                    }
-                    searchContainer.style.display = found ? 'block' : 'none';
-                } else {
-                    searchContainer.style.display = 'none';
-                }
-            });
-        }
-    </script>
-</body>
-</html>
+         
