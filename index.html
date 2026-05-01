@@ -113,6 +113,29 @@
         .result-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
 
         .footer-copyright { text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 12px; }
+
+        /* =========================================
+           Dashboard 2.0 (V7.6)
+           ========================================= */
+        .dashboard-section { max-width: 1400px; margin: 0 auto 30px; }
+        .dash-grid-2 { display: grid; grid-template-columns: 260px 1fr; gap: 16px; margin-bottom: 16px; }
+        .dash-grid-1 { display: grid; grid-template-columns: 1fr; gap: 16px; }
+        .dash-card { background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 12px; padding: 18px; backdrop-filter: blur(10px); box-shadow: 0 4px 20px var(--card-shadow); }
+        .dash-title { color: var(--neon-gold); font-size: 12px; font-weight: bold; letter-spacing: 1px; margin-bottom: 14px; }
+        .bull-bear-wrap { display: flex; align-items: center; justify-content: center; gap: 18px; }
+        .bull-bear-legend { display: flex; flex-direction: column; gap: 8px; font-size: 13px; color: var(--text-muted); }
+        .bull-bear-legend span { display: flex; align-items: center; gap: 6px; }
+        .legend-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+        .pool-health-wrap { display: grid; gap: 8px; }
+        .pool-health-row { display: flex; align-items: center; gap: 10px; }
+        .pool-health-name { font-size: 12px; color: var(--text-muted); width: 130px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .pool-health-track { flex: 1; height: 12px; background: rgba(255,255,255,0.07); border-radius: 6px; overflow: hidden; }
+        .pool-health-fill { height: 100%; border-radius: 6px; transition: width 0.8s ease; }
+        .pool-health-pct { font-size: 12px; color: var(--text-main); width: 38px; text-align: right; flex-shrink: 0; }
+        @media (max-width: 768px) {
+            .dash-grid-2 { grid-template-columns: 1fr; }
+            .pool-health-name { width: 90px; font-size: 11px; }
+        }
     </style>
 </head>
 <body>
@@ -174,6 +197,29 @@
         <input type="text" id="global-search" class="search-box" placeholder="🛸 啟動聲納：輸入代碼開啟模擬探測...">
     </div>
 
+    <!-- ===== Dashboard 2.0 ===== -->
+    <div class="dashboard-section" id="dashboard-section" style="display:none;">
+        <div class="dash-grid-2">
+            <div class="dash-card">
+                <div class="dash-title">⚖️ 魚池多空佔比</div>
+                <div class="bull-bear-wrap">
+                    <canvas id="chart-bull-bear" width="160" height="160" style="max-width:160px;max-height:160px;"></canvas>
+                    <div class="bull-bear-legend" id="bull-bear-legend"></div>
+                </div>
+            </div>
+            <div class="dash-card">
+                <div class="dash-title">🌡️ 汪洋大魚產業熱力分佈 TOP 10</div>
+                <canvas id="chart-industry" style="width:100%;max-height:220px;"></canvas>
+            </div>
+        </div>
+        <div class="dash-grid-1">
+            <div class="dash-card">
+                <div class="dash-title">🎯 各魚池買入加碼健康指數</div>
+                <div class="pool-health-wrap" id="pool-health-wrap"></div>
+            </div>
+        </div>
+    </div>
+
     <div id="search-result-container" class="pool-section" style="display:none;">
         <details open>
             <summary><div class="pool-title">🛰️ 搜尋結果探測</div></summary>
@@ -187,6 +233,7 @@
         <p>© <span id="current-year"></span> 彼夫有擇全域戰情室. All Rights Reserved.</p>
     </footer>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <script>
         // 1. 初始化與主題切換
         document.getElementById('current-year').innerText = new Date().getFullYear();
@@ -287,7 +334,128 @@
             `;
         }
 
-        // 4. 數據讀取與渲染
+        // 4. 儀表板渲染（Dashboard 2.0）
+        let bullBearChart = null;
+        let industryChart = null;
+
+        function renderDashboard(stats) {
+            if (!stats) return;
+            document.getElementById('dashboard-section').style.display = 'block';
+
+            const CYAN   = 'rgba(100,255,218,0.75)';
+            const GREEN  = 'rgba(0,230,118,0.85)';
+            const MUTED  = 'rgba(136,146,176,0.45)';
+            const GOLD   = 'rgba(255,215,0,0.75)';
+            const GRID   = 'rgba(100,255,218,0.08)';
+            const TICK   = '#8892B0';
+
+            // ① 多空佔比 Doughnut
+            const buy   = stats.action_ratio?.buy   || 0;
+            const watch = stats.action_ratio?.watch || 0;
+            const total = buy + watch;
+            const buyPct = total > 0 ? Math.round(buy / total * 100) : 0;
+
+            if (bullBearChart) bullBearChart.destroy();
+            bullBearChart = new Chart(document.getElementById('chart-bull-bear'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['買入加碼', '靜候觀察'],
+                    datasets: [{
+                        data: [buy, watch],
+                        backgroundColor: [GREEN, MUTED],
+                        borderColor: ['#00E676', '#8892B0'],
+                        borderWidth: 2,
+                        hoverOffset: 6,
+                    }]
+                },
+                options: {
+                    responsive: false,
+                    cutout: '68%',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { callbacks: {
+                            label: ctx => ` ${ctx.label}：${ctx.raw} 支`
+                        }}
+                    }
+                },
+                plugins: [{
+                    id: 'centerText',
+                    beforeDraw(chart) {
+                        const { width, height, ctx: c } = chart;
+                        c.save();
+                        c.font = 'bold 22px PingFang TC, sans-serif';
+                        c.fillStyle = '#64FFDA';
+                        c.textAlign = 'center';
+                        c.textBaseline = 'middle';
+                        c.fillText(buyPct + '%', width / 2, height / 2 - 8);
+                        c.font = '11px PingFang TC, sans-serif';
+                        c.fillStyle = '#8892B0';
+                        c.fillText('買入', width / 2, height / 2 + 14);
+                        c.restore();
+                    }
+                }]
+            });
+
+            document.getElementById('bull-bear-legend').innerHTML = `
+                <span><i class="legend-dot" style="background:#00E676"></i>買入加碼 <b style="color:#E6F1FF">${buy} 支</b></span>
+                <span><i class="legend-dot" style="background:#8892B0"></i>靜候觀察 <b style="color:#E6F1FF">${watch} 支</b></span>
+                <span style="font-size:11px;margin-top:4px;">共 ${total} 支持股</span>`;
+
+            // ② 產業熱力分佈 Horizontal Bar
+            const indData = (stats.industry_distribution || []).slice(0, 10);
+            if (industryChart) industryChart.destroy();
+            industryChart = new Chart(document.getElementById('chart-industry'), {
+                type: 'bar',
+                data: {
+                    labels: indData.map(d => d.industry),
+                    datasets: [{
+                        label: '進場支數',
+                        data: indData.map(d => d.count),
+                        backgroundColor: indData.map((_, i) =>
+                            i === 0 ? 'rgba(100,255,218,0.85)' :
+                            i <= 2  ? 'rgba(100,255,218,0.6)'  :
+                            i <= 5  ? 'rgba(100,255,218,0.4)'  : 'rgba(136,146,176,0.35)'),
+                        borderRadius: 4,
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { callbacks: { label: ctx => ` ${ctx.raw} 支` }}
+                    },
+                    scales: {
+                        x: { grid: { color: GRID }, ticks: { color: TICK, stepSize: 1 } },
+                        y: { grid: { display: false }, ticks: { color: TICK, font: { size: 11 } } }
+                    }
+                }
+            });
+
+            // ③ 各魚池買入健康指數（CSS bar，無需 Chart.js）
+            const poolStats = stats.pool_buy_stats || {};
+            const wrap = document.getElementById('pool-health-wrap');
+            wrap.innerHTML = '';
+            const poolOrder = ["🌟 彼神黃金魚池","🐅 三日成猛虎水池","🔥 姊夫爆發小魚池","🍁 楓大永動魚池","🔭 測試員觀察水域"];
+            poolOrder.forEach(pname => {
+                const d = poolStats[pname];
+                if (!d) return;
+                const pct = d.total > 0 ? Math.round(d.buy / d.total * 100) : 0;
+                const color = pct >= 50 ? '#00E676' : pct > 0 ? '#FFD700' : '#8892B0';
+                const shortName = pname.replace(/[🔥🍁🌟🔭🐅]/u, '').trim();
+                wrap.innerHTML += `
+                    <div class="pool-health-row">
+                        <div class="pool-health-name" title="${pname}">${shortName}</div>
+                        <div class="pool-health-track">
+                            <div class="pool-health-fill" style="width:${pct}%;background:${color};"></div>
+                        </div>
+                        <div class="pool-health-pct" style="color:${color}">${pct}%<br><span style="font-size:10px;color:#8892B0">${d.buy}/${d.total}</span></div>
+                    </div>`;
+            });
+        }
+
+        // 5. 數據讀取與渲染
         let fullData = null;
         fetch('plum_blossom_data.json?t=' + new Date().getTime())
             .then(res => res.json())
@@ -300,8 +468,10 @@
                     updateTimeEl.innerText = "⏱️ 雷達更新：" + json_data.last_updated;
                 }
 
+                renderDashboard(json_data.dashboard_stats);
+
                 const container = document.getElementById('main-container');
-                if (!container) return; 
+                if (!container) return;
                 
                 const displayOrder = ["🌟 彼神黃金魚池", "🔭 測試員觀察水域", "🐅 三日成猛虎水池", "🔥 姊夫爆發小魚池", "🍁 楓大永動魚池", "🌊 汪洋大魚"];
 

@@ -484,9 +484,40 @@ def main():
 
     final_data_structure["🌊 汪洋大魚"] = market_pool
 
+    # =====================================================================
+    # 🎯 V7.6 前端儀表板數據預計算（供 index.html Chart.js 使用）
+    # =====================================================================
+    industry_counter = {}
+    for s in market_pool:
+        ind = s.get('industry', '未分類')
+        industry_counter[ind] = industry_counter.get(ind, 0) + 1
+    industry_dist = [{'industry': k, 'count': v}
+                     for k, v in sorted(industry_counter.items(), key=lambda x: -x[1])[:12]]
+
+    named_stocks = []
+    for pname, pstocks in final_data_structure.items():
+        if pname != "🌊 汪洋大魚":
+            named_stocks.extend(pstocks)
+    buy_n = sum(1 for s in named_stocks if s.get('action') == '買入加碼')
+    watch_n = len(named_stocks) - buy_n
+
+    pool_buy_stats = {}
+    for pname, pstocks in final_data_structure.items():
+        if pstocks and pname != "🌊 汪洋大魚":
+            buy_p = sum(1 for s in pstocks if s.get('action') == '買入加碼')
+            pool_buy_stats[pname] = {'total': len(pstocks), 'buy': buy_p}
+
+    dashboard_stats = {
+        'industry_distribution': industry_dist,
+        'action_ratio': {'buy': buy_n, 'watch': watch_n},
+        'pool_buy_stats': pool_buy_stats,
+        'ocean_total': len(market_pool),
+    }
+
     output = {
         "last_updated": taiwan_time.strftime("%Y/%m/%d %H:%M"),
         "api_cost_estimate": f"本次執行約消耗 {_api_calls_count} 次 FinMind API（快取節省不計入）",
+        "dashboard_stats": dashboard_stats,
         "pools": final_data_structure,
     }
     with open("plum_blossom_data.json", 'w', encoding='utf-8') as f:
@@ -501,7 +532,7 @@ def main():
         print("  - ⚠️ 快取儲存失敗，不影響本次結果")
 
     print(f"\n🎉 掃描完成！本次共消耗 FinMind API {_api_calls_count} 次（快取命中不計入）")
-    print(f"   V7.5 節省摘要：MA5 預篩攔截 {yf_skipped_ma5} 支、魚池省略 FinMind 股價")
+    print(f"   V7.6 儀表板數據：產業 {len(industry_dist)} 類、魚池多空 {buy_n}/{watch_n}")
 
 
 if __name__ == "__main__":
