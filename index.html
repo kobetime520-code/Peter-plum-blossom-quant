@@ -120,21 +120,30 @@
 
     <div class="top-nav">
         <header class="header">
-            <h1>🌌 彼夫有擇模擬選股戰情室 <span class="version-badge">V7.4 快取降載版</span></h1>
+            <h1>🌌 彼夫有擇模擬選股戰情室 <span class="version-badge">V7.5 API三劍客降載版</span></h1>
             <div id="update-time" class="update-time">衛星同步中...</div>
-            <div class="system-alert">⚡ 核心引擎 V7.4 降載上線｜導入本地快取與戰術縮圈</div>
+            <div class="system-alert">⚡ 核心引擎 V7.5 上線｜API 消耗從 430 次驟降至 171 次（實測降幅 -60%）</div>
         </header>
 
         <details class="info-section">
             <summary>📜 改版歷程細節</summary>
             <div class="log-content">
-                <b>✅ V7.4 快取降載與戰術縮圈：</b>
+                <b>🚀 V7.5 API 三劍客降載版（2026-05-01）：</b>
+                <ul>
+                    <li><b>① Yahoo MA5 前置預篩：</b>在呼叫 FinMind 籌碼 API 之前，先以 Yahoo 已下載的資料判斷 <code>收盤 &gt;= MA5</code>。若不符合，action 邏輯必為「靜候觀察」，直接跳過 FinMind 呼叫。本次實測攔截 <b>65 支</b>冗餘請求。</li>
+                    <li><b>② Yahoo 股價取代 FinMind 股價：</b>市場掃描與魚池監控全面改用 Yahoo 批量下載的股價資料計算，不再個別呼叫 FinMind 股價 API（每支節省 1 次）。Yahoo 未命中時才啟動備援，備援失敗才退回 FinMind 最後防線，確保資料完整性。</li>
+                    <li><b>③ TaiwanStockInfo 7 日快取：</b>股票名稱、產業、市場別等基本資料極少變動，改為獨立 <code>finmind_info_cache.json</code> 儲存，7 天內直接讀本地，不重複消耗 API。</li>
+                    <li><b>🔐 安全修復：</b>FinMind Token 重新修正為從 GitHub Secrets 環境變數讀取，排除硬碼風險。</li>
+                    <li><b>📊 實測效果：</b>FinMind API 消耗由 V7.4 的 <b>~430 次</b> 驟降至 <b>171 次</b>，實測降幅 <b>-60%</b>（超越預估目標）。</li>
+                </ul>
+                <hr style="border: 0; border-top: 1px dashed var(--panel-border); margin: 15px 0;">
+                <b>✅ V7.4 快取降載與戰術縮圈（2026-04-28）：</b>
                 <ul>
                     <li><b>API 防呆快取：</b>導入本地 <code>finmind_cache.json</code> 機制，同日內重複測試執行不再重複消耗 API 額度。</li>
                     <li><b>戰術性縮圈：</b>第一階段粗篩成交量門檻由 1,000 張提升至 <b>1,500 張</b>，過濾冷門股並大幅降低 API 負載。</li>
                 </ul>
                 <hr style="border: 0; border-top: 1px dashed var(--panel-border); margin: 15px 0;">
-                <b>✅ V7.3 混合引擎升級：</b>
+                <b>✅ V7.3 混合引擎升級（2026-04-26）：</b>
                 <ul>
                     <li><b>精準數據源：</b>導入 FinMind 精確數據。</li>
                     <li><b>混合掃描架構：</b>Yahoo 快速粗篩 + FinMind 深度精濾。</li>
@@ -145,11 +154,12 @@
         <details class="info-section">
             <summary>🌊 汪洋大魚 & 🐅 三日成虎 選股邏輯</summary>
             <div class="log-content">
-                <b>🌊 汪洋大魚 (第一階段初選)：</b>
+                <b>🌊 汪洋大魚 (第一階段初選 — V7.5 三關篩選)：</b>
                 <ul>
-                    <li><b>1. 動能：</b>當日成交量 <b>>= 1,500 張</b> (V7.4 戰術縮圈)。</li>
-                    <li><b>2. 趨勢：</b>股價站穩 30 日均線 (30MA)。</li>
-                    <li><b>3. 籌碼：</b>近 30 日三大法人合計呈現「淨買超」。</li>
+                    <li><b>1. 動能：</b>當日成交量 <b>>= 1,500 張</b>（V7.4 戰術縮圈）。</li>
+                    <li><b>2. 趨勢：</b>股價站穩 30 日均線（30MA）。</li>
+                    <li><b>3. 🆕 MA5 前置預判：</b>股價 >= 5 日均線（MA5），排除短線弱勢股，大幅降低無效 API 呼叫。</li>
+                    <li><b>4. 籌碼：</b>近 30 日三大法人合計呈現「淨買超」（通過前三關才呼叫 FinMind）。</li>
                 </ul>
                 <hr style="border: 0; border-top: 1px dashed var(--panel-border); margin: 15px 0;">
                 <b>🐅 三日成猛虎 (第二階段晉升)：</b>

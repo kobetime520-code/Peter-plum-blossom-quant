@@ -1,5 +1,11 @@
 # ==========================================
-# 靜水流深戰情室：核心監控與全域雷達 V7.4
+# 靜水流深戰情室：核心監控與全域雷達 V7.5
+# ==========================================
+# V7.5 API 降載三劍客：
+#   ① Yahoo MA5 前置預篩  → 市場掃描省 ~40% 呼叫
+#   ② Yahoo 股價取代 FinMind（市場掃描 + 魚池）→ 每股節省 1 call
+#   ③ TaiwanStockInfo 7 日快取 → 每週省 6 次
+#   預估總降幅：430 → ~260 次（減少 ~40%）
 # ==========================================
 import yfinance as yf
 import pandas as pd
@@ -16,9 +22,12 @@ logger = logging.getLogger('yfinance')
 logger.setLevel(logging.CRITICAL)
 
 # --- 1. 金鑰與設定區 ---
-FINMIND_TOKEN = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJkYXRlIjoiMjAyNi0wNC0xMiAxNjo1Nzo0OSIsInVzZXJfaWQiOiJQZXRlckplZmYwMjI2IiwiZW1haWwiOiJrb2JldGltZTUyMEBnbWFpbC5jb20iLCJpcCI6Ijk0LjE1Ni4yMDUuMjQzIn0.UuDTYEvzoHk_qdW6mBElD_OfM3fVezky7X9dEFId3zg"
+# 🔐 V7.5 安全修正：Token 從環境變數讀取（不再硬碼）
+FINMIND_TOKEN = os.environ.get("FINMIND_TOKEN", "")
 HISTORY_FILE = "ocean_history.json"
 CACHE_FILE = "finmind_cache.json"
+INFO_CACHE_FILE = "finmind_info_cache.json"   # 🆕 V7.5：TaiwanStockInfo 獨立快取
+INFO_CACHE_EXPIRY_DAYS = 7                    # 🆕 V7.5：股票基本資料 7 天更新一次
 
 # --- 2. 魚池設定區 ---
 POOL_SETTINGS = {
@@ -51,7 +60,6 @@ def fetch_finmind(dataset, start_date, end_date, data_id, retries=1):
         try:
             return pd.DataFrame(_finmind_cache[cache_key])
         except Exception:
-            # 快取資料損毀，移除後走正常流程
             _finmind_cache.pop(cache_key, None)
 
     # ── 快取未命中：呼叫 API ──
@@ -63,14 +71,13 @@ def fetch_finmind(dataset, start_date, end_date, data_id, retries=1):
         "end_date": end_date,
         "token": FINMIND_TOKEN,
     }
-    _api_calls_count += 1  # 只要發出請求就計數
+    _api_calls_count += 1
     for attempt in range(retries + 1):
         try:
             res = requests.get(url, params=params, timeout=10)
             res_data = res.json()
             if res_data.get("msg") == "success":
                 data_list = res_data.get("data", [])
-                # 寫入快取
                 try:
                     _finmind_cache[cache_key] = data_list
                 except Exception:
@@ -213,9 +220,9 @@ def calculate_stock_data(sid, name, industry, df_prices, df_inst, force_show=Fal
 def main():
     global _finmind_cache, _api_calls_count
 
-    print("🌊 啟動彼我還楓姊夫戰情室 (V7.4 快取降載＋Yahoo粗篩+FinMind精濾 混合引擎版)...")
+    print("🌊 啟動彼我還楓姊夫戰情室 (V7.5 API三劍客降載版：MA5預篩＋Yahoo替代股價＋Info七日快取)...")
 
-    # ── 載入本地快取 ──────────────────────────────────────────────────
+    # ── 載入本地快取（籌碼資料） ──────────────────────────────────────
     try:
         if os.path.exists(CACHE_FILE):
             with open(CACHE_FILE, 'r', encoding='utf-8') as f:
@@ -232,8 +239,40 @@ def main():
     start_30d = (taiwan_time - timedelta(days=45)).strftime("%Y-%m-%d")
     start_60d = (taiwan_time - timedelta(days=90)).strftime("%Y-%m-%d")
 
-    df_info = fetch_finmind("TaiwanStockInfo", "2020-01-01", today_str, "")
-    if df_info.empty:
+    # =====================================================================
+    # 🆕 V7.5 優化③：TaiwanStockInfo 7 日快取
+    # 股票基本資料（名稱、產業、市場別）幾乎不變，7天才重抓一次
+    # =====================================================================
+    df_info = None
+    try:
+        if os.path.exists(INFO_CACHE_FILE):
+            with open(INFO_CACHE_FILE, 'r', encoding='utf-8') as f:
+                info_cache = json.load(f)
+            cache_date_str = info_cache.get("date", "2000-01-01")
+            cache_date = datetime.strptime(cache_date_str, "%Y-%m-%d")
+            age_days = (taiwan_time - cache_date).days
+            if age_days < INFO_CACHE_EXPIRY_DAYS:
+                df_info = pd.DataFrame(info_cache.get("data", []))
+                print(f"  - 📋 TaiwanStockInfo 使用 {age_days} 天前快取（{cache_date_str}，尚有效，省 1 API 次）")
+    except Exception:
+        pass
+
+    if df_info is None or df_info.empty:
+        print("  - 📋 TaiwanStockInfo 快取已過期或不存在，重新抓取...")
+        df_info = fetch_finmind("TaiwanStockInfo", "2020-01-01", today_str, "")
+        if not df_info.empty:
+            try:
+                with open(INFO_CACHE_FILE, 'w', encoding='utf-8') as f:
+                    json.dump({
+                        "date": today_str,
+                        "data": df_info.to_dict('records')
+                    }, f, ensure_ascii=False)
+                print(f"  - 💾 TaiwanStockInfo 已快取至 {INFO_CACHE_FILE}（7天內免抓）")
+            except Exception:
+                pass
+
+    if df_info is None or df_info.empty:
+        print("❌ 無法取得股票清單，終止執行")
         return
 
     name_map = dict(zip(df_info['stock_id'].astype(str), df_info['stock_name']))
@@ -315,11 +354,19 @@ def main():
     print(f"  - 🎯 下載完成！成功取得 {len(valid_dfs)} 檔有效股價，進入雷達濾網...")
 
     # =====================================================================
-    # 🎯 V7.4 混合引擎核心：Yahoo 粗篩通過後，以 FinMind 精確股價製卡
-    #    粗篩門檻：成交量 >= 1,500 張（戰術縮圈，大幅降低 API 呼叫）
+    # 🎯 V7.5 混合引擎核心（市場掃描段）
+    #    粗篩門檻（全用 Yahoo 計算，無 API 消耗）：
+    #      ① 成交量 >= 1,500 張
+    #      ② 收盤 > MA30
+    #      ③ 🆕 收盤 >= MA5（前置 action 邏輯預判，跳過必敗的股）
+    #    精篩：通過三關者，只呼叫 FinMind 籌碼（1 call/股）
+    #          股價改用 Yahoo 取代 FinMind（省 1 call/股）
     # =====================================================================
     market_pool = []
     added_market_sids = set()
+    yf_skipped_ma5 = 0     # 統計：被 MA5 預篩擋掉的數量
+    yf_passed_filter = 0   # 統計：三關全過、真正呼叫 FinMind 的數量
+
     for sid in set(market_sids):
         df_yf = valid_dfs.get(sid)
         if df_yf is None or df_yf.empty:
@@ -328,28 +375,44 @@ def main():
             continue
         try:
             latest_yf = df_yf.iloc[-1]
-            # 🎯 V7.4：粗篩量能門檻提升至 1,500 張（原為 1,000 張）
-            if (float(latest_yf['Volume']) / 1000) >= 1500:
-                ma30_yf = df_yf['Close'].rolling(window=30).mean().iloc[-1]
-                if float(latest_yf['Close']) > ma30_yf:
-                    df_p_finmind = fetch_finmind("TaiwanStockPrice", start_60d, today_str, sid)
-                    if df_p_finmind.empty:
-                        time.sleep(1)
-                        df_p_finmind = fetch_finmind("TaiwanStockPrice", start_60d, today_str, sid)
+            close_yf = float(latest_yf['Close'])
+            vol_lots_yf = float(latest_yf['Volume']) / 1000
 
-                    df_i = fetch_finmind("TaiwanStockInstitutionalInvestorsBuySell", start_30d, today_str, sid)
-                    if df_i.empty:
-                        time.sleep(1)
-                        df_i = fetch_finmind("TaiwanStockInstitutionalInvestorsBuySell", start_30d, today_str, sid)
-                    time.sleep(0.2)
+            # 第一關：量能門檻（V7.4 縮圈戰術）
+            if vol_lots_yf < 1500:
+                continue
 
-                    ind = industry_map.get(sid, "未知產業")
-                    s_data = calculate_stock_data(sid, name_map.get(sid, sid), ind, df_p_finmind, df_i)
-                    if s_data and s_data['action'] == "買入加碼":
-                        market_pool.append(s_data)
-                        added_market_sids.add(sid)
+            # 第二關：收盤 > MA30（趨勢確認）
+            ma30_yf = float(df_yf['Close'].rolling(window=30).mean().iloc[-1])
+            if close_yf <= ma30_yf:
+                continue
+
+            # 🆕 第三關：收盤 >= MA5（action 前置預判）
+            # action 邏輯為 close >= ma5 AND inst_buy > 0
+            # 若 close < ma5，無論籌碼如何，action 必為「靜候觀察」→ 直接跳過
+            ma5_yf = float(df_yf['Close'].rolling(window=5).mean().iloc[-1]) if len(df_yf) >= 5 else close_yf
+            if close_yf < ma5_yf:
+                yf_skipped_ma5 += 1
+                continue
+
+            # 三關全過：呼叫 FinMind 籌碼（僅 1 call，Yahoo 取代股價）
+            yf_passed_filter += 1
+            df_i = fetch_finmind("TaiwanStockInstitutionalInvestorsBuySell", start_30d, today_str, sid)
+            if df_i.empty:
+                time.sleep(1)
+                df_i = fetch_finmind("TaiwanStockInstitutionalInvestorsBuySell", start_30d, today_str, sid)
+            time.sleep(0.2)
+
+            ind = industry_map.get(sid, "未知產業")
+            # 🆕 直接用 Yahoo df 計算（不再額外呼叫 FinMind 股價）
+            s_data = calculate_stock_data(sid, name_map.get(sid, sid), ind, df_yf, df_i)
+            if s_data and s_data['action'] == "買入加碼":
+                market_pool.append(s_data)
+                added_market_sids.add(sid)
         except Exception:
             continue
+
+    print(f"  - 📊 MA5 預篩：攔截 {yf_skipped_ma5} 支（必靜候），{yf_passed_filter} 支進入籌碼精篩")
 
     # 🎯 V7 核心升級：Date-Lock 日期防呆機制與向下相容（完整保留）
     today_ocean_sids = [s['stock_id'] for s in market_pool]
@@ -358,7 +421,6 @@ def main():
     for sid in today_ocean_sids:
         old_data = history.get(sid, {"count": 0, "last_date": ""})
 
-        # 向下相容：V6 舊格式（純 int）自動升級
         if isinstance(old_data, int):
             old_data = {"count": old_data, "last_date": ""}
 
@@ -376,6 +438,12 @@ def main():
     with open(HISTORY_FILE, 'w', encoding='utf-8') as f:
         json.dump(new_history, f, ensure_ascii=False, indent=2)
 
+    # =====================================================================
+    # 🎯 V7.5 魚池監控段：Yahoo 股價優先，FinMind 只抓籌碼
+    #    - Yahoo valid_dfs 中已有所有魚池股票的股價（大量下載時一併拿到）
+    #    - 若 Yahoo 未命中才用雙重火力備援
+    #    - FinMind 股價呼叫完全省略（每支魚池股省 1 call）
+    # =====================================================================
     final_data_structure = {}
     for pool_name, tickers in POOL_SETTINGS.items():
         if pool_name == "🐅 三日成猛虎水池" and not tickers:
@@ -387,23 +455,27 @@ def main():
             if sid in seen_in_pool:
                 continue
 
-            df_yf_cache = valid_dfs.get(sid)
-            if df_yf_cache is None or df_yf_cache.empty:
-                print(f"      - 快取未命中，啟動 {sid} 雙重火力補抓（Yahoo 備援）...")
-                download_yf_data_single(sid, market_map)
+            # 🆕 V7.5：優先用 Yahoo 股價，不呼叫 FinMind 股價
+            df_price_to_use = valid_dfs.get(sid)
+            if df_price_to_use is None or df_price_to_use.empty:
+                print(f"      - Yahoo 未命中，啟動 {sid} 雙重火力補抓（Yahoo 備援）...")
+                df_price_to_use = download_yf_data_single(sid, market_map)
+                # 若 Yahoo 備援也失敗，才退回 FinMind 股價（最後防線）
+                if df_price_to_use is None or df_price_to_use.empty:
+                    print(f"      - Yahoo 備援失敗，改用 FinMind 股價（{sid}）...")
+                    df_price_to_use = fetch_finmind("TaiwanStockPrice", start_60d, today_str, sid)
+                    if df_price_to_use.empty:
+                        time.sleep(1)
+                        df_price_to_use = fetch_finmind("TaiwanStockPrice", start_60d, today_str, sid)
 
-            df_p_finmind = fetch_finmind("TaiwanStockPrice", start_60d, today_str, sid)
-            if df_p_finmind.empty:
-                time.sleep(1)
-                df_p_finmind = fetch_finmind("TaiwanStockPrice", start_60d, today_str, sid)
-
+            # 只抓籌碼（1 call，Yahoo 已取代股價）
             df_i = fetch_finmind("TaiwanStockInstitutionalInvestorsBuySell", start_30d, today_str, sid)
             if df_i.empty:
                 time.sleep(1)
                 df_i = fetch_finmind("TaiwanStockInstitutionalInvestorsBuySell", start_30d, today_str, sid)
 
             ind = industry_map.get(sid, "未分類")
-            s_data = calculate_stock_data(sid, name_map.get(sid, sid), ind, df_p_finmind, df_i, force_show=True)
+            s_data = calculate_stock_data(sid, name_map.get(sid, sid), ind, df_price_to_use, df_i, force_show=True)
             if s_data:
                 results.append(s_data)
                 seen_in_pool.add(sid)
@@ -429,6 +501,7 @@ def main():
         print("  - ⚠️ 快取儲存失敗，不影響本次結果")
 
     print(f"\n🎉 掃描完成！本次共消耗 FinMind API {_api_calls_count} 次（快取命中不計入）")
+    print(f"   V7.5 節省摘要：MA5 預篩攔截 {yf_skipped_ma5} 支、魚池省略 FinMind 股價")
 
 
 if __name__ == "__main__":
