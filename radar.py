@@ -28,7 +28,7 @@ HISTORY_FILE = "ocean_history.json"
 CACHE_FILE = "finmind_cache.json"
 INFO_CACHE_FILE = "finmind_info_cache.json"   # 🆕 V7.5：TaiwanStockInfo 獨立快取
 INFO_CACHE_EXPIRY_DAYS = 7                    # 🆕 V7.5：股票基本資料 7 天更新一次
-CACHE_TTL_HOURS = 24                          # 🆕 V7.8：FinMind 快取有效期（24 小時）
+CACHE_TTL_HOURS = 30                          # 🆕 V7.8：FinMind 快取有效期（30 小時，確保昨日資料今日仍可命中）
 
 # --- 2. 魚池設定區 ---
 POOL_SETTINGS = {
