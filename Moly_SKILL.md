@@ -17,11 +17,11 @@ description: >
 
 ## 核心腳本
 
-主程式位置：`C:\Users\wangj\OneDrive\圖片\桌面\Team stock\moly.py`
+主程式位置：`C:\Users\wangj\OneDrive\桌面\Team stock\moly.py`
 
 執行方式：
 \`\`\`powershell
-cd "C:\Users\wangj\OneDrive\圖片\桌面\Team stock"
+cd "C:\Users\wangj\OneDrive\桌面\Team stock"
 python moly.py
 \`\`\`
 
@@ -36,7 +36,7 @@ python moly.py
 
 | 項目 | 值 |
 |---|---|
-| 本地資料夾 | `C:\Users\wangj\OneDrive\圖片\桌面\Team stock` |
+| 本地資料夾 | `C:\Users\wangj\OneDrive\桌面\Team stock` |
 | GitHub Repo | `kobetime520-code/Peter-plum-blossom-quant` |
 | Workflow 檔案 | `auto_radar.yml` |
 | 工具需求 | Python 3、`gh`（GitHub CLI）、`git` |
@@ -77,7 +77,7 @@ gh auth login --with-token
 ### C. 初始化本地 Git Repo（首次同步）
 
 \`\`\`powershell
-cd "C:\Users\wangj\OneDrive\圖片\桌面\Team stock"
+cd "C:\Users\wangj\OneDrive\桌面\Team stock"
 git init
 git remote add origin https://github.com/kobetime520-code/Peter-plum-blossom-quant.git
 git fetch origin main

@@ -16,7 +16,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - Moly 🌸 - %(mess
 
 REPO     = "kobetime520-code/Peter-plum-blossom-quant"
 WORKFLOW = "auto_radar.yml"
-LOCAL_PATH = r"C:\Users\wangj\OneDrive\圖片\桌面\Team stock"
+LOCAL_PATH = r"C:\Users\wangj\OneDrive\桌面\Team stock"
 
 # gh CLI 完整路徑（Task Scheduler 不繼承用戶 PATH，需寫死）
 GH = r"C:\Program Files\GitHub CLI\gh.exe"
