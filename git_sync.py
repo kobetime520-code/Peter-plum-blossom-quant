@@ -9,7 +9,10 @@ V1.0 | 2026-05-02
 import subprocess
 import sys
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
+
+# 台灣時區 UTC+8
+TW_TZ = timezone(timedelta(hours=8))
 
 # 專案根目錄（與 radar.py 同層）
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -49,7 +52,7 @@ def sync_to_github():
     主流程：git add → git commit → git push
     任何步驟失敗皆印出警告，不讓整個系統崩潰。
     """
-    taiwan_time = datetime.utcnow() + timedelta(hours=8)
+    taiwan_time = datetime.now(TW_TZ)
     commit_msg = f"🤖 自動更新：Moly Daily Report {taiwan_time.strftime('%Y-%m-%d %H:%M')}"
 
     print("\n🔗 git_sync.py 啟動：準備推送戰報至 GitHub main...")
@@ -77,7 +80,15 @@ def sync_to_github():
             return False
     print(f"  ✅ git commit：{commit_msg}")
 
-    # ── Step 3：git push ─────────────────────────────────────────────────
+    # ── Step 3：git pull --rebase（防 non-fast-forward 衝突）─────────────
+    print("  🔄 執行 git pull --rebase，融合雲端最新變動...")
+    ok, out = run_git(["pull", "--rebase", "origin", "main"])
+    if not ok:
+        print(f"  ⚠️ git pull --rebase 失敗，建議手動解除：{out}")
+        return False
+    print(f"  ✅ git pull --rebase 完成")
+
+    # ── Step 4：git push ─────────────────────────────────────────────────
     ok, out = run_git(["push", "origin", "main"])
     if not ok:
         print(f"  ⚠️ git push 失敗（可能為網路斷線或遠端衝突）：{out}")
