@@ -20,3 +20,7 @@ __pycache__/
 .DS_Store
 Thumbs.db
 *.xlsx
+
+# === 集團總部機密保護 ===
+AI_Magic_Workspace/
+*.csv
