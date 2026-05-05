@@ -115,7 +115,8 @@ def fetch_finmind(dataset, start_date, end_date, data_id, retries=2):
     _api_calls_count += 1
     for attempt in range(retries + 1):
         try:
-            res = requests.get(url, params=params, timeout=10)
+            res = requests.get(url, params=params, timeout=15)
+            res.raise_for_status()
             res_data = res.json()
             if res_data.get("msg") == "success":
                 data_list = res_data.get("data", [])
@@ -133,9 +134,11 @@ def fetch_finmind(dataset, start_date, end_date, data_id, retries=2):
                 # API 回傳非 success，等待後重試（不直接 break）
                 if attempt < retries:
                     time.sleep(1)
-        except Exception:
+        except requests.exceptions.RequestException as e:
             if attempt < retries:
                 time.sleep(1)
+            else:
+                print(f"  ⚠️ [防禦機制觸發] {data_id} FinMind API 無回應，自動跳過（原因：{e}）")
     return pd.DataFrame()
 
 
