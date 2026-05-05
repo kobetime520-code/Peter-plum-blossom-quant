@@ -16,7 +16,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - Moly 🌸 - %(mess
 # moly.py 不重複執行 push，避免 non-fast-forward 衝突。
 # ============================================================
 
-LOCAL_PATH = r"C:\Users\wangj\OneDrive\AI Magic\Team stock"
+LOCAL_PATH = r"C:\AIworkplace\AI Magic\Team stock"
 RADAR_SCRIPT = os.path.join(LOCAL_PATH, "radar.py")
 
 
