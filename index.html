@@ -166,7 +166,14 @@
         <details class="info-section">
             <summary>📜 改版歷程細節</summary>
             <div class="log-content">
-                <b>🆕 V7.9 維運日誌 + 自動推送（2026-05-02）：</b>
+                <b>🆕 V8.0 互動排序 + 搜尋增強（2026-05-07）：</b>
+                <ul>
+                    <li><b>各魚池排序選擇器：</b>在每個魚池標題列右側新增下拉菜單，支援四種排序模式：預設（法人買超）、法人買超、現價高低、成交量大小，一鍵重排卡片。</li>
+                    <li><b>模糊搜尋 + 股名支援：</b>搜尋框從精確匹配改為 <code>includes()</code> 模糊搜尋，同時支援股號代碼與股名搜尋，輸入一個字元即可觸發。</li>
+                    <li><b>模擬倉折疊化：</b>將 Beta user 模擬倉改為 <code>&lt;details&gt;</code> 可折疊元件，預設收合，點擊標題展開，減少首屏視覺噪音。</li>
+                </ul>
+                <hr style="border: 0; border-top: 1px dashed var(--panel-border); margin: 15px 0;">
+                <b>✅ V7.9 維運日誌 + 自動推送（2026-05-02）：</b>
                 <ul>
                     <li><b>維運日誌 log_report.json：</b>每次掃描結束後自動產出，記錄 API 消耗次數、快取命中數、處理檔數、執行狀態，供前端儀表板即時讀取。</li>
                     <li><b>git_sync.py 自動推送：</b>本地執行時掃描完畢自動呼叫 git_sync.py，精準 add 三個戰報（plum_blossom_data.json、ocean_history.json、log_report.json）→ commit → push，無需手動操作。</li>
@@ -322,10 +329,14 @@
         function createCard(s, isWangYang = false, prefix = "main-") {
             const isBuy = s.action === '買入加碼';
             const instText = s.inst_buy > 0 ? '+' + s.inst_buy : s.inst_buy;
-            
+            const instColor = s.inst_buy > 0 ? 'var(--neon-green)' : 'var(--neon-red)';
+
             const foreignText = (s.foreign_buy !== undefined) ? (s.foreign_buy > 0 ? '+' + s.foreign_buy : s.foreign_buy) : '--';
+            const foreignColor = (s.foreign_buy !== undefined) ? (s.foreign_buy > 0 ? 'var(--neon-green)' : 'var(--neon-red)') : 'var(--text-main)';
+
             const trustText = (s.trust_buy !== undefined) ? (s.trust_buy > 0 ? '+' + s.trust_buy : s.trust_buy) : '--';
-            
+            const trustColor = (s.trust_buy !== undefined) ? (s.trust_buy > 0 ? 'var(--neon-red)' : 'var(--neon-cyan)') : 'var(--text-main)';
+
             const isTrustBuying = s.trust_buy > 0;
             const trustBadge = isTrustBuying ? `<span style="color:var(--neon-red); font-size:12px; font-weight:bold; margin-left:8px;">🔥 投信認養</span>` : '';
 
@@ -339,12 +350,12 @@
                             <span class="stock-id">${s.stock_id}</span>
                             <span class="stock-name">${s.stock_name} <span class="industry-badge">${indText}</span>${trustBadge}</span>
                         </div>
-                        <div class="inst-badge" style="color:var(--text-muted); font-size:12px;">總法人 ${instText}</div>
+                        <div class="inst-badge" style="color:${instColor}; font-size:12px; font-weight: bold;">總法人 ${instText}</div>
                     </div>
-                    
+
                     <div class="data-row" style="background: rgba(255,215,0,0.05); padding: 6px 10px; border-radius: 6px; border-left: 3px solid var(--neon-gold); margin-bottom: 12px;">
-                        <span style="font-size: 13px; color: var(--text-muted);">30日外資 <b style="color: var(--text-main);">${foreignText}</b></span>
-                        <span style="font-size: 13px; color: var(--text-muted);">30日投信 <b style="color: ${isTrustBuying ? 'var(--neon-red)' : 'var(--text-main)'}; font-size: 15px;">${trustText}</b></span>
+                        <span style="font-size: 13px; color: var(--text-muted);">30日外資 <b style="color: ${foreignColor}; font-weight: bold;">${foreignText}</b></span>
+                        <span style="font-size: 13px; color: var(--text-muted);">30日投信 <b style="color: ${trustColor}; font-size: 15px; font-weight: bold;">${trustText}</b></span>
                     </div>
 
                     <div class="data-row"><span>現價</span><b class="highlight">${s.close}</b></div>
@@ -360,31 +371,39 @@
                         </a>
                     </div>
 
-                    <div class="sim-panel">
-                        <div style="font-size: 12px; color: var(--neon-gold); margin-bottom: 10px; font-weight: bold; text-align: center;">🛠️ Beta user 模擬倉</div>
-                        <div class="sim-input-grid">
-                            <div style="display: flex; flex-direction: column; gap: 4px;">
-                                <span style="font-size: 10px; color: var(--text-muted); padding-left: 2px;">持股價位</span>
-                                <input type="number" id="price-${uniqueId}" class="sim-input" placeholder="0.0" oninput="updateSim('${uniqueId}')">
+                    <details style="margin-top: 15px;">
+                        <summary style="list-style: none; outline: none; cursor: pointer; background: rgba(0, 0, 0, 0.2); padding: 10px 12px; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: var(--neon-gold); font-weight: bold; letter-spacing: 0.5px; user-select: none;">
+                            <span>🛠️ Beta user 模擬倉</span>
+                            <span style="font-size: 10px; transition: transform 0.3s;">▼</span>
+                        </summary>
+                        <style>
+                            details[open] > summary span:last-child { transform: rotate(180deg); }
+                        </style>
+                        <div class="sim-panel" style="margin-top: 10px;">
+                            <div class="sim-input-grid">
+                                <div style="display: flex; flex-direction: column; gap: 4px;">
+                                    <span style="font-size: 10px; color: var(--text-muted); padding-left: 2px;">持股價位</span>
+                                    <input type="number" id="price-${uniqueId}" class="sim-input" placeholder="0.0" oninput="updateSim('${uniqueId}')">
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 4px;">
+                                    <span style="font-size: 10px; color: var(--text-muted); padding-left: 2px;">持股股數</span>
+                                    <input type="number" id="shares-${uniqueId}" class="sim-input" placeholder="1000">
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 4px;">
+                                    <span style="font-size: 10px; color: var(--text-muted); padding-left: 2px;">停利比例 (%)</span>
+                                    <input type="number" id="target-pct-${uniqueId}" class="sim-input" value="50" oninput="updateSim('${uniqueId}')">
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 4px;">
+                                    <span style="font-size: 10px; color: var(--text-muted); padding-left: 2px;">停損比例 (%)</span>
+                                    <input type="number" id="stop-pct-${uniqueId}" class="sim-input" value="10" oninput="updateSim('${uniqueId}')">
+                                </div>
                             </div>
-                            <div style="display: flex; flex-direction: column; gap: 4px;">
-                                <span style="font-size: 10px; color: var(--text-muted); padding-left: 2px;">持股股數</span>
-                                <input type="number" id="shares-${uniqueId}" class="sim-input" placeholder="1000">
-                            </div>
-                            <div style="display: flex; flex-direction: column; gap: 4px;">
-                                <span style="font-size: 10px; color: var(--text-muted); padding-left: 2px;">停利比例 (%)</span>
-                                <input type="number" id="target-pct-${uniqueId}" class="sim-input" value="50" oninput="updateSim('${uniqueId}')">
-                            </div>
-                            <div style="display: flex; flex-direction: column; gap: 4px;">
-                                <span style="font-size: 10px; color: var(--text-muted); padding-left: 2px;">停損比例 (%)</span>
-                                <input type="number" id="stop-pct-${uniqueId}" class="sim-input" value="10" oninput="updateSim('${uniqueId}')">
+                            <div class="sim-result">
+                                <div class="result-row"><span>🎯 模擬停利點參考</span><b id="profit-${uniqueId}" style="color: var(--neon-cyan);">--</b></div>
+                                <div class="result-row"><span>✂️ 模擬停損點參考</span><b id="loss-${uniqueId}" style="color: var(--neon-red);">--</b></div>
                             </div>
                         </div>
-                        <div class="sim-result">
-                            <div class="result-row"><span>🎯 模擬停利點參考</span><b id="profit-${uniqueId}" style="color: var(--neon-cyan);">--</b></div>
-                            <div class="result-row"><span>✂️ 模擬停損點參考</span><b id="loss-${uniqueId}" style="color: var(--neon-red);">--</b></div>
-                        </div>
-                    </div>
+                    </details>
                 </div>
             `;
         }
@@ -510,13 +529,61 @@
             });
         }
 
+        // 排序函數
+        function sortStocks(stocks, sortBy) {
+            const copy = [...stocks];
+            switch(sortBy) {
+                case 'inst_buy':
+                    return copy.sort((a, b) => (b.inst_buy - a.inst_buy) || (b.close - a.close));
+                case 'close':
+                    return copy.sort((a, b) => (b.close - a.close) || (b.inst_buy - a.inst_buy));
+                case 'volume':
+                    return copy.sort((a, b) => (b.volume - a.volume) || (b.close - a.close));
+                default:
+                    return copy;
+            }
+        }
+
+        function renderGrid(stocks, isWangYang = false, poolName = '') {
+            const grid = document.createElement('div');
+            grid.className = 'grid-container';
+
+            if (isWangYang) {
+                const industryGroups = {};
+                stocks.forEach(s => {
+                    const ind = s.industry || "未分類產業";
+                    if (!industryGroups[ind]) industryGroups[ind] = [];
+                    industryGroups[ind].push(s);
+                });
+
+                const wrapper = document.createElement('div');
+                for (const [ind, indStocks] of Object.entries(industryGroups)) {
+                    const indDetails = document.createElement('details');
+                    indDetails.className = 'industry-details';
+                    indDetails.innerHTML = `<summary><div class="industry-section-title">🏷️ 【${ind}】族群 (${indStocks.length} 檔) <span class="ind-arrow">▼</span></div></summary>`;
+
+                    const indGrid = document.createElement('div');
+                    indGrid.className = 'grid-container';
+                    indGrid.style.paddingTop = "5px";
+                    indStocks.forEach(s => indGrid.innerHTML += createCard(s, true, 'main-'));
+
+                    indDetails.appendChild(indGrid);
+                    wrapper.appendChild(indDetails);
+                }
+                return wrapper;
+            } else {
+                stocks.forEach(s => grid.innerHTML += createCard(s, false, 'main-'));
+                return grid;
+            }
+        }
+
         // 5. 數據讀取與渲染
         let fullData = null;
         fetch('plum_blossom_data.json?t=' + new Date().getTime())
             .then(res => res.json())
             .then(json_data => {
                 fullData = json_data;
-                
+
                 // 更新時間顯示
                 const updateTimeEl = document.getElementById('update-time');
                 if(updateTimeEl && json_data.last_updated) {
@@ -527,7 +594,7 @@
 
                 const container = document.getElementById('main-container');
                 if (!container) return;
-                
+
                 const displayOrder = ["🌟 彼神黃金魚池", "🔭 測試員觀察水域", "🐅 三日成猛虎水池", "🔥 姊夫爆發小魚池", "🍁 楓大永動魚池", "🌊 汪洋大魚"];
 
                 const poolDescriptions = {
@@ -544,40 +611,36 @@
                         const stocks = json_data.pools[poolName];
                         const section = document.createElement('details');
                         section.className = 'pool-section';
+                        section.setAttribute('data-pool-name', poolName);
 
                         const desc = poolDescriptions[poolName] || '';
                         const descHtml = desc ? `<div class="pool-desc">💬 ${desc}</div>` : '';
-                        section.innerHTML = `<summary><div class="pool-title"><span>${poolName}</span>${descHtml}</div></summary>`;
-                        
-                        if (poolName === "🌊 汪洋大魚") {
-                            let sortedStocks = stocks.sort((a, b) => (b.inst_buy - a.inst_buy) || (b.close - a.close));
-                            const industryGroups = {};
-                            sortedStocks.forEach(s => {
-                                const ind = s.industry || "未分類產業";
-                                if (!industryGroups[ind]) industryGroups[ind] = [];
-                                industryGroups[ind].push(s);
-                            });
-                            
-                            for (const [ind, indStocks] of Object.entries(industryGroups)) {
-                                const indDetails = document.createElement('details');
-                                indDetails.className = 'industry-details';
-                                indDetails.innerHTML = `<summary><div class="industry-section-title">🏷️ 【${ind}】族群 (${indStocks.length} 檔) <span class="ind-arrow">▼</span></div></summary>`;
-                                
-                                const indGrid = document.createElement('div');
-                                indGrid.className = 'grid-container';
-                                indGrid.style.paddingTop = "5px";
-                                indStocks.forEach(s => indGrid.innerHTML += createCard(s, true, 'main-'));
-                                
-                                indDetails.appendChild(indGrid);
-                                section.appendChild(indDetails);
-                            }
-                        } else {
-                            const grid = document.createElement('div');
-                            grid.className = 'grid-container';
-                            stocks.forEach(s => grid.innerHTML += createCard(s, false, 'main-'));
-                            section.appendChild(grid);
-                        }
-                        
+                        const sortSelector = `<select class="pool-sort-select" style="background: var(--input-bg); border: 1px solid var(--panel-border); color: var(--text-muted); padding: 4px 8px; border-radius: 4px; font-size: 12px; cursor: pointer; margin-left: auto; flex-shrink: 0;">
+                            <option value="default">排序：預設</option>
+                            <option value="inst_buy">排序：法人買超</option>
+                            <option value="close">排序：現價高低</option>
+                            <option value="volume">排序：成交量</option>
+                        </select>`;
+
+                        section.innerHTML = `<summary><div class="pool-title"><span>${poolName}</span>${sortSelector}${descHtml}</div></summary>`;
+
+                        const gridContainer = document.createElement('div');
+                        gridContainer.className = 'pool-grid-container';
+                        const isWangYang = poolName === "🌊 汪洋大魚";
+                        const sortedStocks = sortStocks(stocks, 'inst_buy');
+                        gridContainer.appendChild(renderGrid(sortedStocks, isWangYang, poolName));
+                        section.appendChild(gridContainer);
+
+                        // 排序事件綁定
+                        const sortSelect = section.querySelector('.pool-sort-select');
+                        sortSelect.addEventListener('change', (e) => {
+                            const sortBy = e.target.value === 'default' ? 'inst_buy' : e.target.value;
+                            const sortedStocks = sortStocks(stocks, sortBy);
+                            const newGrid = renderGrid(sortedStocks, isWangYang, poolName);
+                            gridContainer.innerHTML = '';
+                            gridContainer.appendChild(newGrid);
+                        });
+
                         container.appendChild(section);
                     }
                 });
@@ -588,9 +651,7 @@
                         const section = document.createElement('details');
                         section.className = 'pool-section';
                         section.innerHTML = `<summary><div class="pool-title">${poolName}</div></summary>`;
-                        const grid = document.createElement('div');
-                        grid.className = 'grid-container';
-                        stocks.forEach(s => grid.innerHTML += createCard(s, false, 'main-'));
+                        const grid = renderGrid(stocks, false, poolName);
                         section.appendChild(grid);
                         container.appendChild(section);
                     }
@@ -628,26 +689,33 @@
             })
             .catch(() => {});
 
-        // 5. 搜尋功能綁定 (完整實作版)
+        // 5. 搜尋功能綁定 (模糊搜尋版 + 股名支援)
         const searchInput = document.getElementById('global-search');
         if(searchInput) {
             searchInput.addEventListener('input', (e) => {
-                const code = e.target.value.trim();
+                const query = e.target.value.trim().toLowerCase();
                 const searchGrid = document.getElementById('search-grid');
                 const searchContainer = document.getElementById('search-result-container');
-                
-                if (code.length >= 2 && fullData) {
+
+                if (query.length >= 1 && fullData) {
                     searchGrid.innerHTML = '';
-                    let found = false;
+                    const matches = [];
+
                     for (const stocks of Object.values(fullData.pools)) {
-                        const match = stocks.find(s => s.stock_id === code);
-                        if (match) {
-                            searchGrid.innerHTML = createCard(match, false, 'search-');
-                            found = true;
-                            break;
+                        for (const s of stocks) {
+                            if (s.stock_id.toLowerCase().includes(query) ||
+                                (s.stock_name && s.stock_name.toLowerCase().includes(query))) {
+                                matches.push(s);
+                            }
                         }
                     }
-                    searchContainer.style.display = found ? 'block' : 'none';
+
+                    if (matches.length > 0) {
+                        matches.forEach(m => searchGrid.innerHTML += createCard(m, false, 'search-'));
+                        searchContainer.style.display = 'block';
+                    } else {
+                        searchContainer.style.display = 'none';
+                    }
                 } else {
                     searchContainer.style.display = 'none';
                 }
