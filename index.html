@@ -158,14 +158,22 @@
 
     <div class="top-nav">
         <header class="header">
-            <h1>🌌 彼夫有擇模擬選股戰情室 <span class="version-badge">V7.9</span></h1>
+            <h1>🌌 彼夫有擇模擬選股戰情室 <span class="version-badge">V8.0</span></h1>
             <div id="update-time" class="update-time">衛星同步中...</div>
-            <div class="system-alert">⚡ 核心引擎 V7.9 上線｜維運日誌 log_report.json + git_sync 自動推送 + 例假日智慧跳出</div>
+            <div class="system-alert">⚡ 核心引擎 V8.0 上線｜本地無菌主算 + 雲端靜態展示｜Path Immunity 跨硬碟免疫設計</div>
         </header>
 
         <details class="info-section">
             <summary>📜 改版歷程細節</summary>
             <div class="log-content">
+                <b>🚀 V8.0 基地遷移＋本地自動化架構（2026-05-08）：</b>
+                <ul>
+                    <li><b>系統架構重大變革：</b>捨棄 GitHub Actions 線上運算，改採「本地無菌主算 + 雲端靜態展示」雙軌架構，本地端負責全部運算與 push，GitHub Pages 僅作靜態展示節點。</li>
+                    <li><b>極速偵測技術：</b>整合 FinMind Cache 快取機制，掃描全市場 API 消耗較舊架構降低 80%，單次完整掃描已可在 <b>1 分鐘內</b>完成。</li>
+                    <li><b>環境免疫設計（Path Immunity）：</b>實現動態路徑自動定位，支援跨硬碟基地遷移，路徑變動後程式不崩潰、不需手動修改設定。</li>
+                    <li><b>通訊模組預備：</b>底層程式碼重構完成 Line Notify 擴充介面，後續可一鍵接入訊號推播通知。</li>
+                </ul>
+                <hr style="border: 0; border-top: 1px dashed var(--panel-border); margin: 15px 0;">
                 <b>🆕 V8.0 互動排序 + 搜尋增強（2026-05-07）：</b>
                 <ul>
                     <li><b>各魚池排序選擇器：</b>在每個魚池標題列右側新增下拉菜單，支援四種排序模式：預設（法人買超）、法人買超、現價高低、成交量大小，一鍵重排卡片。</li>
