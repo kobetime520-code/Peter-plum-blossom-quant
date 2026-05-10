@@ -30,26 +30,27 @@
             --ind-badge-bg: rgba(255, 255, 255, 0.1);
         }
 
+        /* 柔霧深洋 V8.1 — 降低亮度 + 強化文字對比 */
         [data-theme="light-ocean"] {
-            --ocean-bg: linear-gradient(135deg, #E0F2F1 0%, #B2EBF2 50%, #81D4FA 100%);
-            --panel-bg: rgba(255, 255, 255, 0.75);
-            --panel-border: rgba(0, 138, 162, 0.3);
-            --text-main: #003B46; 
-            --text-muted: #006064;
-            --neon-cyan: #00838F; 
-            --neon-green: #00897B; 
-            --neon-red: #D32F2F; 
-            --neon-gold: #F57F17; 
-            --title-bg: rgba(255, 255, 255, 0.6);
-            --badge-bg: rgba(0, 131, 143, 0.1);
-            --sim-bg: rgba(255, 255, 255, 0.5);
-            --input-bg: rgba(255, 255, 255, 0.8);
-            --watch-bg: rgba(0, 0, 0, 0.03);
-            --watch-border: rgba(0, 0, 0, 0.1);
-            --card-shadow: rgba(0, 96, 100, 0.15);
-            --log-bg: rgba(0, 131, 143, 0.05);
-            --note-bg: rgba(245, 127, 23, 0.05);
-            --ind-badge-bg: rgba(0, 131, 143, 0.1);
+            --ocean-bg: linear-gradient(160deg, #B8D8E4 0%, #7EBAD0 45%, #4E9AB6 100%);
+            --panel-bg: rgba(220, 241, 250, 0.92);
+            --panel-border: rgba(0, 95, 125, 0.30);
+            --text-main: #010E18;
+            --text-muted: #123D50;
+            --neon-cyan: #004E65;
+            --neon-green: #005E50;
+            --neon-red: #A01E1E;
+            --neon-gold: #9A4500;
+            --title-bg: rgba(200, 232, 246, 0.94);
+            --badge-bg: rgba(0, 95, 125, 0.13);
+            --sim-bg: rgba(208, 237, 248, 0.65);
+            --input-bg: rgba(230, 246, 252, 0.94);
+            --watch-bg: rgba(0, 0, 0, 0.06);
+            --watch-border: rgba(0, 0, 0, 0.15);
+            --card-shadow: rgba(5, 50, 72, 0.22);
+            --log-bg: rgba(0, 95, 125, 0.07);
+            --note-bg: rgba(154, 69, 0, 0.07);
+            --ind-badge-bg: rgba(0, 95, 125, 0.13);
         }
 
         body {
@@ -150,6 +151,51 @@
         .moly-status-badge.error { background: rgba(255,82,82,0.12); color: #FF5252; border: 1px solid #FF5252; }
         .moly-divider { width: 1px; height: 20px; background: var(--panel-border); flex-shrink: 0; }
         @media (max-width: 600px) { .moly-divider { display: none; } .moly-status-bar { gap: 10px 16px; } }
+
+        /* =========================================
+           魚池快速導航列 (V8.1)
+           ========================================= */
+        .pool-quick-nav {
+            position: sticky; top: 0; z-index: 200;
+            background: var(--panel-bg); backdrop-filter: blur(14px);
+            border-bottom: 1px solid var(--panel-border);
+            padding: 10px 16px; display: flex; gap: 8px;
+            overflow-x: auto; align-items: center;
+            box-shadow: 0 2px 12px var(--card-shadow);
+            scrollbar-width: none;
+        }
+        .pool-quick-nav::-webkit-scrollbar { display: none; }
+        .pool-nav-label { font-size: 11px; color: var(--text-muted); font-weight: bold; letter-spacing: 1px; white-space: nowrap; flex-shrink: 0; padding-right: 8px; border-right: 1px solid var(--panel-border); margin-right: 4px; }
+        .pool-nav-btn {
+            display: flex; align-items: center; gap: 5px; white-space: nowrap; flex-shrink: 0;
+            background: transparent; border: 1px solid var(--panel-border);
+            color: var(--text-muted); padding: 5px 12px; border-radius: 20px;
+            cursor: pointer; font-size: 13px; font-weight: bold;
+            transition: all 0.25s ease; font-family: inherit;
+        }
+        .pool-nav-btn:hover { background: var(--badge-bg); color: var(--neon-cyan); border-color: var(--neon-cyan); }
+        .pool-nav-btn.active { background: var(--badge-bg); color: var(--neon-cyan); border-color: var(--neon-cyan); box-shadow: 0 0 8px rgba(100,255,218,0.15); }
+        .pool-nav-count { font-size: 11px; background: var(--neon-cyan); color: #fff; border-radius: 10px; padding: 1px 6px; font-weight: bold; opacity: 0.85; }
+        .pool-nav-btn.active .pool-nav-count { opacity: 1; color: #000; }
+
+        /* 回頂端懸浮按鈕 (V8.1) */
+        .back-to-top-btn {
+            position: fixed; bottom: 28px; right: 24px; z-index: 500;
+            width: 44px; height: 44px; border-radius: 50%;
+            background: var(--panel-bg); border: 1px solid var(--neon-cyan);
+            color: var(--neon-cyan); font-size: 20px; cursor: pointer;
+            backdrop-filter: blur(8px); box-shadow: 0 4px 16px var(--card-shadow);
+            display: none; align-items: center; justify-content: center;
+            transition: all 0.3s ease;
+        }
+        .back-to-top-btn:hover { background: var(--badge-bg); transform: translateY(-2px); }
+
+        /* 頁尾版本歷程 (V8.1) */
+        .footer-log-section { max-width: 900px; margin: 0 auto 10px; padding: 0 20px; }
+        .footer-log-toggle { background: transparent; border: 1px dashed var(--panel-border); border-radius: 8px; color: var(--text-muted); font-size: 12px; cursor: pointer; padding: 8px 18px; width: 100%; text-align: center; font-family: inherit; transition: 0.3s; letter-spacing: 0.5px; }
+        .footer-log-toggle:hover { color: var(--neon-gold); border-color: var(--neon-gold); }
+        .footer-log-content { display: none; margin-top: 8px; }
+        .footer-log-content.open { display: block; }
     </style>
 </head>
 <body>
@@ -158,12 +204,13 @@
 
     <div class="top-nav">
         <header class="header">
-            <h1>🌌 彼夫有擇模擬選股戰情室 <span class="version-badge">V8.0</span></h1>
+            <h1>🌌 彼夫有擇模擬選股戰情室 <span class="version-badge">V8.1</span></h1>
             <div id="update-time" class="update-time">衛星同步中...</div>
             <div class="system-alert">⚡ 核心引擎 V8.0 上線｜本地無菌主算 + 雲端靜態展示｜Path Immunity 跨硬碟免疫設計</div>
         </header>
 
-        <details class="info-section">
+        <!-- 版本歷程移至頁尾 (V8.1) -->
+        <details class="info-section" style="display:none;">
             <summary>📜 改版歷程細節</summary>
             <div class="log-content">
                 <b>🚀 V8.0 基地遷移＋本地自動化架構（2026-05-08）：</b>
@@ -230,7 +277,7 @@
             </div>
         </details>
 
-        <details class="info-section">
+        <details class="info-section" style="display:none;">
             <summary>🌊 汪洋大魚 & 🐅 三日成虎 選股邏輯</summary>
             <div class="log-content">
                 <b>🌊 汪洋大魚 (第一階段初選 — V7.6 三關篩選)：</b>
@@ -251,6 +298,17 @@
 
         <input type="text" id="global-search" class="search-box" placeholder="🛸 啟動聲納：輸入代碼開啟模擬探測...">
     </div>
+
+    <!-- ===== V8.1 魚池快速導航列 ===== -->
+    <nav class="pool-quick-nav" id="pool-quick-nav">
+        <span class="pool-nav-label">跳至魚池</span>
+        <button class="pool-nav-btn" data-target="pool-0">🌟 黃金 <span class="pool-nav-count" id="nav-count-0">-</span></button>
+        <button class="pool-nav-btn" data-target="pool-1">🐅 猛虎 <span class="pool-nav-count" id="nav-count-1">-</span></button>
+        <button class="pool-nav-btn" data-target="pool-2">🔥 爆發 <span class="pool-nav-count" id="nav-count-2">-</span></button>
+        <button class="pool-nav-btn" data-target="pool-3">🍁 永動 <span class="pool-nav-count" id="nav-count-3">-</span></button>
+        <button class="pool-nav-btn" data-target="pool-4">🔭 觀察 <span class="pool-nav-count" id="nav-count-4">-</span></button>
+        <button class="pool-nav-btn" data-target="pool-5">🌊 汪洋 <span class="pool-nav-count" id="nav-count-5">-</span></button>
+    </nav>
 
     <!-- ===== V7.9 維運狀態列 ===== -->
     <div class="moly-status-bar" id="moly-status-bar" style="display:none;">
@@ -299,9 +357,38 @@
 
     <main id="main-container"></main>
 
+    <!-- ===== 頁尾版本歷程 (V8.1) ===== -->
+    <div class="footer-log-section">
+        <button class="footer-log-toggle" id="footer-log-toggle">📜 展開改版歷程 ▾</button>
+        <div class="footer-log-content info-section" id="footer-log-content">
+            <div class="log-content">
+                <b>🌊 汪洋大魚選股邏輯（四關篩選）：</b>
+                <ul>
+                    <li><b>1. 動能：</b>成交量 >= 1,500 張</li>
+                    <li><b>2. 趨勢：</b>股價站穩 30MA</li>
+                    <li><b>3. MA5 預判：</b>股價 >= MA5，排除短線弱勢股</li>
+                    <li><b>4. 籌碼：</b>近 30 日三大法人淨買超（通過前三關才呼叫 FinMind）</li>
+                </ul>
+                <b>🐅 三日成猛虎：</b>連續 3 個交易日符合汪洋大魚標準，自動晉升，代表籌碼與趨勢具高延續性。
+                <hr style="border: 0; border-top: 1px dashed var(--panel-border); margin: 15px 0;">
+                <b>🚀 V8.1（2026-05-10）：</b>柔霧深洋主題、魚池快速導航列、版本歷程移至頁尾、回頂端按鈕。<br>
+                <b>🚀 V8.0（2026-05-08）：</b>本地無菌主算 + 雲端靜態展示雙軌架構、Path Immunity 設計。<br>
+                <b>✅ V7.9（2026-05-02）：</b>log_report.json 維運日誌、git_sync.py 自動推送、例假日智慧跳出。<br>
+                <b>✅ V7.8（2026-05-01）：</b>快取 TTL 30h、即時寫盤、自動清理逾期快取。<br>
+                <b>📊 V7.6（2026-05-01）：</b>Dashboard 2.0（多空佔比、產業熱力、健康指數）。<br>
+                <b>🚀 V7.5（2026-05-01）：</b>API 三劍客降載，消耗 430 → 171 次（-60%）、Token 安全修復。<br>
+                <b>✅ V7.4（2026-04-28）：</b>finmind_cache.json 防呆快取、粗篩量能門檻 1,500 張。<br>
+                <b>✅ V7.3（2026-04-26）：</b>Yahoo 粗篩 + FinMind 深度精濾混合架構。
+            </div>
+        </div>
+    </div>
+
     <footer class="footer-copyright">
         <p>© <span id="current-year"></span> 彼夫有擇全域戰情室. All Rights Reserved.</p>
     </footer>
+
+    <!-- ===== V8.1 回頂端懸浮按鈕 ===== -->
+    <button class="back-to-top-btn" id="back-to-top" title="回到頂端">↑</button>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <script>
@@ -729,6 +816,77 @@
                 }
             });
         }
+
+        // =========================================
+        // V8.1 魚池快速導航列
+        // =========================================
+        const navPoolMap = [
+            "🌟 彼神黃金魚池",
+            "🐅 三日成猛虎水池",
+            "🔥 姊夫爆發小魚池",
+            "🍁 楓大永動魚池",
+            "🔭 測試員觀察水域",
+            "🌊 汪洋大魚"
+        ];
+
+        function initPoolNav(poolsData) {
+            document.querySelectorAll('.pool-section[data-pool-name]').forEach(sec => {
+                const pName = sec.getAttribute('data-pool-name');
+                const idx = navPoolMap.indexOf(pName);
+                if (idx >= 0) {
+                    sec.id = 'pool-nav-' + idx;
+                    const count = poolsData[pName] ? poolsData[pName].length : 0;
+                    const badge = document.getElementById('nav-count-' + idx);
+                    if (badge) badge.textContent = count;
+                }
+            });
+
+            document.querySelectorAll('.pool-nav-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const idx = btn.getAttribute('data-target').replace('pool-', '');
+                    const sec = document.getElementById('pool-nav-' + idx);
+                    if (!sec) return;
+                    sec.setAttribute('open', '');
+                    setTimeout(() => sec.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+                    document.querySelectorAll('.pool-nav-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                });
+            });
+        }
+
+        window.addEventListener('scroll', () => {
+            let currentIdx = -1;
+            document.querySelectorAll('.pool-section[id^="pool-nav-"]').forEach(sec => {
+                if (sec.getBoundingClientRect().top <= 120) {
+                    currentIdx = parseInt(sec.id.replace('pool-nav-', ''));
+                }
+            });
+            document.querySelectorAll('.pool-nav-btn').forEach(btn => {
+                const idx = parseInt(btn.getAttribute('data-target').replace('pool-', ''));
+                btn.classList.toggle('active', idx === currentIdx);
+            });
+            const topBtn = document.getElementById('back-to-top');
+            if (topBtn) topBtn.style.display = window.scrollY > 400 ? 'flex' : 'none';
+        });
+
+        const topBtn = document.getElementById('back-to-top');
+        if (topBtn) topBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+        const footerToggle = document.getElementById('footer-log-toggle');
+        const footerContent = document.getElementById('footer-log-content');
+        if (footerToggle && footerContent) {
+            footerToggle.addEventListener('click', () => {
+                const isOpen = footerContent.classList.toggle('open');
+                footerToggle.textContent = isOpen ? '📜 收合改版歷程 ▴' : '📜 展開改版歷程 ▾';
+            });
+        }
+
+        new MutationObserver((_, obs) => {
+            if (fullData && document.querySelector('.pool-section[data-pool-name]')) {
+                obs.disconnect();
+                initPoolNav(fullData.pools);
+            }
+        }).observe(document.getElementById('main-container'), { childList: true });
     </script>
 </body>
 </html>
