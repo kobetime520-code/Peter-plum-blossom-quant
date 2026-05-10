@@ -29,6 +29,7 @@ jobs:
         run: python -u radar.py  # -u 確保 Log 即時輸出，利於除錯
         env:
           FINMIND_TOKEN: ${{ secrets.FINMIND_TOKEN }}  # 從 Repository Secrets 注入 API 金鑰
+          FORCE_RUN: 'true'  # 👈 必須補上這一行！這是手動通行的關鍵指令
 
       - name: 📤 自動提交並更新數據檔案
         run: |
