@@ -271,15 +271,22 @@ def calculate_stock_data(sid, name, industry, df_prices, df_inst, force_show=Fal
 def main():
     global _finmind_cache, _api_calls_count, _cache_hits_count, _stocks_processed_count
 
+    # 讀取手動強制執行標籤
+    force_run_flag = os.environ.get("FORCE_RUN") == "true"
+
     # 🆕 V7.9：例假日檢查（台灣時間，週六=5、週日=6 自動跳出）
     _check_time = datetime.utcnow() + timedelta(hours=8)
     if _check_time.weekday() >= 5:
         day_name = "週六" if _check_time.weekday() == 5 else "週日"
-        print(f"📅 今日為 {day_name}（{_check_time.strftime('%Y-%m-%d')}），例假日不執行，Radar 休息。")
-        _write_log_report(_check_time, status="Skipped-Holiday")
-        return
+        if force_run_flag:
+            print(f"⚠️ [例外狀況] 今日為 {day_name}（{_check_time.strftime('%Y-%m-%d')}），但偵測到指揮官強制執行指令，系統繞過休市檢查。")
+            # 繼續往下執行，不 return
+        else:
+            print(f"📅 今日為 {day_name}（{_check_time.strftime('%Y-%m-%d')}），例假日不執行，Radar 休息。")
+            _write_log_report(_check_time, status="Skipped-Holiday")
+            return
 
-    print("🌊 啟動彼我還楓姊夫戰情室 (V7.9 維運日誌版：例假日過濾＋log_report 自動產出)...")
+    print("🌊 啟動彼我還楓姊夫戰情室 (V8.1 維運日誌版：例假日過濾＋log_report 自動產出)...")
 
     # ── 載入本地快取（含 TTL 清理） ─────────────────────────────────────
     # 🆕 V7.8：啟動時自動清除超過 CACHE_TTL_HOURS 的過期資料
