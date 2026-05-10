@@ -34,6 +34,6 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action Bot"
-          git add plum_blossom_data.json ocean_history.json log_report.json  # 精確指定產出檔案，避免污染倉庫
+          git add plum_blossom_data.json ocean_history.json log_report.json index.html  # 精確指定產出檔案，避免污染倉庫
           git commit -m "🖐️ 手動更新：由指揮官手動觸發戰情室掃描" || echo "無變更需要提交"
           git push
