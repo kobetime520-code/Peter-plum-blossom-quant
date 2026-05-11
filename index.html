@@ -204,7 +204,7 @@
 
     <div class="top-nav">
         <header class="header">
-            <h1>🌌 彼夫有擇模擬選股戰情室 <span class="version-badge">V8.1</span></h1>
+            <h1>🌌 彼夫有擇模擬選股戰情室 <span class="version-badge">V8.2</span></h1>
             <div id="update-time" class="update-time">衛星同步中...</div>
             <div class="system-alert">⚡ 核心引擎 V8.0 上線｜本地無菌主算 + 雲端靜態展示｜Path Immunity 跨硬碟免疫設計</div>
         </header>
@@ -371,6 +371,7 @@
                 </ul>
                 <b>🐅 三日成猛虎：</b>連續 3 個交易日符合汪洋大魚標準，自動晉升，代表籌碼與趨勢具高延續性。
                 <hr style="border: 0; border-top: 1px dashed var(--panel-border); margin: 15px 0;">
+                <b>🆕 V8.2（2026-05-12）：</b>每張股票卡新增三大資訊入口 — 📰 鉅亨新聞、📊 Yahoo 報價、📋 Goodinfo 深度研究；移除原 Yahoo 新聞單鈕，改為三欄等寬連結列。<br>
                 <b>🚀 V8.1（2026-05-10）：</b>柔霧深洋主題、魚池快速導航列、版本歷程移至頁尾、回頂端按鈕。<br>
                 <b>🚀 V8.0（2026-05-08）：</b>本地無菌主算 + 雲端靜態展示雙軌架構、Path Immunity 設計。<br>
                 <b>✅ V7.9（2026-05-02）：</b>log_report.json 維運日誌、git_sync.py 自動推送、例假日智慧跳出。<br>
@@ -461,8 +462,16 @@
                         <div class="action-box ${isBuy ? 'buy' : 'watch'}" style="flex: 1; margin-top: 0;">
                             ${isBuy ? '🚀 買入加碼' : '📡 靜候觀察'}
                         </div>
-                        <a href="https://tw.stock.yahoo.com/quote/${s.stock_id}/news" target="_blank" style="text-decoration: none; display: flex; align-items: center; justify-content: center; padding: 0 15px; background: rgba(100, 255, 218, 0.05); color: var(--neon-cyan); border: 1px solid var(--panel-border); border-radius: 6px; font-weight: bold; font-size: 14px; transition: 0.3s; white-space: nowrap;">
-                            📰 查新聞
+                    </div>
+                    <div style="display: flex; gap: 6px; margin-top: 8px;">
+                        <a href="https://www.cnyes.com/twstock/${s.stock_id}" target="_blank" style="text-decoration: none; flex: 1; display: flex; align-items: center; justify-content: center; padding: 6px 4px; background: rgba(100, 255, 218, 0.05); color: var(--neon-cyan); border: 1px solid var(--panel-border); border-radius: 6px; font-size: 12px; font-weight: bold; transition: 0.3s; white-space: nowrap;" title="鉅亨網 — 即時新聞">
+                            📰 鉅亨新聞
+                        </a>
+                        <a href="https://tw.stock.yahoo.com/quote/${s.stock_id}" target="_blank" style="text-decoration: none; flex: 1; display: flex; align-items: center; justify-content: center; padding: 6px 4px; background: rgba(100, 255, 218, 0.05); color: var(--neon-cyan); border: 1px solid var(--panel-border); border-radius: 6px; font-size: 12px; font-weight: bold; transition: 0.3s; white-space: nowrap;" title="Yahoo Finance — 即時股價">
+                            📊 Yahoo 報價
+                        </a>
+                        <a href="https://goodinfo.tw/tw/StockInfo.asp?STOCK_ID=${s.stock_id}" target="_blank" style="text-decoration: none; flex: 1; display: flex; align-items: center; justify-content: center; padding: 6px 4px; background: rgba(100, 255, 218, 0.05); color: var(--neon-cyan); border: 1px solid var(--panel-border); border-radius: 6px; font-size: 12px; font-weight: bold; transition: 0.3s; white-space: nowrap;" title="Goodinfo — 財報 / 籌碼 / 法人">
+                            📋 Goodinfo
                         </a>
                     </div>
 
