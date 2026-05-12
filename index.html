@@ -30,27 +30,27 @@
             --ind-badge-bg: rgba(255, 255, 255, 0.1);
         }
 
-        /* 柔霧深洋 V8.1 — 降低亮度 + 強化文字對比 */
+        /* 粉色海洋 V8.3 */
         [data-theme="light-ocean"] {
-            --ocean-bg: linear-gradient(160deg, #B8D8E4 0%, #7EBAD0 45%, #4E9AB6 100%);
-            --panel-bg: rgba(220, 241, 250, 0.92);
-            --panel-border: rgba(0, 95, 125, 0.30);
-            --text-main: #010E18;
-            --text-muted: #123D50;
-            --neon-cyan: #004E65;
-            --neon-green: #005E50;
+            --ocean-bg: linear-gradient(160deg, #F9E4EC 0%, #F0B8CE 45%, #D98CA8 100%);
+            --panel-bg: rgba(253, 235, 242, 0.92);
+            --panel-border: rgba(160, 60, 100, 0.28);
+            --text-main: #1A0810;
+            --text-muted: #6B2040;
+            --neon-cyan: #8C1F4A;
+            --neon-green: #6B4226;
             --neon-red: #A01E1E;
-            --neon-gold: #9A4500;
-            --title-bg: rgba(200, 232, 246, 0.94);
-            --badge-bg: rgba(0, 95, 125, 0.13);
-            --sim-bg: rgba(208, 237, 248, 0.65);
-            --input-bg: rgba(230, 246, 252, 0.94);
+            --neon-gold: #8B3A62;
+            --title-bg: rgba(248, 220, 232, 0.94);
+            --badge-bg: rgba(160, 60, 100, 0.13);
+            --sim-bg: rgba(248, 220, 232, 0.65);
+            --input-bg: rgba(253, 235, 242, 0.94);
             --watch-bg: rgba(0, 0, 0, 0.06);
             --watch-border: rgba(0, 0, 0, 0.15);
-            --card-shadow: rgba(5, 50, 72, 0.22);
-            --log-bg: rgba(0, 95, 125, 0.07);
-            --note-bg: rgba(154, 69, 0, 0.07);
-            --ind-badge-bg: rgba(0, 95, 125, 0.13);
+            --card-shadow: rgba(100, 20, 55, 0.18);
+            --log-bg: rgba(160, 60, 100, 0.07);
+            --note-bg: rgba(139, 58, 98, 0.07);
+            --ind-badge-bg: rgba(160, 60, 100, 0.13);
         }
 
         body {
@@ -200,11 +200,11 @@
 </head>
 <body>
 
-    <button id="theme-toggle" class="theme-toggle-btn">✨ 切換輕淡海洋版</button>
+    <button id="theme-toggle" class="theme-toggle-btn">🌸 切換粉色海洋版</button>
 
     <div class="top-nav">
         <header class="header">
-            <h1>🌌 彼夫有擇模擬選股戰情室 <span class="version-badge">V8.2</span></h1>
+            <h1>🌌 彼夫有擇模擬選股戰情室 <span class="version-badge">V8.3</span></h1>
             <div id="update-time" class="update-time">衛星同步中...</div>
             <div class="system-alert">⚡ 核心引擎 V8.0 上線｜本地無菌主算 + 雲端靜態展示｜Path Immunity 跨硬碟免疫設計</div>
         </header>
@@ -371,6 +371,7 @@
                 </ul>
                 <b>🐅 三日成猛虎：</b>連續 3 個交易日符合汪洋大魚標準，自動晉升，代表籌碼與趨勢具高延續性。
                 <hr style="border: 0; border-top: 1px dashed var(--panel-border); margin: 15px 0;">
+                <b>🆕 V8.3（2026-05-13）：</b>移除不穩定的 Goodinfo 按鈕；行動訊號 + 鉅亨新聞 + Yahoo 報價合併為單列；輕淡海洋主題改版為粉色海洋（`[data-theme="light-ocean"]` 全色系替換）。<br>
                 <b>🆕 V8.2（2026-05-12）：</b>每張股票卡新增三大資訊入口 — 📰 鉅亨新聞、📊 Yahoo 報價、📋 Goodinfo 深度研究；移除原 Yahoo 新聞單鈕，改為三欄等寬連結列。<br>
                 <b>🚀 V8.1（2026-05-10）：</b>柔霧深洋主題、魚池快速導航列、版本歷程移至頁尾、回頂端按鈕。<br>
                 <b>🚀 V8.0（2026-05-08）：</b>本地無菌主算 + 雲端靜態展示雙軌架構、Path Immunity 設計。<br>
@@ -400,7 +401,7 @@
         themeBtn.addEventListener('click', () => {
             const isLight = document.documentElement.getAttribute('data-theme') === 'light-ocean';
             document.documentElement.setAttribute('data-theme', isLight ? '' : 'light-ocean');
-            themeBtn.innerText = isLight ? '✨ 切換輕淡海洋版' : '🌌 切換深海太空版';
+            themeBtn.innerText = isLight ? '🌸 切換粉色海洋版' : '🌌 切換深海太空版';
         });
 
         // 2. 模擬倉計算邏輯
@@ -458,20 +459,15 @@
                     <div class="data-row"><span>成交量</span><b>${s.volume.toLocaleString()}</b></div>
                     <div class="data-row"><span>5MA/30MA</span><b>${s.ma5}/${s.ma30}</b></div>
                     
-                    <div style="display: flex; gap: 10px; margin-top: 15px;">
-                        <div class="action-box ${isBuy ? 'buy' : 'watch'}" style="flex: 1; margin-top: 0;">
+                    <div style="display: flex; gap: 8px; margin-top: 15px;">
+                        <div class="action-box ${isBuy ? 'buy' : 'watch'}" style="flex: 2; margin-top: 0;">
                             ${isBuy ? '🚀 買入加碼' : '📡 靜候觀察'}
                         </div>
-                    </div>
-                    <div style="display: flex; gap: 6px; margin-top: 8px;">
-                        <a href="https://www.cnyes.com/twstock/${s.stock_id}" target="_blank" style="text-decoration: none; flex: 1; display: flex; align-items: center; justify-content: center; padding: 6px 4px; background: rgba(100, 255, 218, 0.05); color: var(--neon-cyan); border: 1px solid var(--panel-border); border-radius: 6px; font-size: 12px; font-weight: bold; transition: 0.3s; white-space: nowrap;" title="鉅亨網 — 即時新聞">
-                            📰 鉅亨新聞
+                        <a href="https://www.cnyes.com/twstock/${s.stock_id}" target="_blank" style="text-decoration: none; flex: 1; display: flex; align-items: center; justify-content: center; padding: 0 6px; background: rgba(100, 255, 218, 0.05); color: var(--neon-cyan); border: 1px solid var(--panel-border); border-radius: 6px; font-size: 12px; font-weight: bold; transition: 0.3s; white-space: nowrap;" title="鉅亨網 — 即時新聞">
+                            📰 鉅亨
                         </a>
-                        <a href="https://tw.stock.yahoo.com/quote/${s.stock_id}" target="_blank" style="text-decoration: none; flex: 1; display: flex; align-items: center; justify-content: center; padding: 6px 4px; background: rgba(100, 255, 218, 0.05); color: var(--neon-cyan); border: 1px solid var(--panel-border); border-radius: 6px; font-size: 12px; font-weight: bold; transition: 0.3s; white-space: nowrap;" title="Yahoo Finance — 即時股價">
-                            📊 Yahoo 報價
-                        </a>
-                        <a href="https://goodinfo.tw/tw/StockInfo.asp?STOCK_ID=${s.stock_id}" target="_blank" rel="noreferrer" style="text-decoration: none; flex: 1; display: flex; align-items: center; justify-content: center; padding: 6px 4px; background: rgba(100, 255, 218, 0.05); color: var(--neon-cyan); border: 1px solid var(--panel-border); border-radius: 6px; font-size: 12px; font-weight: bold; transition: 0.3s; white-space: nowrap;" title="Goodinfo — 財報 / 籌碼 / 法人">
-                            📋 Goodinfo
+                        <a href="https://tw.stock.yahoo.com/quote/${s.stock_id}" target="_blank" style="text-decoration: none; flex: 1; display: flex; align-items: center; justify-content: center; padding: 0 6px; background: rgba(100, 255, 218, 0.05); color: var(--neon-cyan); border: 1px solid var(--panel-border); border-radius: 6px; font-size: 12px; font-weight: bold; transition: 0.3s; white-space: nowrap;" title="Yahoo Finance — 即時股價">
+                            📊 Yahoo
                         </a>
                     </div>
 
