@@ -465,6 +465,16 @@
             const isTrustBuying = s.trust_buy > 0;
             const trustBadge = isTrustBuying ? `<span style="color:var(--neon-red); font-size:12px; font-weight:bold; margin-left:8px;">🔥 投信認養</span>` : '';
 
+            const scoreVal = s.strength_score ?? 0;
+            const scoreColor = scoreVal >= 70 ? 'var(--neon-green)' : scoreVal >= 50 ? 'var(--neon-gold)' : 'var(--text-muted)';
+            const chipSignal = s.chip_signal || '無買';
+            const chipColor = chipSignal === '雙買' ? 'var(--neon-green)' : chipSignal === '投信單買' ? 'var(--neon-red)' : chipSignal === '外資單買' ? 'var(--neon-cyan)' : 'var(--text-muted)';
+            const instGrade = s.inst_grade || 'X';
+            const rsi14Val = s.rsi14 != null ? s.rsi14.toFixed(1) : '--';
+            const volRatioVal = s.vol_ratio != null ? s.vol_ratio.toFixed(2) : '--';
+            const bullAlignText = s.bull_align ? '✅ 多頭排列' : '⚠️ 非多頭';
+            const bullAlignColor = s.bull_align ? 'var(--neon-green)' : 'var(--text-muted)';
+
             const indText = s.industry || '未分類';
             const uniqueId = prefix + s.stock_id;
 
@@ -478,14 +488,24 @@
                         <div class="inst-badge" style="color:${instColor}; font-size:12px; font-weight: bold;">總法人 ${instText}</div>
                     </div>
 
-                    <div class="data-row" style="background: rgba(255,215,0,0.05); padding: 6px 10px; border-radius: 6px; border-left: 3px solid var(--neon-gold); margin-bottom: 12px;">
+                    <div class="data-row" style="background: rgba(255,215,0,0.05); padding: 6px 10px; border-radius: 6px; border-left: 3px solid var(--neon-gold); margin-bottom: 8px;">
                         <span style="font-size: 13px; color: var(--text-muted);">30日外資 <b style="color: ${foreignColor}; font-weight: bold;">${foreignText}</b></span>
                         <span style="font-size: 13px; color: var(--text-muted);">30日投信 <b style="color: ${trustColor}; font-size: 15px; font-weight: bold;">${trustText}</b></span>
+                    </div>
+                    <div class="data-row" style="background: rgba(100,255,218,0.04); padding: 6px 10px; border-radius: 6px; border-left: 3px solid var(--neon-cyan); margin-bottom: 12px;">
+                        <span style="font-size: 13px; color: var(--text-muted);">籌碼訊號 <b style="color: ${chipColor}; font-weight: bold;">${chipSignal}</b></span>
+                        <span style="font-size: 13px; color: var(--text-muted);">評級 <b style="color: var(--neon-gold); font-size: 15px; font-weight: bold;">${instGrade}</b></span>
                     </div>
 
                     <div class="data-row"><span>現價</span><b class="highlight">${s.close}</b></div>
                     <div class="data-row"><span>成交量</span><b>${s.volume.toLocaleString()}</b></div>
-                    <div class="data-row"><span>5MA/30MA</span><b>${s.ma5}/${s.ma30}</b></div>
+                    <div class="data-row"><span>5MA/10MA/30MA</span><b>${s.ma5} / ${s.ma10 ?? '--'} / ${s.ma30}</b></div>
+                    <div class="data-row">
+                        <span>強勢評分</span>
+                        <b style="color: ${scoreColor}; font-size: 17px; font-weight: bold;">${scoreVal}/100</b>
+                    </div>
+                    <div class="data-row"><span>RSI14 / 量比</span><b>${rsi14Val} / ${volRatioVal}x</b></div>
+                    <div class="data-row"><span>均線排列</span><b style="color: ${bullAlignColor};">${bullAlignText}</b></div>
                     
                     <div style="display: flex; gap: 8px; margin-top: 15px;">
                         <div class="action-box ${isBuy ? 'buy' : 'watch'}" style="flex: 2; margin-top: 0;">
