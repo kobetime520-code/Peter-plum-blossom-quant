@@ -127,14 +127,19 @@ def sync_to_github():
         run_git(["stash", "pop"])
         print("  📦 stash pop：殘留變動已還原")
 
-    # ── Step 4：git push ─────────────────────────────────────────────────
-    ok, out = run_git(["push", "origin", "main"])
-    if not ok:
-        print(f"  ⚠️ git push 失敗（可能為網路斷線或遠端衝突）：{out}")
-        print("     建議手動執行：git pull --rebase && git push origin main")
-        return False
-    print(f"  ✅ git push：成功推送至 GitHub main ✨")
-    return True
+    # ── Step 4：git push（最多重試 2 次，間隔 15 秒）────────────────────
+    for attempt in range(1, 3):
+        ok, out = run_git(["push", "origin", "main"])
+        if ok:
+            print(f"  ✅ git push：成功推送至 GitHub main ✨（第 {attempt} 次）")
+            return True
+        print(f"  ⚠️ git push 第 {attempt} 次失敗：{out}")
+        if attempt < 2:
+            print("     15 秒後重試...")
+            import time as _time
+            _time.sleep(15)
+    print("     建議手動執行：git pull --rebase && git push origin main")
+    return False
 
 
 if __name__ == "__main__":
