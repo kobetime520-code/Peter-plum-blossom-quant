@@ -210,6 +210,85 @@ def normalize_finmind_price_df(df_finmind):
     return df
 
 
+def _calc_rsi14(prices: pd.Series) -> float:
+    if len(prices) < 15:
+        return 50.0
+    delta = prices.diff()
+    gain = delta.clip(lower=0)
+    loss = -delta.clip(upper=0)
+    avg_gain = gain.rolling(window=14).mean().iloc[-1]
+    avg_loss = loss.rolling(window=14).mean().iloc[-1]
+    if avg_loss == 0:
+        return 100.0
+    return round(100 - (100 / (1 + avg_gain / avg_loss)), 1)
+
+
+def _calc_technical_score(close, ma5, ma10, ma30, rsi14) -> int:
+    score = 0
+    if ma5 > ma10 and ma10 > ma30:
+        score += 15
+    elif ma5 > ma30:
+        score += 8
+    elif close > ma30:
+        score += 3
+    if 50 <= rsi14 <= 70:
+        score += 15
+    elif 40 <= rsi14 < 50:
+        score += 8
+    elif rsi14 > 70:
+        score += 5
+    elif 30 <= rsi14 < 40:
+        score += 2
+    gap = (close - ma5) / ma5 * 100 if ma5 > 0 else 0
+    if gap >= 3:
+        score += 10
+    elif gap >= 1:
+        score += 7
+    elif gap >= 0:
+        score += 4
+    return min(score, 40)
+
+
+def _calc_volume_score(vol_lots, vol_ratio) -> int:
+    score = 0
+    if vol_ratio >= 2.0:
+        score += 15
+    elif vol_ratio >= 1.5:
+        score += 12
+    elif vol_ratio >= 1.0:
+        score += 8
+    elif vol_ratio >= 0.7:
+        score += 4
+    if vol_lots >= 10000:
+        score += 10
+    elif vol_lots >= 5000:
+        score += 8
+    elif vol_lots >= 3000:
+        score += 6
+    elif vol_lots >= 2000:
+        score += 4
+    return min(score, 25)
+
+
+def _calc_chip_score(inst_buy, foreign_buy, trust_buy) -> int:
+    score = 0
+    if foreign_buy > 0 and trust_buy > 0:
+        score += 15
+    elif trust_buy > 0:
+        score += 10
+    elif foreign_buy > 0:
+        score += 7
+    if inst_buy >= 5000:
+        score += 20
+    elif inst_buy >= 1000:
+        score += 15
+    elif inst_buy >= 500:
+        score += 10
+    elif inst_buy > 0:
+        score += 5
+    return min(score, 35)
+
+
 def calculate_stock_data(sid, name, industry, df_prices, df_inst, force_show=False):
     try:
         if df_prices is not None and not df_prices.empty:
@@ -221,7 +300,9 @@ def calculate_stock_data(sid, name, industry, df_prices, df_inst, force_show=Fal
                 return {"stock_id": sid, "stock_name": name, "industry": industry,
                         "close": "無資料", "volume": 0, "inst_buy": 0,
                         "foreign_buy": 0, "trust_buy": 0, "ma5": 0, "ma30": 0,
-                        "action": "靜候觀察", "target_price": 0, "stop_loss": 0}
+                        "action": "靜候觀察", "target_price": 0, "stop_loss": 0,
+                        "ma10": 0, "rsi14": 50.0, "vol_ratio": 1.0, "bull_align": False,
+                        "chip_signal": "無買", "inst_grade": "X", "strength_score": 0}
             return None
 
         df_prices = df_prices.dropna(subset=['Close', 'Volume'])
@@ -233,6 +314,13 @@ def calculate_stock_data(sid, name, industry, df_prices, df_inst, force_show=Fal
         ma5 = round(float(df_prices['Close'].rolling(window=5).mean().iloc[-1]), 2) if len(df_prices) >= 5 else close_price
         ma30 = round(float(df_prices['Close'].rolling(window=30).mean().iloc[-1]), 2) if len(df_prices) >= 30 else close_price
         vol_lots = int(float(latest['Volume']) / 1000) if pd.notna(latest['Volume']) else 0
+
+        # V8.5 新增技術指標（零 API 消耗，由 yfinance 資料計算）
+        ma10 = round(float(df_prices['Close'].rolling(window=10).mean().iloc[-1]), 2) if len(df_prices) >= 10 else ma5
+        vol_ma5 = df_prices['Volume'].rolling(window=5).mean().iloc[-1]
+        vol_ratio = round(float(latest['Volume']) / float(vol_ma5), 2) if (pd.notna(vol_ma5) and vol_ma5 > 0) else 1.0
+        rsi14 = _calc_rsi14(df_prices['Close'])
+        bull_align = bool(ma5 > ma10 and ma10 > ma30)
 
         # 🎯 V7.1 籌碼細分核心邏輯（完整保留）
         inst_buy_30d = 0
@@ -249,6 +337,28 @@ def calculate_stock_data(sid, name, industry, df_prices, df_inst, force_show=Fal
                 foreign_buy_30d = int(df_inst[mask_foreign]['net_buy'].sum() / 1000)
                 trust_buy_30d = int(df_inst[mask_trust]['net_buy'].sum() / 1000)
 
+        # V8.5 籌碼分級標籤
+        chip_signal = (
+            "雙買" if foreign_buy_30d > 0 and trust_buy_30d > 0
+            else "投信單買" if trust_buy_30d > 0
+            else "外資單買" if foreign_buy_30d > 0
+            else "無買"
+        )
+        inst_grade = (
+            "S" if inst_buy_30d >= 5000
+            else "A" if inst_buy_30d >= 1000
+            else "B" if inst_buy_30d >= 500
+            else "C" if inst_buy_30d > 0
+            else "X"
+        )
+
+        # V8.5 強勢評分（0-100，技術40 + 量能25 + 籌碼35）
+        strength_score = (
+            _calc_technical_score(close_price, ma5, ma10, ma30, rsi14)
+            + _calc_volume_score(vol_lots, vol_ratio)
+            + _calc_chip_score(inst_buy_30d, foreign_buy_30d, trust_buy_30d)
+        )
+
         action = "買入加碼" if close_price >= ma5 and inst_buy_30d > 0 else "靜候觀察"
 
         return {
@@ -258,13 +368,22 @@ def calculate_stock_data(sid, name, industry, df_prices, df_inst, force_show=Fal
             "ma5": ma5, "ma30": ma30, "action": action,
             "target_price": round(close_price * 1.5, 2),
             "stop_loss": round(close_price * 0.9, 2),
+            "ma10": ma10,
+            "rsi14": rsi14,
+            "vol_ratio": vol_ratio,
+            "bull_align": bull_align,
+            "chip_signal": chip_signal,
+            "inst_grade": inst_grade,
+            "strength_score": strength_score,
         }
     except Exception:
         if force_show:
             return {"stock_id": sid, "stock_name": name, "industry": industry,
                     "close": "計算異常", "volume": 0, "inst_buy": 0,
                     "foreign_buy": 0, "trust_buy": 0, "ma5": 0, "ma30": 0,
-                    "action": "靜候觀察", "target_price": 0, "stop_loss": 0}
+                    "action": "靜候觀察", "target_price": 0, "stop_loss": 0,
+                    "ma10": 0, "rsi14": 50.0, "vol_ratio": 1.0, "bull_align": False,
+                    "chip_signal": "無買", "inst_grade": "X", "strength_score": 0}
         return None
 
 
@@ -286,7 +405,7 @@ def main():
             _write_log_report(_check_time, status="Skipped-Holiday")
             return
 
-    print("🌊 啟動彼我還楓姊夫戰情室 (V8.1 維運日誌版：例假日過濾＋log_report 自動產出)...")
+    print("🌊 啟動彼我還楓姊夫戰情室 (V8.5 強勢評分版：strength_score + RSI14 + MA10 + 籌碼分級 + 汪洋排序)...")
 
     # ── 載入本地快取（含 TTL 清理） ─────────────────────────────────────
     # 🆕 V7.8：啟動時自動清除超過 CACHE_TTL_HOURS 的過期資料
@@ -491,6 +610,9 @@ def main():
 
     print(f"  - 📊 MA5 預篩：攔截 {yf_skipped_ma5} 支（必靜候），{yf_passed_filter} 支進入籌碼精篩")
 
+    # V8.5：汪洋大魚依強勢評分由高到低排序
+    market_pool.sort(key=lambda x: x.get('strength_score', 0), reverse=True)
+
     # 🎯 V7 核心升級：Date-Lock 日期防呆機制與向下相容（完整保留）
     today_ocean_sids = [s['stock_id'] for s in market_pool]
     new_history = {}
@@ -612,11 +734,29 @@ def main():
     # 🆕 V7.9：本地執行時自動呼叫 git_sync.py 推送戰報
     # GitHub Actions 環境由 auto_radar.yml Step 5 負責，不重複呼叫
     if not os.environ.get("GITHUB_ACTIONS"):
+        push_status = "OK"
         try:
             git_sync_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "git_sync.py")
-            subprocess.run([sys.executable, git_sync_path], check=False)
+            result = subprocess.run([sys.executable, git_sync_path], check=False, timeout=120)
+            if result.returncode != 0:
+                push_status = "FAILED"
+                print(f"  ⚠️ git_sync.py 結束碼：{result.returncode}，請手動確認推送")
+        except subprocess.TimeoutExpired:
+            push_status = "TIMEOUT"
+            print("  ⚠️ git_sync.py 超過 120 秒未完成，可能為網路異常，請手動執行推送")
         except Exception as e:
+            push_status = "ERROR"
             print(f"  ⚠️ git_sync.py 呼叫失敗（不影響本次結果）：{e}")
+        # 回寫 push_status 至 log_report.json，供 moly.py 感知推送結果
+        if push_status != "OK":
+            try:
+                with open(LOG_REPORT_FILE, 'r', encoding='utf-8') as f:
+                    _log = json.load(f)
+                _log["push_status"] = push_status
+                with open(LOG_REPORT_FILE, 'w', encoding='utf-8') as f:
+                    json.dump(_log, f, ensure_ascii=False, indent=2)
+            except Exception:
+                pass
 
 
 if __name__ == "__main__":

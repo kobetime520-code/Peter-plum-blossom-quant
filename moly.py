@@ -2,6 +2,7 @@ import subprocess
 import logging
 import os
 import sys
+import json
 
 # 設定 Moly 的日誌格式
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - Moly 🌸 - %(message)s')
@@ -45,11 +46,30 @@ def run_radar():
         return False
 
 
+def _check_push_status():
+    """讀取 log_report.json，回傳 push_status 欄位（預設 OK）"""
+    try:
+        log_path = os.path.join(LOCAL_PATH, "log_report.json")
+        with open(log_path, 'r', encoding='utf-8') as f:
+            report = json.load(f)
+        return report.get("push_status", "OK")
+    except Exception:
+        return "OK"
+
+
 def main():
     logging.info("=== Moly 本地主算核心啟動（方案 B）===")
 
     if run_radar():
-        logging.info("✅ 全流程完成：雷達掃描 → 戰報產出 → GitHub 同步（由 git_sync.py 執行）")
+        push_status = _check_push_status()
+        if push_status != "OK":
+            logging.error("=" * 60)
+            logging.error(f"❌ 【推送失敗】git_sync.py 回報狀態：{push_status}")
+            logging.error("   戰報已產出，但 GitHub 未更新。")
+            logging.error("   請手動執行：python git_sync.py")
+            logging.error("=" * 60)
+        else:
+            logging.info("✅ 全流程完成：雷達掃描 → 戰報產出 → GitHub 同步（由 git_sync.py 執行）")
     else:
         logging.error("⚠️  雷達掃描失敗，本次不推送任何資料。")
         logging.error("    請確認 Python 環境、API Token 與網路連線後重試。")
