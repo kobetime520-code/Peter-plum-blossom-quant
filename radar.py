@@ -10,6 +10,7 @@
 #   ④ theme_tag：產業題材標籤（Grace 規格，由 industry_category 對應）
 #   ⑤ sweet_buy_low / sweet_buy_high：甜蜜買進區間（Joe 計算法，MA5/MA10 中間帶）
 #   ⑥ first_target：第一停利點（close × 1.15，+15%）
+#   ⑦ 圖片法則：量比價先，量增價漲確認做多，題材優先過濾
 # ==========================================
 import yfinance as yf
 import pandas as pd
@@ -274,6 +275,34 @@ def _calc_volume_score(vol_lots, vol_ratio) -> int:
     return min(score, 25)
 
 
+
+# =====================================================================
+# 🏷️ V8.6 題材標籤對應（Grace 規格，零 API 消耗）
+# =====================================================================
+_THEME_MAP = [
+    (["半導體", "積體電路", "晶圓", "IC", "封測"], "🔬 半導體"),
+    (["AI", "人工智慧", "伺服器", "雲端", "資料中心", "網路通訊"], "🤖 AI/雲端"),
+    (["電動車", "電池", "儲能", "新能源"], "🚗 電動車/儲能"),
+    (["被動元件", "電容", "電阻", "電感"], "🔩 被動元件"),
+    (["面板", "顯示器", "光電"], "📺 面板/光電"),
+    (["生技", "醫療", "製藥", "醫材"], "💊 生技醫療"),
+    (["金融", "銀行", "保險", "證券"], "🏦 金融"),
+    (["航運", "海運", "空運"], "🚢 航運"),
+    (["鋼鐵", "金屬", "原物料"], "🏗️ 原物料"),
+    (["軟體", "資訊服務", "遊戲"], "💻 軟體/遊戲"),
+    (["ETF", "指數"], "📊 ETF"),
+]
+
+def _get_theme_tag(industry: str) -> str:
+    """V8.6：依產業類別對應題材標籤（Grace 規格）"""
+    if not industry:
+        return "📌 其他"
+    for keywords, tag in _THEME_MAP:
+        for kw in keywords:
+            if kw.lower() in industry.lower():
+                return tag
+    return "📌 其他"
+
 def _calc_chip_score(inst_buy, foreign_buy, trust_buy) -> int:
     score = 0
     if foreign_buy > 0 and trust_buy > 0:
@@ -333,7 +362,7 @@ def calculate_stock_data(sid, name, industry, df_prices, df_inst, force_show=Fal
                 return {
                     "stock_id": sid, "stock_name": name, "industry": industry,
                     "close": "無資料", "volume": 0, "inst_buy": 0,
-                    "foreign_buy": 0, "trust_buy": 0, "ma5": 0, "ma30\": 0,
+                    "foreign_buy": 0, "trust_buy": 0, "ma5": 0, "ma30": 0,
                     "action": "靜候觀察", "target_price": 0, "stop_loss": 0,
                     "ma10": 0, "rsi14": 50.0, "vol_ratio": 1.0, "bull_align": False,
                     "chip_signal": "無買", "inst_grade": "X", "strength_score": 0,
@@ -407,6 +436,15 @@ def calculate_stock_data(sid, name, industry, df_prices, df_inst, force_show=Fal
 
         action = "買入加碼" if close_price >= ma5 and inst_buy_30d > 0 else "靜候觀察"
 
+        # V8.6 甜蜜買進區間（Joe 計算法：MA5/MA10 上緣 -1% ~ +0.5%）
+        ma_top = max(ma5, ma10)
+        sweet_buy_low  = round(ma_top * 0.990, 2)
+        sweet_buy_high = round(ma_top * 1.005, 2)
+        # V8.6 第一停利（+15%）& 最終目標（+50%，沿用）
+        first_target = round(close_price * 1.15, 2)
+        # V8.6 題材標籤（Grace 規格）
+        theme_tag = _get_theme_tag(industry)
+
         return {
             "stock_id": sid, "stock_name": name, "industry": industry,
             "close": close_price, "volume": vol_lots,
@@ -414,6 +452,10 @@ def calculate_stock_data(sid, name, industry, df_prices, df_inst, force_show=Fal
             "ma5": ma5, "ma30": ma30, "action": action,
             "target_price": round(close_price * 1.5, 2),
             "stop_loss": round(close_price * 0.9, 2),
+            "first_target": first_target,
+            "sweet_buy_low": sweet_buy_low,
+            "sweet_buy_high": sweet_buy_high,
+            "theme_tag": theme_tag,
             "ma10": ma10,
             "rsi14": rsi14,
             "vol_ratio": vol_ratio,
