@@ -4,12 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🌌自動巡航｜彼夫有擇模擬選股戰情室</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <style>
         /* =========================================
            1. 核心主題設定
            ========================================= */
         :root {
-            --ocean-bg: radial-gradient(circle at top, #0A192F 0%, #020C1B 100%);
+            --ocean-bg: radial-gradient(circle at 30% 20%, #0D2137 0%, #061428 50%, #010810 100%);
+            --create-glow: rgba(100, 255, 218, 0.15);
             --panel-bg: rgba(16, 32, 64, 0.75);
             --panel-border: rgba(100, 255, 218, 0.2);
             --text-main: #E6F1FF;
@@ -30,9 +34,11 @@
             --ind-badge-bg: rgba(255, 255, 255, 0.1);
         }
 
-        /* 粉色海洋 V8.5 */
+        /* 粉色海洋 V8.6 — 創意暖光升級 */
         [data-theme="light-ocean"] {
-            --ocean-bg: linear-gradient(160deg, #F9E4EC 0%, #F0B8CE 45%, #D98CA8 100%);
+            --ocean-bg: linear-gradient(150deg, #FFE8F2 0%, #EDADC8 40%, #C87AA0 100%);
+            --create-glow: rgba(220, 130, 170, 0.18);
+            --chip-border: rgba(200, 100, 140, 0.45);
             --panel-bg: rgba(253, 235, 242, 0.92);
             --panel-border: rgba(160, 60, 100, 0.28);
             --text-main: #1A0810;
@@ -55,7 +61,7 @@
 
         body {
             background: var(--ocean-bg); background-attachment: fixed; color: var(--text-main);
-            font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; margin: 0; padding: 20px; min-height: 100vh;
+            font-family: "Noto Sans TC", "Inter", "PingFang TC", "Microsoft JhengHei", sans-serif; margin: 0; padding: 20px; min-height: 100vh;
             transition: background 0.6s ease, color 0.6s ease; 
         }
 
@@ -276,6 +282,53 @@
         .grade-C { background: rgba(136,146,176,0.12); color: #8892B0; border: 1px solid rgba(136,146,176,0.3); }
         .grade-X { background: rgba(255,82,82,0.10); color: #FF5252; border: 1px solid rgba(255,82,82,0.3); }
 
+        /* =========================================
+           V8.6 四大概念 chip 標語
+           ========================================= */
+        .concept-chips {
+            display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;
+            margin: 10px auto 2px; padding: 0 10px;
+        }
+        .concept-chip {
+            background: rgba(100, 255, 218, 0.10); color: var(--neon-cyan);
+            border: 1px solid var(--neon-cyan); border-radius: 20px;
+            padding: 4px 14px; font-size: 12px; font-weight: bold; letter-spacing: 0.5px;
+            cursor: default; transition: all 0.3s ease; white-space: nowrap; user-select: none;
+        }
+        .concept-chip:hover {
+            background: var(--create-glow); box-shadow: 0 0 10px var(--create-glow);
+            transform: translateY(-1px);
+        }
+        [data-theme="light-ocean"] .concept-chip {
+            background: rgba(160, 60, 100, 0.13); color: var(--neon-cyan);
+            border-color: var(--chip-border, rgba(200, 100, 140, 0.45));
+        }
+        [data-theme="light-ocean"] .concept-chip:hover {
+            background: var(--create-glow); box-shadow: 0 0 10px var(--create-glow);
+        }
+
+        /* V8.6 猛虎倒計時徽章 */
+        .tiger-countdown {
+            position: absolute; top: 8px; right: 8px;
+            background: rgba(255, 140, 0, 0.15); color: #FF8C00;
+            border: 1px solid rgba(255, 140, 0, 0.45); border-radius: 12px;
+            padding: 2px 8px; font-size: 11px; font-weight: bold; white-space: nowrap;
+            pointer-events: none;
+        }
+
+        /* V8.6 全展開/收合快捷列 */
+        .pool-quick-actions {
+            display: flex; gap: 8px; padding: 4px 16px 8px;
+            max-width: 1400px; margin: 0 auto; justify-content: flex-end;
+            position: relative; z-index: 1;
+        }
+        .pool-action-btn {
+            background: transparent; border: 1px solid var(--panel-border);
+            color: var(--text-muted); padding: 4px 12px; border-radius: 6px;
+            cursor: pointer; font-size: 12px; font-family: inherit; transition: 0.3s;
+        }
+        .pool-action-btn:hover { color: var(--neon-cyan); border-color: var(--neon-cyan); }
+
         /* 2-D 公式橫幅 */
         .v86-formula-banner {
             max-width: 1400px; margin: 0 auto 24px;
@@ -304,7 +357,15 @@
         <header class="header">
             <h1>🌌 彼夫有擇模擬選股戰情室 <span class="version-badge">V8.6</span></h1>
             <div id="update-time" class="update-time">衛星同步中...</div>
-            <div class="system-alert">⚡ 核心引擎 V8.0 上線｜本地無菌主算 + 雲端靜態展示｜Path Immunity 跨硬碟免疫設計</div>
+            <div id="data-stale-alert" style="display:none; font-size:12px; font-weight:bold; margin-top:3px; text-align:center;"></div>
+            <div class="system-alert">⚡ 核心引擎 V8.6 上線｜本地無菌主算 + 雲端靜態展示｜創造 × 創新 × 創意 × 全能</div>
+            <!-- V8.6 四大概念 chip 標語 -->
+            <div class="concept-chips">
+                <span class="concept-chip">🔬 創造</span>
+                <span class="concept-chip">⚡ 創新</span>
+                <span class="concept-chip">🎨 創意</span>
+                <span class="concept-chip">🌐 全能</span>
+            </div>
         <!-- 2-B 打字機動態標語 V8.6 -->
         <div class="v86-typewriter-wrap"><span id="v86-tw" class="v86-tw-cursor"></span></div>
         </header>
@@ -326,53 +387,6 @@
                     <li><b>各魚池排序選擇器：</b>在每個魚池標題列右側新增下拉菜單，支援四種排序模式：預設（法人買超）、法人買超、現價高低、成交量大小，一鍵重排卡片。</li>
                     <li><b>模糊搜尋 + 股名支援：</b>搜尋框從精確匹配改為 <code>includes()</code> 模糊搜尋，同時支援股號代碼與股名搜尋，輸入一個字元即可觸發。</li>
                     <li><b>模擬倉折疊化：</b>將 Beta user 模擬倉改為 <code>&lt;details&gt;</code> 可折疊元件，預設收合，點擊標題展開，減少首屏視覺噪音。</li>
-                </ul>
-                <hr style="border: 0; border-top: 1px dashed var(--panel-border); margin: 15px 0;">
-                <b>✅ V7.9 維運日誌 + 自動推送（2026-05-02）：</b>
-                <ul>
-                    <li><b>維運日誌 log_report.json：</b>每次掃描結束後自動產出，記錄 API 消耗次數、快取命中數、處理檔數、執行狀態，供前端儀表板即時讀取。</li>
-                    <li><b>git_sync.py 自動推送：</b>本地執行時掃描完畢自動呼叫 git_sync.py，精準 add 三個戰報（plum_blossom_data.json、ocean_history.json、log_report.json）→ commit → push，無需手動操作。</li>
-                    <li><b>例假日智慧跳出：</b>偵測非交易日自動跳出，log_report.json 記錄 <code>status: "Skipped-Holiday"</code>，不消耗 API 額度。</li>
-                </ul>
-                <hr style="border: 0; border-top: 1px dashed var(--panel-border); margin: 15px 0;">
-                <b>✅ V7.8 持久化快取 30h TTL（2026-05-01）：</b>
-                <ul>
-                    <li><b>即時寫盤：</b>每次 FinMind 呼叫成功後立即寫入 finmind_cache.json，程式中斷不會遺失快取。</li>
-                    <li><b>TTL 調整 24h → 30h：</b>確保昨日盤後快取在今日仍可命中，跨日測試不重複消耗 API。</li>
-                    <li><b>自動清理：</b>啟動時自動清除逾期快取項目，避免快取無限膨脹。</li>
-                </ul>
-                <hr style="border: 0; border-top: 1px dashed var(--panel-border); margin: 15px 0;">
-                <b>✅ V7.7 FinMind 重試封裝（2026-05-01）：</b>
-                <ul>
-                    <li><b>fetch_finmind 重試邏輯封裝：</b>統一封裝 API 呼叫與重試機制，消除 Token 重複消耗問題，失敗時最多重試 2 次再回傳空值。</li>
-                </ul>
-                <hr style="border: 0; border-top: 1px dashed var(--panel-border); margin: 15px 0;">
-                <b>📊 V7.6 Dashboard 2.0版（2026-05-01）：</b>
-                <ul>
-                    <li><b>視覺化儀表板 Dashboard 2.0：</b>新增三大即時圖表區塊，資料來源為 <code>dashboard_stats</code> 欄位（由 radar.py 每日產出）。</li>
-                    <li><b>① 魚池多空佔比（Doughnut）：</b>統計全體命名魚池的「買入加碼 vs 靜候觀察」比例，快速掌握整體市場多空情緒。</li>
-                    <li><b>② 汪洋大魚產業熱力 TOP10（Horizontal Bar）：</b>顯示當日全市場掃描結果中強勢股最集中的前 10 大產業，一眼看出主流資金板塊。</li>
-                    <li><b>③ 各魚池健康指數（CSS Progress Bar）：</b>每個命名魚池的買入加碼佔比（%），搭配漸層色系呈現強弱分佈。</li>
-                </ul>
-                <b>🚀 V7.5 API 三劍客降載版（2026-05-01）：</b>
-                <ul>
-                    <li><b>① Yahoo MA5 前置預篩：</b>在呼叫 FinMind 籌碼 API 之前，先以 Yahoo 已下載的資料判斷 <code>收盤 &gt;= MA5</code>。若不符合，action 邏輯必為「靜候觀察」，直接跳過 FinMind 呼叫。本次實測攔截 <b>65 支</b>冗餘請求。</li>
-                    <li><b>② Yahoo 股價取代 FinMind 股價：</b>市場掃描與魚池監控全面改用 Yahoo 批量下載的股價資料計算，不再個別呼叫 FinMind 股價 API（每支節省 1 次）。Yahoo 未命中時才啟動備援，備援失敗才退回 FinMind 最後防線，確保資料完整性。</li>
-                    <li><b>③ TaiwanStockInfo 7 日快取：</b>股票名稱、產業、市場別等基本資料極少變動，改為獨立 <code>finmind_info_cache.json</code> 儲存，7 天內直接讀本地，不重複消耗 API。</li>
-                    <li><b>🔐 安全修復：</b>FinMind Token 重新修正為從 GitHub Secrets 環境變數讀取，排除硬碼風險。</li>
-                    <li><b>📊 實測效果：</b>FinMind API 消耗由 V7.4 的 <b>~430 次</b> 驟降至 <b>171 次</b>，實測降幅 <b>-60%</b>（超越預估目標）。</li>
-                </ul>
-                <hr style="border: 0; border-top: 1px dashed var(--panel-border); margin: 15px 0;">
-                <b>✅ V7.4 快取降載與戰術縮圈（2026-04-28）：</b>
-                <ul>
-                    <li><b>API 防呆快取：</b>導入本地 <code>finmind_cache.json</code> 機制，同日內重複測試執行不再重複消耗 API 額度。</li>
-                    <li><b>戰術性縮圈：</b>第一階段粗篩成交量門檻由 1,000 張提升至 <b>1,500 張</b>，過濾冷門股並大幅降低 API 負載。</li>
-                </ul>
-                <hr style="border: 0; border-top: 1px dashed var(--panel-border); margin: 15px 0;">
-                <b>✅ V7.3 混合引擎升級（2026-04-26）：</b>
-                <ul>
-                    <li><b>精準數據源：</b>導入 FinMind 精確數據。</li>
-                    <li><b>混合掃描架構：</b>Yahoo 快速粗篩 + FinMind 深度精濾。</li>
                 </ul>
             </div>
         </details>
@@ -409,6 +423,11 @@
         <button class="pool-nav-btn" data-target="pool-4">🔭 觀察 <span class="pool-nav-count" id="nav-count-4">-</span></button>
         <button class="pool-nav-btn" data-target="pool-5">🌊 汪洋 <span class="pool-nav-count" id="nav-count-5">-</span></button>
     </nav>
+    <!-- V8.6 全展開/全收合快捷列 -->
+    <div class="pool-quick-actions">
+        <button class="pool-action-btn" id="expand-all-pools">⊞ 全展開</button>
+        <button class="pool-action-btn" id="collapse-all-pools">⊟ 全收合</button>
+    </div>
 
     <!-- ===== V7.9 維運狀態列 ===== -->
     <div class="moly-status-bar" id="moly-status-bar" style="display:none;">
@@ -495,18 +514,13 @@
                 </ul>
                 <b>🐅 三日成猛虎：</b>連續 3 個交易日符合汪洋大魚標準，自動晉升，代表籌碼與趨勢具高延續性。
                 <hr style="border: 0; border-top: 1px dashed var(--panel-border); margin: 15px 0;">
+                <b>🚀 V8.6（2026-05-16）：</b>全能戰情室 UI 升級 — 引入「🔬 創造 ⚡ 創新 🎨 創意 🌐 全能」四大概念標語 chip；Noto Sans TC + Inter 字體現代化；深海太空星雲感三色背景、粉色海洋更飽和漸層、主題新增 <code>--create-glow</code> 光暈變數；Zoey 測試員體驗三優化：猛虎倒計時徽章（觀察水域卡片右上角顯示距晉升剩餘次數）、全展開/全收合快捷按鈕、資料時效警示燈（>24h 橘 / >48h 紅）。<br>
                 <b>🆕 V8.5（2026-05-14）：</b>股票卡片新增六大籌碼與技術欄位 — 籌碼訊號（雙買／投信單買／外資單買）、法人評級、強勢評分（/100）、RSI14、量比、均線排列（多頭／非多頭）；均線顯示補上 MA10；法人列 UI 重排優化間距。<br>
                 <b>🆕 V8.4（2026-05-13）：</b>新增回測績效報告區塊（backtest_report.json），展示各魚池 5/30/126 日勝率、平均報酬、超額報酬，支援展開個股明細。<br>
                 <b>🆕 V8.3（2026-05-13）：</b>移除不穩定的 Goodinfo 按鈕；行動訊號 + 鉅亨新聞 + Yahoo 報價合併為單列；輕淡海洋主題改版為粉色海洋（`[data-theme="light-ocean"]` 全色系替換）。<br>
                 <b>🆕 V8.2（2026-05-12）：</b>每張股票卡新增三大資訊入口 — 📰 鉅亨新聞、📊 Yahoo 報價、📋 Goodinfo 深度研究；移除原 Yahoo 新聞單鈕，改為三欄等寬連結列。<br>
                 <b>🚀 V8.1（2026-05-10）：</b>柔霧深洋主題、魚池快速導航列、版本歷程移至頁尾、回頂端按鈕。<br>
-                <b>🚀 V8.0（2026-05-08）：</b>本地無菌主算 + 雲端靜態展示雙軌架構、Path Immunity 設計。<br>
-                <b>✅ V7.9（2026-05-02）：</b>log_report.json 維運日誌、git_sync.py 自動推送、例假日智慧跳出。<br>
-                <b>✅ V7.8（2026-05-01）：</b>快取 TTL 30h、即時寫盤、自動清理逾期快取。<br>
-                <b>📊 V7.6（2026-05-01）：</b>Dashboard 2.0（多空佔比、產業熱力、健康指數）。<br>
-                <b>🚀 V7.5（2026-05-01）：</b>API 三劍客降載，消耗 430 → 171 次（-60%）、Token 安全修復；量能門檻由 1,500 升至 <b>2,000 張</b>（精準縮圈）。<br>
-                <b>✅ V7.4（2026-04-28）：</b>finmind_cache.json 防呆快取、粗篩量能門檻 1,500 張。<br>
-                <b>✅ V7.3（2026-04-26）：</b>Yahoo 粗篩 + FinMind 深度精濾混合架構。
+                <b>🚀 V8.0（2026-05-08）：</b>本地無菌主算 + 雲端靜態展示雙軌架構、Path Immunity 設計；互動排序（法人買超/現價/成交量）、模糊搜尋支援股名、模擬倉折疊化。
             </div>
         </div>
     </div>
@@ -530,6 +544,35 @@
             themeBtn.innerText = isLight ? '🌸 切換粉色海洋版' : '🌌 切換深海太空版';
         });
 
+        // V8.6 全展開/全收合
+        const expandAllBtn = document.getElementById('expand-all-pools');
+        const collapseAllBtn = document.getElementById('collapse-all-pools');
+        if (expandAllBtn) expandAllBtn.addEventListener('click', () => {
+            document.querySelectorAll('.pool-section').forEach(s => s.setAttribute('open', ''));
+        });
+        if (collapseAllBtn) collapseAllBtn.addEventListener('click', () => {
+            document.querySelectorAll('.pool-section').forEach(s => s.removeAttribute('open'));
+        });
+
+        // V8.6 ocean_history 載入（猛虎倒計時徽章資料）
+        let oceanHistoryMap = {};
+        fetch('ocean_history.json?t=' + new Date().getTime())
+            .then(res => res.json())
+            .then(history => {
+                if (Array.isArray(history)) {
+                    history.forEach(entry => {
+                        if (entry && entry.stock_id) {
+                            oceanHistoryMap[entry.stock_id] = (oceanHistoryMap[entry.stock_id] || 0) + 1;
+                        }
+                    });
+                } else if (history && typeof history === 'object') {
+                    for (const [sid, val] of Object.entries(history)) {
+                        oceanHistoryMap[sid] = typeof val === 'number' ? val : (val.appear_count || val.count || 1);
+                    }
+                }
+            })
+            .catch(() => {});
+
         // 2. 模擬倉計算邏輯
         function updateSim(uniqueId) {
             const price = parseFloat(document.getElementById(`price-${uniqueId}`).value) || 0;
@@ -549,7 +592,7 @@
         }
 
         // 3. 卡片生成模板
-        function createCard(s, isWangYang = false, prefix = "main-") {
+        function createCard(s, isWangYang = false, prefix = "main-", poolName = "") {
             const isBuy = s.action === '買入加碼';
             const instText = s.inst_buy > 0 ? '+' + s.inst_buy : s.inst_buy;
             const instColor = s.inst_buy > 0 ? 'var(--neon-green)' : 'var(--neon-red)';
@@ -576,6 +619,13 @@
             const indText = s.industry || '未分類';
             const uniqueId = prefix + s.stock_id;
 
+            // V8.6 猛虎倒計時（僅測試員觀察水域）
+            const histCount = oceanHistoryMap[s.stock_id] || 0;
+            const isWatchPool = poolName === '🔭 測試員觀察水域';
+            const tigerCountdown = (isWatchPool && histCount > 0 && histCount < 3)
+                ? `<span class="tiger-countdown">${histCount === 2 ? '⚡ 再 1 次晉猛虎！' : '🐯 猛虎倒數 ' + (3 - histCount)}</span>`
+                : '';
+
             // V8.6 chip_signal 頂部色帶
             const chipBorderColor = chipSignal==='雙買' ? '#FFD700'
                 : chipSignal==='投信單買' ? '#00E676'
@@ -597,6 +647,7 @@
 
             return `
                 <div class="card ${isBuy ? 'is-buy' : ''}" style="border-top-color:${chipBorderColor};box-shadow:${chipGlow};">
+                    ${tigerCountdown}
                     <div class="stock-header">
                         <div>
                             <span class="stock-id">${s.stock_id}</span>
@@ -856,14 +907,14 @@
                     const indGrid = document.createElement('div');
                     indGrid.className = 'grid-container';
                     indGrid.style.paddingTop = "5px";
-                    indStocks.forEach(s => indGrid.innerHTML += createCard(s, true, 'main-'));
+                    indStocks.forEach(s => indGrid.innerHTML += createCard(s, true, 'main-', poolName));
 
                     indDetails.appendChild(indGrid);
                     wrapper.appendChild(indDetails);
                 }
                 return wrapper;
             } else {
-                stocks.forEach(s => grid.innerHTML += createCard(s, false, 'main-'));
+                stocks.forEach(s => grid.innerHTML += createCard(s, false, 'main-', poolName));
                 return grid;
             }
         }
@@ -875,10 +926,27 @@
             .then(json_data => {
                 fullData = json_data;
 
-                // 更新時間顯示
+                // 更新時間顯示 + V8.6 時效警示燈
                 const updateTimeEl = document.getElementById('update-time');
                 if(updateTimeEl && json_data.last_updated) {
                     updateTimeEl.innerText = "⏱️ 雷達更新：" + json_data.last_updated;
+                    try {
+                        const rawStr = json_data.last_updated.replace(/\//g, '-').replace(' ', 'T');
+                        const lastDate = new Date(rawStr);
+                        const diffHours = (Date.now() - lastDate.getTime()) / 3600000;
+                        const staleEl = document.getElementById('data-stale-alert');
+                        if (staleEl && diffHours > 0) {
+                            if (diffHours > 48) {
+                                staleEl.innerText = '🔴 資料過期（已逾 48h），建議立即執行掃描';
+                                staleEl.style.color = 'var(--neon-red)';
+                                staleEl.style.display = 'block';
+                            } else if (diffHours > 24) {
+                                staleEl.innerText = '🟡 資料已逾 24h，請確認掃描狀態';
+                                staleEl.style.color = 'var(--neon-gold)';
+                                staleEl.style.display = 'block';
+                            }
+                        }
+                    } catch(e) {}
                 }
 
                 try { renderDashboard(json_data.dashboard_stats); } catch(e) { console.warn('Dashboard render error:', e); }
