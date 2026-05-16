@@ -1,11 +1,15 @@
 # ==========================================
-# 靜水流深戰情室：核心監控與全域雷達 V7.5
+# 靜水流深戰情室：核心監控與全域雷達 V8.6
 # ==========================================
 # V7.5 API 降載三劍客：
 #   ① Yahoo MA5 前置預篩  → 市場掃描省 ~40% 呼叫
 #   ② Yahoo 股價取代 FinMind（市場掃描 + 魚池）→ 每股節省 1 call
 #   ③ TaiwanStockInfo 7 日快取 → 每週省 6 次
 #   預估總降幅：430 → ~260 次（減少 ~40%）
+# V8.6 選股法則升級（零 API 消耗）：
+#   ④ theme_tag：產業題材標籤（Grace 規格，由 industry_category 對應）
+#   ⑤ sweet_buy_low / sweet_buy_high：甜蜜買進區間（Joe 計算法，MA5/MA10 中間帶）
+#   ⑥ first_target：第一停利點（close × 1.15，+15%）
 # ==========================================
 import yfinance as yf
 import pandas as pd
@@ -289,6 +293,35 @@ def _calc_chip_score(inst_buy, foreign_buy, trust_buy) -> int:
     return min(score, 35)
 
 
+# =====================================================================
+# 🆕 V8.6 Grace 題材標籤對應表（零 API 消耗）
+# =====================================================================
+_THEME_MAP = [
+    (["半導體", "積體電路", "晶圓", "IC", "封測"], "🔬 半導體"),
+    (["AI", "人工智慧", "伺服器", "雲端", "資料中心", "網路通訊"], "🤖 AI/雲端"),
+    (["電動車", "電池", "儲能", "新能源"], "🚗 電動車/儲能"),
+    (["被動元件", "電容", "電阻", "電感"], "🔩 被動元件"),
+    (["面板", "顯示器", "光電"], "📺 面板/光電"),
+    (["生技", "醫療", "製藥", "醫材"], "💊 生技醫療"),
+    (["金融", "銀行", "保險", "證券"], "🏦 金融"),
+    (["航運", "海運", "空運"], "🚢 航運"),
+    (["鋼鐵", "金屬", "原物料"], "🏗️ 原物料"),
+    (["軟體", "資訊服務", "遊戲"], "💻 軟體/遊戲"),
+    (["ETF", "指數"], "📊 ETF"),
+]
+
+
+def _get_theme_tag(industry: str) -> str:
+    """V8.6 Grace：由 industry_category 對應題材標籤（不消耗 API）"""
+    if not industry:
+        return "📌 其他"
+    for keywords, tag in _THEME_MAP:
+        for kw in keywords:
+            if kw.lower() in industry.lower():
+                return tag
+    return "📌 其他"
+
+
 def calculate_stock_data(sid, name, industry, df_prices, df_inst, force_show=False):
     try:
         if df_prices is not None and not df_prices.empty:
@@ -297,12 +330,16 @@ def calculate_stock_data(sid, name, industry, df_prices, df_inst, force_show=Fal
 
         if df_prices is None or df_prices.empty or len(df_prices) < 2:
             if force_show:
-                return {"stock_id": sid, "stock_name": name, "industry": industry,
-                        "close": "無資料", "volume": 0, "inst_buy": 0,
-                        "foreign_buy": 0, "trust_buy": 0, "ma5": 0, "ma30": 0,
-                        "action": "靜候觀察", "target_price": 0, "stop_loss": 0,
-                        "ma10": 0, "rsi14": 50.0, "vol_ratio": 1.0, "bull_align": False,
-                        "chip_signal": "無買", "inst_grade": "X", "strength_score": 0}
+                return {
+                    "stock_id": sid, "stock_name": name, "industry": industry,
+                    "close": "無資料", "volume": 0, "inst_buy": 0,
+                    "foreign_buy": 0, "trust_buy": 0, "ma5": 0, "ma30\": 0,
+                    "action": "靜候觀察", "target_price": 0, "stop_loss": 0,
+                    "ma10": 0, "rsi14": 50.0, "vol_ratio": 1.0, "bull_align": False,
+                    "chip_signal": "無買", "inst_grade": "X", "strength_score": 0,
+                    "first_target": 0, "sweet_buy_low": 0, "sweet_buy_high": 0,
+                    "theme_tag": _get_theme_tag(industry),
+                }
             return None
 
         df_prices = df_prices.dropna(subset=['Close', 'Volume'])
@@ -359,6 +396,15 @@ def calculate_stock_data(sid, name, industry, df_prices, df_inst, force_show=Fal
             + _calc_chip_score(inst_buy_30d, foreign_buy_30d, trust_buy_30d)
         )
 
+        # 🆕 V8.6 Joe 甜蜜買進區間 & 第一停利
+        ma_top = max(ma5, ma10)
+        sweet_buy_low  = round(ma_top * 0.990, 2)
+        sweet_buy_high = round(ma_top * 1.005, 2)
+        first_target   = round(close_price * 1.15, 2)
+
+        # 🆕 V8.6 Grace 題材標籤
+        theme_tag = _get_theme_tag(industry)
+
         action = "買入加碼" if close_price >= ma5 and inst_buy_30d > 0 else "靜候觀察"
 
         return {
@@ -375,15 +421,23 @@ def calculate_stock_data(sid, name, industry, df_prices, df_inst, force_show=Fal
             "chip_signal": chip_signal,
             "inst_grade": inst_grade,
             "strength_score": strength_score,
+            "first_target": first_target,
+            "sweet_buy_low": sweet_buy_low,
+            "sweet_buy_high": sweet_buy_high,
+            "theme_tag": theme_tag,
         }
     except Exception:
         if force_show:
-            return {"stock_id": sid, "stock_name": name, "industry": industry,
-                    "close": "計算異常", "volume": 0, "inst_buy": 0,
-                    "foreign_buy": 0, "trust_buy": 0, "ma5": 0, "ma30": 0,
-                    "action": "靜候觀察", "target_price": 0, "stop_loss": 0,
-                    "ma10": 0, "rsi14": 50.0, "vol_ratio": 1.0, "bull_align": False,
-                    "chip_signal": "無買", "inst_grade": "X", "strength_score": 0}
+            return {
+                "stock_id": sid, "stock_name": name, "industry": industry,
+                "close": "計算異常", "volume": 0, "inst_buy": 0,
+                "foreign_buy": 0, "trust_buy": 0, "ma5": 0, "ma30": 0,
+                "action": "靜候觀察", "target_price": 0, "stop_loss": 0,
+                "ma10": 0, "rsi14": 50.0, "vol_ratio": 1.0, "bull_align": False,
+                "chip_signal": "無買", "inst_grade": "X", "strength_score": 0,
+                "first_target": 0, "sweet_buy_low": 0, "sweet_buy_high": 0,
+                "theme_tag": _get_theme_tag(industry),
+            }
         return None
 
 
@@ -405,7 +459,7 @@ def main():
             _write_log_report(_check_time, status="Skipped-Holiday")
             return
 
-    print("🌊 啟動彼我還楓姊夫戰情室 (V8.5 強勢評分版：strength_score + RSI14 + MA10 + 籌碼分級 + 汪洋排序)...")
+    print("🌊 啟動彼夫有責戰情室 (V8.6 選股法則版：theme_tag + 甜蜜點 + 第一停利 + 籌碼分級 + 汪洋排序)...")
 
     # ── 載入本地快取（含 TTL 清理） ─────────────────────────────────────
     # 🆕 V7.8：啟動時自動清除超過 CACHE_TTL_HOURS 的過期資料
@@ -440,7 +494,6 @@ def main():
 
     # =====================================================================
     # 🆕 V7.5 優化③：TaiwanStockInfo 7 日快取
-    # 股票基本資料（名稱、產業、市場別）幾乎不變，7天才重抓一次
     # =====================================================================
     df_info = None
     try:
@@ -510,7 +563,7 @@ def main():
     chunk_size = 150
 
     # =====================================================================
-    # 🎯 Yahoo Finance 全市場粗篩段（完全不動）
+    # 🎯 Yahoo Finance 全市場粗篩段
     # =====================================================================
     print(f"  - ⚡ 啟動原生下載資料 (共 {len(exact_tickers)} 檔)...")
     for i in range(0, len(exact_tickers), chunk_size):
@@ -554,17 +607,11 @@ def main():
 
     # =====================================================================
     # 🎯 V7.5 混合引擎核心（市場掃描段）
-    #    粗篩門檻（全用 Yahoo 計算，無 API 消耗）：
-    #      ① 成交量 >= 2,000 張
-    #      ② 收盤 > MA30
-    #      ③ 🆕 收盤 >= MA5（前置 action 邏輯預判，跳過必敗的股）
-    #    精篩：通過三關者，只呼叫 FinMind 籌碼（1 call/股）
-    #          股價改用 Yahoo 取代 FinMind（省 1 call/股）
     # =====================================================================
     market_pool = []
     added_market_sids = set()
-    yf_skipped_ma5 = 0     # 統計：被 MA5 預篩擋掉的數量
-    yf_passed_filter = 0   # 統計：三關全過、真正呼叫 FinMind 的數量
+    yf_skipped_ma5 = 0
+    yf_passed_filter = 0
 
     for sid in set(market_sids):
         df_yf = valid_dfs.get(sid)
@@ -577,7 +624,7 @@ def main():
             close_yf = float(latest_yf['Close'])
             vol_lots_yf = float(latest_yf['Volume']) / 1000
 
-            # 第一關：量能門檻（V7.4 縮圈戰術）
+            # 第一關：量能門檻（V8.5 縮圈戰術，2000張）
             if vol_lots_yf < 2000:
                 continue
 
@@ -586,21 +633,17 @@ def main():
             if close_yf <= ma30_yf:
                 continue
 
-            # 🆕 第三關：收盤 >= MA5（action 前置預判）
-            # action 邏輯為 close >= ma5 AND inst_buy > 0
-            # 若 close < ma5，無論籌碼如何，action 必為「靜候觀察」→ 直接跳過
+            # 第三關：收盤 >= MA5（action 前置預判）
             ma5_yf = float(df_yf['Close'].rolling(window=5).mean().iloc[-1]) if len(df_yf) >= 5 else close_yf
             if close_yf < ma5_yf:
                 yf_skipped_ma5 += 1
                 continue
 
-            # 三關全過：呼叫 FinMind 籌碼（僅 1 call，Yahoo 取代股價）
             yf_passed_filter += 1
-            df_i = fetch_finmind("TaiwanStockInstitutionalInvestorsBuySell", start_30d, today_str, sid)  # V7.7：重試由 fetch_finmind 內部處理
+            df_i = fetch_finmind("TaiwanStockInstitutionalInvestorsBuySell", start_30d, today_str, sid)
             time.sleep(0.2)
 
             ind = industry_map.get(sid, "未知產業")
-            # 🆕 直接用 Yahoo df 計算（不再額外呼叫 FinMind 股價）
             s_data = calculate_stock_data(sid, name_map.get(sid, sid), ind, df_yf, df_i)
             if s_data and s_data['action'] == "買入加碼":
                 market_pool.append(s_data)
@@ -613,7 +656,7 @@ def main():
     # V8.5：汪洋大魚依強勢評分由高到低排序
     market_pool.sort(key=lambda x: x.get('strength_score', 0), reverse=True)
 
-    # 🎯 V7 核心升級：Date-Lock 日期防呆機制與向下相容（完整保留）
+    # 🎯 V7 核心升級：Date-Lock 日期防呆機制與向下相容
     today_ocean_sids = [s['stock_id'] for s in market_pool]
     new_history = {}
 
@@ -640,10 +683,7 @@ def main():
         json.dump(new_history, f, ensure_ascii=False, indent=2)
 
     # =====================================================================
-    # 🎯 V7.5 魚池監控段：Yahoo 股價優先，FinMind 只抓籌碼
-    #    - Yahoo valid_dfs 中已有所有魚池股票的股價（大量下載時一併拿到）
-    #    - 若 Yahoo 未命中才用雙重火力備援
-    #    - FinMind 股價呼叫完全省略（每支魚池股省 1 call）
+    # 🎯 V7.5 魚池監控段
     # =====================================================================
     final_data_structure = {}
     for pool_name, tickers in POOL_SETTINGS.items():
@@ -656,18 +696,15 @@ def main():
             if sid in seen_in_pool:
                 continue
 
-            # 🆕 V7.5：優先用 Yahoo 股價，不呼叫 FinMind 股價
             df_price_to_use = valid_dfs.get(sid)
             if df_price_to_use is None or df_price_to_use.empty:
                 print(f"      - Yahoo 未命中，啟動 {sid} 雙重火力補抓（Yahoo 備援）...")
                 df_price_to_use = download_yf_data_single(sid, market_map)
-                # 若 Yahoo 備援也失敗，才退回 FinMind 股價（最後防線）
                 if df_price_to_use is None or df_price_to_use.empty:
                     print(f"      - Yahoo 備援失敗，改用 FinMind 股價（{sid}）...")
-                    df_price_to_use = fetch_finmind("TaiwanStockPrice", start_60d, today_str, sid)  # V7.7：重試由函式內部處理
+                    df_price_to_use = fetch_finmind("TaiwanStockPrice", start_60d, today_str, sid)
 
-            # 只抓籌碼（1 call，Yahoo 已取代股價）
-            df_i = fetch_finmind("TaiwanStockInstitutionalInvestorsBuySell", start_30d, today_str, sid)  # V7.7：重試由函式內部處理
+            df_i = fetch_finmind("TaiwanStockInstitutionalInvestorsBuySell", start_30d, today_str, sid)
 
             ind = industry_map.get(sid, "未分類")
             s_data = calculate_stock_data(sid, name_map.get(sid, sid), ind, df_price_to_use, df_i, force_show=True)
@@ -680,7 +717,7 @@ def main():
     final_data_structure["🌊 汪洋大魚"] = market_pool
 
     # =====================================================================
-    # 🎯 V7.6 前端儀表板數據預計算（供 index.html Chart.js 使用）
+    # 🎯 V7.6 前端儀表板數據預計算
     # =====================================================================
     industry_counter = {}
     for s in market_pool:
@@ -718,21 +755,17 @@ def main():
     with open("plum_blossom_data.json", 'w', encoding='utf-8') as f:
         json.dump(output, f, ensure_ascii=False, indent=2)
 
-    # ── 結束前最終寫盤（安全備援，即時寫盤已在每次 API 後執行）────────
     _save_cache_to_disk()
     print(f"  - 💾 快取最終寫盤完成，共 {len(_finmind_cache)} 筆（下次執行可直接命中）")
 
-    # 🆕 V7.9：統計成功處理股票檔數（魚池 + 汪洋大魚）
     _stocks_processed_count = sum(len(v) for v in final_data_structure.values())
 
-    # 🆕 V7.9：產出維運日誌 log_report.json
     _write_log_report(taiwan_time, stocks_processed=_stocks_processed_count, status="Success")
 
     print(f"\n🎉 掃描完成！本次共消耗 FinMind API {_api_calls_count} 次（快取命中 {_cache_hits_count} 次）")
-    print(f"   V7.9 儀表板數據：產業 {len(industry_dist)} 類、魚池多空 {buy_n}/{watch_n}、處理 {_stocks_processed_count} 檔")
+    print(f"   V8.6 儀表板數據：產業 {len(industry_dist)} 類、魚池多空 {buy_n}/{watch_n}、處理 {_stocks_processed_count} 檔")
 
     # 🆕 V7.9：本地執行時自動呼叫 git_sync.py 推送戰報
-    # GitHub Actions 環境由 auto_radar.yml Step 5 負責，不重複呼叫
     if not os.environ.get("GITHUB_ACTIONS"):
         push_status = "OK"
         try:
@@ -747,7 +780,6 @@ def main():
         except Exception as e:
             push_status = "ERROR"
             print(f"  ⚠️ git_sync.py 呼叫失敗（不影響本次結果）：{e}")
-        # 回寫 push_status 至 log_report.json，供 moly.py 感知推送結果
         if push_status != "OK":
             try:
                 with open(LOG_REPORT_FILE, 'r', encoding='utf-8') as f:
