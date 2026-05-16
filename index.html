@@ -704,6 +704,7 @@
 
         function renderDashboard(stats) {
             if (!stats) return;
+            if (typeof Chart === 'undefined') { console.warn('Chart.js not loaded, skipping dashboard'); return; }
             document.getElementById('dashboard-section').style.display = 'block';
 
             const CYAN   = 'rgba(100,255,218,0.75)';
@@ -880,7 +881,7 @@
                     updateTimeEl.innerText = "⏱️ 雷達更新：" + json_data.last_updated;
                 }
 
-                renderDashboard(json_data.dashboard_stats);
+                try { renderDashboard(json_data.dashboard_stats); } catch(e) { console.warn('Dashboard render error:', e); }
 
                 const container = document.getElementById('main-container');
                 if (!container) return;
@@ -896,12 +897,14 @@
                     "🌊 汪洋大魚": "全市場每日掃描，量能＋趨勢＋MA5＋三大法人四關篩選後符合條件的強勢股"
                 };
 
+                const autoOpenPools = ["🌟 彼神黃金魚池", "🔥 姊夫爆發小魚池", "🍁 楓大永動魚池", "🔭 測試員觀察水域"];
                 displayOrder.forEach(poolName => {
                     if (json_data.pools[poolName] && json_data.pools[poolName].length > 0) {
                         const stocks = json_data.pools[poolName];
                         const section = document.createElement('details');
                         section.className = 'pool-section';
                         section.setAttribute('data-pool-name', poolName);
+                        if (autoOpenPools.includes(poolName)) section.setAttribute('open', '');
 
                         const desc = poolDescriptions[poolName] || '';
                         const descHtml = desc ? `<div class="pool-desc">💬 ${desc}</div>` : '';
