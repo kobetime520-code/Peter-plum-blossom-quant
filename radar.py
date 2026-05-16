@@ -12,13 +12,23 @@
 #   ⑥ first_target：第一停利點（close × 1.15，+15%）
 #   ⑦ 圖片法則：量比價先，量增價漲確認做多，題材優先過濾
 # ==========================================
+import sys
+import io
+
+# 強制 UTF-8 輸出，防止 Windows CP950 終端對 emoji 拋 UnicodeEncodeError
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+else:
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
+
 import yfinance as yf
 import pandas as pd
 import requests
 import time
 import json
 import os
-import sys
 import subprocess
 import logging
 from datetime import datetime, timedelta
