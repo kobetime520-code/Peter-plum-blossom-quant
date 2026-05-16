@@ -3,1047 +3,994 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🌌自動巡航｜彼夫有擇模擬選股戰情室</title>
+    <title>🌌 彼夫有擇模擬選股戰情室 V8.6</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
-        /* =========================================
-           1. 核心主題設定
-           ========================================= */
         :root {
-            --ocean-bg: radial-gradient(circle at top, #0A192F 0%, #020C1B 100%);
-            --panel-bg: rgba(16, 32, 64, 0.75);
-            --panel-border: rgba(100, 255, 218, 0.2);
-            --text-main: #E6F1FF;
-            --text-muted: #8892B0;
-            --neon-cyan: #64FFDA;
-            --neon-green: #00E676;
-            --neon-red: #FF5252;
-            --neon-gold: #FFD700;
-            --title-bg: rgba(0, 0, 0, 0.4);
-            --badge-bg: rgba(0, 0, 0, 0.2);
-            --sim-bg: rgba(0, 0, 0, 0.2);
-            --input-bg: rgba(0, 0, 0, 0.3);
-            --watch-bg: rgba(255, 255, 255, 0.05);
-            --watch-border: rgba(255, 255, 255, 0.1);
-            --card-shadow: rgba(0, 0, 0, 0.4);
-            --log-bg: rgba(100, 255, 218, 0.05);
-            --note-bg: rgba(255, 215, 0, 0.05);
-            --ind-badge-bg: rgba(255, 255, 255, 0.1);
+            --bg-deep:    #07090f;
+            --bg-card:    #0d1117;
+            --bg-surface: #161b22;
+            --border:     rgba(255,255,255,0.07);
+            --accent:     #58a6ff;
+            --accent2:    #bc8cff;
+            --accent3:    #79c0ff;
+            --buy:        #3fb950;
+            --watch:      #8b949e;
+            --text:       #e6edf3;
+            --text-muted: #8b949e;
+            --gold:       #ffd700;
+            --red:        #f85149;
+            --card-radius:14px;
+            --chip-color: rgba(255,255,255,0.15);
         }
 
-        /* 粉色海洋 V8.5 */
-        [data-theme="light-ocean"] {
-            --ocean-bg: linear-gradient(160deg, #F9E4EC 0%, #F0B8CE 45%, #D98CA8 100%);
-            --panel-bg: rgba(253, 235, 242, 0.92);
-            --panel-border: rgba(160, 60, 100, 0.28);
-            --text-main: #1A0810;
-            --text-muted: #6B2040;
-            --neon-cyan: #8C1F4A;
-            --neon-green: #6B4226;
-            --neon-red: #A01E1E;
-            --neon-gold: #8B3A62;
-            --title-bg: rgba(248, 220, 232, 0.94);
-            --badge-bg: rgba(160, 60, 100, 0.13);
-            --sim-bg: rgba(248, 220, 232, 0.65);
-            --input-bg: rgba(253, 235, 242, 0.94);
-            --watch-bg: rgba(0, 0, 0, 0.06);
-            --watch-border: rgba(0, 0, 0, 0.15);
-            --card-shadow: rgba(100, 20, 55, 0.18);
-            --log-bg: rgba(160, 60, 100, 0.07);
-            --note-bg: rgba(139, 58, 98, 0.07);
-            --ind-badge-bg: rgba(160, 60, 100, 0.13);
-        }
+        /* 2-A Canvas 粒子 + Neural SVG 背景 (V8.6) */
+        #v86-canvas-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+        #v86-neural-svg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; opacity: 0.13; }
 
+        /* 2-B 打字機標語 (V8.6) */
+        .v86-typewriter-wrap { text-align:center; padding: 6px 0 2px; font-size:.85rem; letter-spacing:.08em; color:var(--accent2); min-height:22px; position:relative; z-index:1; }
+        .v86-tw-cursor::after { content:'|'; animation: blink 1s step-end infinite; }
+        @keyframes blink { 50%{ opacity:0; } }
+
+        /* 2-C 卡片甜蜜點區塊 + 評分條 (V8.6) */
+        .sweet-zone {
+            margin: 10px 0 4px;
+            padding: 8px 10px;
+            border: 1.5px dashed #ffd70066;
+            border-radius: 8px;
+            background: rgba(255,215,0,0.04);
+            font-size: 12px;
+        }
+        .sweet-zone-title {
+            font-size: 11px; font-weight: 700;
+            color: var(--gold); letter-spacing:.05em; margin-bottom:5px;
+        }
+        .sweet-zone-range {
+            font-size: 15px; font-weight: 700;
+            color: var(--gold); margin-bottom: 4px;
+        }
+        .sweet-price-row { display:flex; gap:10px; flex-wrap:wrap; }
+        .sweet-price-item { flex:1; min-width:80px; }
+        .sweet-price-label { font-size:10px; color:var(--text-muted); }
+        .sweet-price-val { font-size:13px; font-weight:700; }
+        .score-bar-wrap { margin: 4px 0; }
+        .score-bar-track { height: 6px; border-radius: 3px; background: rgba(255,255,255,0.08); overflow: hidden; margin-top: 4px; }
+        .score-bar-fill { height: 100%; border-radius: 3px; transition: width 0.8s ease; }
+        .score-label { font-size:11px; color:var(--text-muted); display:flex; justify-content:space-between; }
+        .grade-badge { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 11px; font-weight: bold; }
+        .grade-S { background:#ffd70033; color:#ffd700; border:1px solid #ffd70066; }
+        .grade-A { background:#bc8cff33; color:#bc8cff; border:1px solid #bc8cff66; }
+        .grade-B { background:#58a6ff33; color:#58a6ff; border:1px solid #58a6ff66; }
+        .grade-C { background:#3fb95033; color:#3fb950; border:1px solid #3fb95066; }
+        .grade-X { background:#8b949e22; color:#8b949e; border:1px solid #8b949e44; }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
         body {
-            background: var(--ocean-bg); background-attachment: fixed; color: var(--text-main);
-            font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; margin: 0; padding: 20px; min-height: 100vh;
-            transition: background 0.6s ease, color 0.6s ease; 
+            font-family: 'Segoe UI', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+            background: var(--bg-deep);
+            color: var(--text);
+            min-height: 100vh;
+            position: relative;
         }
 
-        .theme-toggle-btn { position: fixed; top: 20px; right: 20px; z-index: 1000; background: var(--panel-bg); color: var(--neon-cyan); border: 1px solid var(--neon-cyan); padding: 8px 16px; border-radius: 20px; cursor: pointer; font-weight: bold; transition: 0.3s ease; backdrop-filter: blur(5px); box-shadow: 0 4px 15px var(--card-shadow); font-size: 14px; }
-        .top-nav { max-width: 1200px; margin: 0 auto 30px; display: flex; flex-direction: column; align-items: center; gap: 15px; border-bottom: 1px solid var(--panel-border); padding-bottom: 20px; }
-        .search-box { background: var(--panel-bg); border: 1px solid var(--neon-cyan); border-radius: 30px; padding: 10px 25px; width: 100%; max-width: 400px; color: var(--text-main); font-size: 16px; outline: none; box-shadow: 0 0 15px var(--card-shadow); text-align: center; transition: 0.3s ease; }
-        .header { text-align: center; width: 100%; }
-        .header h1 { margin: 0; letter-spacing: 2px; text-shadow: 0 0 10px var(--panel-border); font-size: 28px; }
-        .version-badge { font-size: 14px; background: var(--neon-cyan); color: #000; padding: 3px 8px; border-radius: 6px; font-weight: bold; vertical-align: middle; }
-        .update-time { font-size: 12px; color: var(--neon-cyan); opacity: 0.8; margin-top: 5px; margin-bottom: 15px; }
-
-        .system-alert { background: var(--note-bg); border: 1px solid var(--neon-gold); border-radius: 8px; padding: 12px 20px; margin: 10px auto 20px; max-width: 800px; color: var(--neon-gold); font-weight: bold; font-size: 15px; letter-spacing: 1px; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 0 10px rgba(255, 215, 0, 0.2); animation: pulse-border 2s infinite; }
-        @keyframes pulse-border { 0% { box-shadow: 0 0 5px rgba(255, 215, 0, 0.2); } 50% { box-shadow: 0 0 15px rgba(255, 215, 0, 0.5); } 100% { box-shadow: 0 0 5px rgba(255, 215, 0, 0.2); } }
-
-        .info-section { width: 100%; max-width: 800px; margin: 10px auto; background: var(--log-bg); border: 1px solid var(--panel-border); border-radius: 8px; font-size: 13px; color: var(--text-muted); transition: 0.3s ease; overflow: hidden; }
-        .info-section summary { font-weight: bold; color: var(--neon-gold); cursor: pointer; padding: 10px 15px; display: flex; align-items: center; justify-content: center; letter-spacing: 1px; list-style: none; outline: none; }
-        .info-section summary::-webkit-details-marker { display: none; }
-        .log-content { padding: 15px; line-height: 1.8; text-align: left; border-top: 1px dashed var(--panel-border); }
-        .log-content b { color: var(--neon-cyan); }
-        .log-content ul { margin: 10px 0; padding-left: 20px; }
-        .log-content li { margin-bottom: 8px; }
-
-        .pool-section { margin-bottom: 30px; max-width: 1400px; margin-left: auto; margin-right: auto; }
-        .pool-section summary { list-style: none; cursor: pointer; outline: none; }
-        .pool-title { font-size: 20px; font-weight: bold; color: var(--neon-cyan); background: var(--title-bg); padding: 12px 20px; border-left: 4px solid var(--neon-cyan); border-radius: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px; }
-        .pool-title::after { content: '▼'; font-size: 14px; transition: 0.3s; flex-shrink: 0; }
-        details[open] .pool-title::after { transform: rotate(180deg); }
-        .pool-desc { font-size: 12px; font-weight: normal; color: var(--text-muted); width: 100%; padding: 4px 0 0 0; border-top: 1px dashed var(--panel-border); margin-top: 4px; letter-spacing: 0.5px; line-height: 1.6; }
-
-        .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 25px; padding: 20px 0; }
-        
-        .industry-details { margin-top: 15px; border-bottom: 1px dashed var(--panel-border); padding-bottom: 10px; transition: 0.3s; }
-        .industry-details summary { list-style: none; cursor: pointer; outline: none; display: flex; justify-content: space-between; align-items: center; }
-        .industry-section-title { color: var(--neon-gold); font-size: 17px; font-weight: bold; letter-spacing: 1px; padding: 10px 5px; margin: 0; }
-        .ind-arrow { font-size: 12px; opacity: 0.6; transition: transform 0.3s; color: var(--neon-cyan); }
-        .industry-details[open] .ind-arrow { transform: rotate(180deg); }
-
-        .card { background: var(--panel-bg); backdrop-filter: blur(10px); border-radius: 15px; padding: 22px; border: 1px solid var(--panel-border); border-top: 4px solid var(--text-muted); box-shadow: 0 10px 30px var(--card-shadow); transition: 0.4s ease; position: relative; }
-        .card.is-buy { border-top-color: var(--neon-green); }
-        .stock-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .stock-id { font-size: 26px; font-weight: bold; color: var(--neon-cyan); }
-        .industry-badge { background: var(--ind-badge-bg); color: var(--text-main); font-size: 11px; padding: 2px 6px; border-radius: 4px; }
-        
-        .data-row { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 8px; color: var(--text-muted); }
-        .data-row b { color: var(--text-main); font-size: 16px; }
-        .highlight { color: var(--neon-cyan) !important; font-size: 20px !important; }
-
-        .action-box { margin-top: 15px; padding: 10px; text-align: center; font-weight: bold; border-radius: 6px; font-size: 15px; }
-        .action-box.buy { background: rgba(0,255,0,0.1); color: var(--neon-green); border: 1px solid var(--neon-green); }
-        .action-box.watch { background: var(--watch-bg); color: var(--text-muted); border: 1px solid var(--watch-border); }
-
-        .sim-panel { margin-top: 15px; padding: 12px; background: var(--sim-bg); border-radius: 8px; border-top: 1px dashed var(--panel-border); }
-        .sim-input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
-        .sim-input { width: 100%; background: var(--input-bg); border: 1px solid var(--panel-border); border-radius: 4px; color: var(--neon-cyan); padding: 5px; font-size: 13px; outline: none; }
-        .sim-result { font-size: 12px; border-top: 1px dashed var(--panel-border); padding-top: 10px; }
-        .result-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
-
-        .footer-copyright { text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 12px; }
-
-        /* =========================================
-           Dashboard 2.0 (V7.6)
-           ========================================= */
-        .dashboard-section { max-width: 1400px; margin: 0 auto 30px; }
-        .dash-grid-2 { display: grid; grid-template-columns: 260px 1fr; gap: 16px; margin-bottom: 16px; }
-        .dash-grid-1 { display: grid; grid-template-columns: 1fr; gap: 16px; }
-        .dash-card { background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 12px; padding: 18px; backdrop-filter: blur(10px); box-shadow: 0 4px 20px var(--card-shadow); }
-        .dash-title { color: var(--neon-gold); font-size: 12px; font-weight: bold; letter-spacing: 1px; margin-bottom: 14px; }
-        .bull-bear-wrap { display: flex; align-items: center; justify-content: center; gap: 18px; }
-        .bull-bear-legend { display: flex; flex-direction: column; gap: 8px; font-size: 13px; color: var(--text-muted); }
-        .bull-bear-legend span { display: flex; align-items: center; gap: 6px; }
-        .legend-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
-        .pool-health-wrap { display: grid; gap: 8px; }
-        .pool-health-row { display: flex; align-items: center; gap: 10px; }
-        .pool-health-name { font-size: 12px; color: var(--text-muted); width: 130px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .pool-health-track { flex: 1; height: 12px; background: rgba(255,255,255,0.07); border-radius: 6px; overflow: hidden; }
-        .pool-health-fill { height: 100%; border-radius: 6px; transition: width 0.8s ease; }
-        .pool-health-pct { font-size: 12px; color: var(--text-main); width: 38px; text-align: right; flex-shrink: 0; }
-        @media (max-width: 768px) {
-            .dash-grid-2 { grid-template-columns: 1fr; }
-            .pool-health-name { width: 90px; font-size: 11px; }
+        /* ── 頂部橫幅 ── */
+        .top-banner {
+            position: relative; z-index: 2;
+            background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #0d1117 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 18px 24px 12px;
+            text-align: center;
+        }
+        .top-banner h1 { font-size: 1.5rem; font-weight: 800; letter-spacing: .06em; }
+        .top-banner h1 .version-badge {
+            display: inline-block;
+            font-size: .65rem;
+            background: linear-gradient(90deg,#58a6ff,#bc8cff);
+            color: #000;
+            border-radius: 6px;
+            padding: 1px 7px;
+            vertical-align: middle;
+            margin-left: 6px;
+            font-weight: 700;
+        }
+        .top-banner .subtitle {
+            font-size: .8rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+            letter-spacing: .04em;
         }
 
-        /* =========================================
-           維運狀態列 (V7.9)
-           ========================================= */
-        .moly-status-bar { max-width: 1400px; margin: 0 auto 20px; background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 12px; padding: 14px 20px; backdrop-filter: blur(10px); display: flex; flex-wrap: wrap; align-items: center; gap: 8px 24px; }
-        .moly-bar-title { color: var(--neon-gold); font-size: 12px; font-weight: bold; letter-spacing: 1px; flex-shrink: 0; }
-        .moly-stat { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-muted); }
-        .moly-stat b { color: var(--text-main); }
-        .moly-status-badge { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; }
-        .moly-status-badge.success { background: rgba(0,230,118,0.12); color: #00E676; border: 1px solid #00E676; }
-        .moly-status-badge.holiday { background: rgba(255,215,0,0.12); color: #FFD700; border: 1px solid #FFD700; }
-        .moly-status-badge.error { background: rgba(255,82,82,0.12); color: #FF5252; border: 1px solid #FF5252; }
-        .moly-divider { width: 1px; height: 20px; background: var(--panel-border); flex-shrink: 0; }
-        @media (max-width: 600px) { .moly-divider { display: none; } .moly-status-bar { gap: 10px 16px; } }
+        /* 2-A Canvas 粒子 + Neural SVG V8.6 */
+        <canvas id="v86-canvas-bg"></canvas>
+        <svg id="v86-neural-svg" xmlns="http://www.w3.org/2000/svg"></svg>
 
-        /* =========================================
-           魚池快速導航列 (V8.1)
-           ========================================= */
-        .pool-quick-nav {
-            position: sticky; top: 0; z-index: 200;
-            background: var(--panel-bg); backdrop-filter: blur(14px);
-            border-bottom: 1px solid var(--panel-border);
-            padding: 10px 16px; display: flex; gap: 8px;
-            overflow-x: auto; align-items: center;
-            box-shadow: 0 2px 12px var(--card-shadow);
-            scrollbar-width: none;
+        /* ── 頁面骨架 ── */
+        #app-wrapper {
+            position: relative; z-index: 1;
+            display: flex;
+            min-height: calc(100vh - 72px);
         }
-        .pool-quick-nav::-webkit-scrollbar { display: none; }
-        .pool-nav-label { font-size: 11px; color: var(--text-muted); font-weight: bold; letter-spacing: 1px; white-space: nowrap; flex-shrink: 0; padding-right: 8px; border-right: 1px solid var(--panel-border); margin-right: 4px; }
-        .pool-nav-btn {
-            display: flex; align-items: center; gap: 5px; white-space: nowrap; flex-shrink: 0;
-            background: transparent; border: 1px solid var(--panel-border);
-            color: var(--text-muted); padding: 5px 12px; border-radius: 20px;
-            cursor: pointer; font-size: 13px; font-weight: bold;
-            transition: all 0.25s ease; font-family: inherit;
+
+        /* ── 左側選單 ── */
+        #sidebar {
+            width: 220px;
+            flex-shrink: 0;
+            background: var(--bg-card);
+            border-right: 1px solid var(--border);
+            padding: 16px 0;
+            overflow-y: auto;
+            position: sticky;
+            top: 0;
+            height: calc(100vh - 72px);
         }
-        .pool-nav-btn:hover { background: var(--badge-bg); color: var(--neon-cyan); border-color: var(--neon-cyan); }
-        .pool-nav-btn.active { background: var(--badge-bg); color: var(--neon-cyan); border-color: var(--neon-cyan); box-shadow: 0 0 8px rgba(100,255,218,0.15); }
-        .pool-nav-count { font-size: 11px; background: var(--neon-cyan); color: #fff; border-radius: 10px; padding: 1px 6px; font-weight: bold; opacity: 0.85; }
-        .pool-nav-btn.active .pool-nav-count { opacity: 1; color: #000; }
-
-        /* 回頂端懸浮按鈕 (V8.1) */
-        .back-to-top-btn {
-            position: fixed; bottom: 28px; right: 24px; z-index: 500;
-            width: 44px; height: 44px; border-radius: 50%;
-            background: var(--panel-bg); border: 1px solid var(--neon-cyan);
-            color: var(--neon-cyan); font-size: 20px; cursor: pointer;
-            backdrop-filter: blur(8px); box-shadow: 0 4px 16px var(--card-shadow);
-            display: none; align-items: center; justify-content: center;
-            transition: all 0.3s ease;
+        .sidebar-title {
+            font-size: .68rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            letter-spacing: .12em;
+            padding: 0 16px 8px;
+            text-transform: uppercase;
         }
-        .back-to-top-btn:hover { background: var(--badge-bg); transform: translateY(-2px); }
+        .pool-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            padding: 10px 16px;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: .85rem;
+            text-align: left;
+            transition: all .18s;
+            border-left: 3px solid transparent;
+        }
+        .pool-btn:hover { background: rgba(88,166,255,.06); color: var(--text); }
+        .pool-btn.active {
+            background: rgba(88,166,255,.1);
+            color: var(--accent);
+            border-left-color: var(--accent);
+            font-weight: 600;
+        }
+        .pool-btn .badge {
+            margin-left: auto;
+            background: var(--bg-surface);
+            border-radius: 10px;
+            padding: 1px 7px;
+            font-size: .72rem;
+            color: var(--text-muted);
+        }
 
-        /* =========================================
-           回測績效報告 (V8.4)
-           ========================================= */
-        .backtest-pool-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; padding: 16px 0; }
-        .backtest-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
-        .backtest-table th { color: var(--text-muted); font-weight: normal; padding: 4px 8px; text-align: right; border-bottom: 1px dashed var(--panel-border); }
-        .backtest-table th:first-child { text-align: left; }
-        .backtest-table td { padding: 5px 8px; text-align: right; }
-        .backtest-table td:first-child { text-align: left; color: var(--text-muted); font-size: 12px; }
-        .backtest-detail-toggle { width: 100%; margin-top: 12px; background: transparent; border: 1px dashed var(--panel-border); border-radius: 6px; color: var(--text-muted); font-size: 12px; cursor: pointer; padding: 6px 10px; text-align: left; font-family: inherit; transition: 0.3s; }
-        .backtest-detail-toggle:hover { color: var(--neon-cyan); border-color: var(--neon-cyan); }
-        .backtest-detail-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; }
-        .backtest-detail-table th { color: var(--text-muted); font-weight: normal; padding: 3px 6px; text-align: right; border-bottom: 1px dashed var(--panel-border); }
-        .backtest-detail-table th:first-child, .backtest-detail-table th:nth-child(2), .backtest-detail-table th:nth-child(3) { text-align: left; }
-        .backtest-detail-table td { padding: 4px 6px; text-align: right; border-bottom: 1px solid rgba(255,255,255,0.03); }
-        .backtest-detail-table td:first-child, .backtest-detail-table td:nth-child(2), .backtest-detail-table td:nth-child(3) { text-align: left; }
+        /* ── 主區域 ── */
+        #main-container {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
 
-        /* 頁尾版本歷程 (V8.1) */
-        .footer-log-section { max-width: 900px; margin: 0 auto 10px; padding: 0 20px; }
-        .footer-log-toggle { background: transparent; border: 1px dashed var(--panel-border); border-radius: 8px; color: var(--text-muted); font-size: 12px; cursor: pointer; padding: 8px 18px; width: 100%; text-align: center; font-family: inherit; transition: 0.3s; letter-spacing: 0.5px; }
-        .footer-log-toggle:hover { color: var(--neon-gold); border-color: var(--neon-gold); }
-        .footer-log-content { display: none; margin-top: 8px; }
-        .footer-log-content.open { display: block; }
+        /* ── 儀表板 ── */
+        #dashboard-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 14px;
+        }
+        .dash-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--card-radius);
+            padding: 16px;
+        }
+        .dash-card h4 {
+            font-size: .75rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+        .dash-stat { display: flex; gap: 20px; }
+        .dash-stat-item { text-align: center; flex: 1; }
+        .dash-stat-num { font-size: 2rem; font-weight: 800; line-height: 1; }
+        .dash-stat-label { font-size: .72rem; color: var(--text-muted); margin-top: 4px; }
+        .buy-num { color: var(--buy); }
+        .watch-num { color: var(--watch); }
+
+        /* ── 篩選列 ── */
+        #filter-bar {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--card-radius);
+            padding: 12px 16px;
+        }
+        #filter-bar input, #filter-bar select {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            padding: 6px 12px;
+            font-size: .85rem;
+            outline: none;
+        }
+        #filter-bar input:focus, #filter-bar select:focus {
+            border-color: var(--accent);
+        }
+        .filter-label { font-size: .8rem; color: var(--text-muted); }
+
+        /* ── 卡片網格 ── */
+        #cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 14px;
+        }
+
+        /* ── 股票卡片 ── */
+        .stock-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--card-radius);
+            padding: 0;
+            overflow: hidden;
+            transition: transform .18s, box-shadow .18s;
+            position: relative;
+        }
+        .stock-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0,0,0,.4);
+        }
+        /* V8.6 chip_signal 頂部色帶 */
+        .stock-card::before {
+            content: '';
+            display: block;
+            height: 3px;
+            background: var(--chip-color);
+        }
+        .card-body { padding: 14px 16px 16px; }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+        .card-name { font-size: 1rem; font-weight: 700; }
+        .card-id { font-size: .75rem; color: var(--text-muted); margin-top: 2px; }
+        .card-action {
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: .75rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .action-buy { background: rgba(63,185,80,.15); color: var(--buy); border: 1px solid rgba(63,185,80,.3); }
+        .action-watch { background: rgba(139,148,158,.1); color: var(--watch); border: 1px solid rgba(139,148,158,.2); }
+
+        .card-price { font-size: 1.6rem; font-weight: 800; margin-bottom: 2px; }
+        .card-meta { font-size: .75rem; color: var(--text-muted); margin-bottom: 10px; }
+
+        .card-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+        .tag {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: .7rem;
+            font-weight: 600;
+        }
+        .tag-industry { background: rgba(88,166,255,.12); color: var(--accent3); }
+        .tag-theme { background: rgba(188,140,255,.1); color: var(--accent2); font-size:.68rem; }
+
+        .card-metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .metric-item { }
+        .metric-label { font-size: .67rem; color: var(--text-muted); }
+        .metric-value { font-size: .85rem; font-weight: 600; }
+
+        .card-inst {
+            display: flex;
+            gap: 10px;
+            padding: 8px 10px;
+            background: var(--bg-surface);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-size: .8rem;
+        }
+        .inst-item { flex: 1; text-align: center; }
+        .inst-label { font-size: .65rem; color: var(--text-muted); }
+        .inst-val { font-weight: 700; }
+
+        .card-targets {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            font-size: .8rem;
+        }
+        .target-item { padding: 6px 10px; background: var(--bg-surface); border-radius: 8px; }
+        .target-label { font-size: .67rem; color: var(--text-muted); }
+        .target-val { font-weight: 700; }
+
+        /* ── 模擬面板 ── */
+        #sim-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--card-radius);
+            padding: 20px;
+        }
+        #sim-panel h3 { font-size: 1rem; font-weight: 700; margin-bottom: 16px; }
+        .sim-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+        .sim-field { display: flex; flex-direction: column; gap: 4px; }
+        .sim-field label { font-size: .75rem; color: var(--text-muted); }
+        .sim-field input, .sim-field select {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            padding: 8px 12px;
+            font-size: .9rem;
+            outline: none;
+        }
+        #sim-result {
+            margin-top: 16px;
+            padding: 16px;
+            background: var(--bg-surface);
+            border-radius: 10px;
+            font-size: .88rem;
+            line-height: 1.9;
+        }
+        .sim-row { display: flex; justify-content: space-between; padding: 3px 0; }
+        .sim-divider { border: none; border-top: 1px solid var(--border); margin: 8px 0; }
+        .sim-highlight { color: var(--accent); font-weight: 700; }
+        .sim-buy { color: var(--buy); font-weight: 700; }
+        .sim-danger { color: var(--red); font-weight: 700; }
+
+        /* ── 狀態列 ── */
+        #status-bar {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            z-index: 100;
+            background: rgba(13,17,23,.95);
+            border-top: 1px solid var(--border);
+            padding: 8px 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: .75rem;
+            color: var(--text-muted);
+        }
+        #status-bar .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--buy); }
+        #status-bar .sep { opacity: .3; }
+
+        /* ── 空狀態 ── */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+        .empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
+
+        /* ── 2-D 公式橫幅 V8.6 ── */
+        .v86-formula-banner {
+            position: relative; z-index: 2;
+            background: linear-gradient(90deg,
+                rgba(88,166,255,.12) 0%,
+                rgba(188,140,255,.12) 33%,
+                rgba(63,185,80,.12) 66%,
+                rgba(255,215,0,.10) 100%);
+            border-top: 1px solid rgba(88,166,255,.15);
+            border-bottom: 1px solid rgba(255,215,0,.10);
+            padding: 8px 20px;
+            text-align: center;
+            font-size: .78rem;
+            font-weight: 600;
+            letter-spacing: .06em;
+            color: var(--text-muted);
+        }
+        .v86-formula-banner span { color: var(--accent); }
     </style>
 </head>
 <body>
 
-    <button id="theme-toggle" class="theme-toggle-btn">🌸 切換粉色海洋版</button>
+    <!-- 2-A Canvas 粒子 + Neural SVG V8.6 -->
+    <canvas id="v86-canvas-bg"></canvas>
+    <svg id="v86-neural-svg" xmlns="http://www.w3.org/2000/svg"></svg>
 
-    <div class="top-nav">
-        <header class="header">
-            <h1>🌌 彼夫有擇模擬選股戰情室 <span class="version-badge">V8.5</span></h1>
-            <div id="update-time" class="update-time">衛星同步中...</div>
-            <div class="system-alert">⚡ 核心引擎 V8.0 上線｜本地無菌主算 + 雲端靜態展示｜Path Immunity 跨硬碟免疫設計</div>
-        </header>
-
-        <!-- 版本歷程移至頁尾 (V8.1) -->
-        <details class="info-section" style="display:none;">
-            <summary>📜 改版歷程細節</summary>
-            <div class="log-content">
-                <b>🚀 V8.0 基地遷移＋本地自動化架構（2026-05-08）：</b>
-                <ul>
-                    <li><b>系統架構重大變革：</b>捨棄 GitHub Actions 線上運算，改採「本地無菌主算 + 雲端靜態展示」雙軌架構，本地端負責全部運算與 push，GitHub Pages 僅作靜態展示節點。</li>
-                    <li><b>極速偵測技術：</b>整合 FinMind Cache 快取機制，掃描全市場 API 消耗較舊架構降低 80%，單次完整掃描已可在 <b>1 分鐘內</b>完成。</li>
-                    <li><b>環境免疫設計（Path Immunity）：</b>實現動態路徑自動定位，支援跨硬碟基地遷移，路徑變動後程式不崩潰、不需手動修改設定。</li>
-                    <li><b>通訊模組預備：</b>底層程式碼重構完成 Line Notify 擴充介面，後續可一鍵接入訊號推播通知。</li>
-                </ul>
-                <hr style="border: 0; border-top: 1px dashed var(--panel-border); margin: 15px 0;">
-                <b>🆕 V8.0 互動排序 + 搜尋增強（2026-05-07）：</b>
-                <ul>
-                    <li><b>各魚池排序選擇器：</b>在每個魚池標題列右側新增下拉菜單，支援四種排序模式：預設（法人買超）、法人買超、現價高低、成交量大小，一鍵重排卡片。</li>
-                    <li><b>模糊搜尋 + 股名支援：</b>搜尋框從精確匹配改為 <code>includes()</code> 模糊搜尋，同時支援股號代碼與股名搜尋，輸入一個字元即可觸發。</li>
-                    <li><b>模擬倉折疊化：</b>將 Beta user 模擬倉改為 <code>&lt;details&gt;</code> 可折疊元件，預設收合，點擊標題展開，減少首屏視覺噪音。</li>
-                </ul>
-                <hr style="border: 0; border-top: 1px dashed var(--panel-border); margin: 15px 0;">
-                <b>✅ V7.9 維運日誌 + 自動推送（2026-05-02）：</b>
-                <ul>
-                    <li><b>維運日誌 log_report.json：</b>每次掃描結束後自動產出，記錄 API 消耗次數、快取命中數、處理檔數、執行狀態，供前端儀表板即時讀取。</li>
-                    <li><b>git_sync.py 自動推送：</b>本地執行時掃描完畢自動呼叫 git_sync.py，精準 add 三個戰報（plum_blossom_data.json、ocean_history.json、log_report.json）→ commit → push，無需手動操作。</li>
-                    <li><b>例假日智慧跳出：</b>偵測非交易日自動跳出，log_report.json 記錄 <code>status: "Skipped-Holiday"</code>，不消耗 API 額度。</li>
-                </ul>
-                <hr style="border: 0; border-top: 1px dashed var(--panel-border); margin: 15px 0;">
-                <b>✅ V7.8 持久化快取 30h TTL（2026-05-01）：</b>
-                <ul>
-                    <li><b>即時寫盤：</b>每次 FinMind 呼叫成功後立即寫入 finmind_cache.json，程式中斷不會遺失快取。</li>
-                    <li><b>TTL 調整 24h → 30h：</b>確保昨日盤後快取在今日仍可命中，跨日測試不重複消耗 API。</li>
-                    <li><b>自動清理：</b>啟動時自動清除逾期快取項目，避免快取無限膨脹。</li>
-                </ul>
-                <hr style="border: 0; border-top: 1px dashed var(--panel-border); margin: 15px 0;">
-                <b>✅ V7.7 FinMind 重試封裝（2026-05-01）：</b>
-                <ul>
-                    <li><b>fetch_finmind 重試邏輯封裝：</b>統一封裝 API 呼叫與重試機制，消除 Token 重複消耗問題，失敗時最多重試 2 次再回傳空值。</li>
-                </ul>
-                <hr style="border: 0; border-top: 1px dashed var(--panel-border); margin: 15px 0;">
-                <b>📊 V7.6 Dashboard 2.0版（2026-05-01）：</b>
-                <ul>
-                    <li><b>視覺化儀表板 Dashboard 2.0：</b>新增三大即時圖表區塊，資料來源為 <code>dashboard_stats</code> 欄位（由 radar.py 每日產出）。</li>
-                    <li><b>① 魚池多空佔比（Doughnut）：</b>統計全體命名魚池的「買入加碼 vs 靜候觀察」比例，快速掌握整體市場多空情緒。</li>
-                    <li><b>② 汪洋大魚產業熱力 TOP10（Horizontal Bar）：</b>顯示當日全市場掃描結果中強勢股最集中的前 10 大產業，一眼看出主流資金板塊。</li>
-                    <li><b>③ 各魚池健康指數（CSS Progress Bar）：</b>每個命名魚池的買入加碼佔比（%），搭配漸層色系呈現強弱分佈。</li>
-                </ul>
-                <b>🚀 V7.5 API 三劍客降載版（2026-05-01）：</b>
-                <ul>
-                    <li><b>① Yahoo MA5 前置預篩：</b>在呼叫 FinMind 籌碼 API 之前，先以 Yahoo 已下載的資料判斷 <code>收盤 &gt;= MA5</code>。若不符合，action 邏輯必為「靜候觀察」，直接跳過 FinMind 呼叫。本次實測攔截 <b>65 支</b>冗餘請求。</li>
-                    <li><b>② Yahoo 股價取代 FinMind 股價：</b>市場掃描與魚池監控全面改用 Yahoo 批量下載的股價資料計算，不再個別呼叫 FinMind 股價 API（每支節省 1 次）。Yahoo 未命中時才啟動備援，備援失敗才退回 FinMind 最後防線，確保資料完整性。</li>
-                    <li><b>③ TaiwanStockInfo 7 日快取：</b>股票名稱、產業、市場別等基本資料極少變動，改為獨立 <code>finmind_info_cache.json</code> 儲存，7 天內直接讀本地，不重複消耗 API。</li>
-                    <li><b>🔐 安全修復：</b>FinMind Token 重新修正為從 GitHub Secrets 環境變數讀取，排除硬碼風險。</li>
-                    <li><b>📊 實測效果：</b>FinMind API 消耗由 V7.4 的 <b>~430 次</b> 驟降至 <b>171 次</b>，實測降幅 <b>-60%</b>（超越預估目標）。</li>
-                </ul>
-                <hr style="border: 0; border-top: 1px dashed var(--panel-border); margin: 15px 0;">
-                <b>✅ V7.4 快取降載與戰術縮圈（2026-04-28）：</b>
-                <ul>
-                    <li><b>API 防呆快取：</b>導入本地 <code>finmind_cache.json</code> 機制，同日內重複測試執行不再重複消耗 API 額度。</li>
-                    <li><b>戰術性縮圈：</b>第一階段粗篩成交量門檻由 1,000 張提升至 <b>1,500 張</b>，過濾冷門股並大幅降低 API 負載。</li>
-                </ul>
-                <hr style="border: 0; border-top: 1px dashed var(--panel-border); margin: 15px 0;">
-                <b>✅ V7.3 混合引擎升級（2026-04-26）：</b>
-                <ul>
-                    <li><b>精準數據源：</b>導入 FinMind 精確數據。</li>
-                    <li><b>混合掃描架構：</b>Yahoo 快速粗篩 + FinMind 深度精濾。</li>
-                </ul>
-            </div>
-        </details>
-
-        <details class="info-section" style="display:none;">
-            <summary>🌊 汪洋大魚 & 🐅 三日成虎 選股邏輯</summary>
-            <div class="log-content">
-                <b>🌊 汪洋大魚 (第一階段初選 — V7.6 三關篩選)：</b>
-                <ul>
-                    <li><b>1. 動能：</b>當日成交量 <b>>= 2,000 張</b>（V7.5 升級縮圈）。</li>
-                    <li><b>2. 趨勢：</b>股價站穩 30 日均線（30MA）。</li>
-                    <li><b>3. 🆕 MA5 前置預判：</b>股價 >= 5 日均線（MA5），排除短線弱勢股，大幅降低無效 API 呼叫。</li>
-                    <li><b>4. 籌碼：</b>近 30 日三大法人合計呈現「淨買超」（通過前三關才呼叫 FinMind）。</li>
-                </ul>
-                <hr style="border: 0; border-top: 1px dashed var(--panel-border); margin: 15px 0;">
-                <b>🐅 三日成猛虎 (第二階段晉升)：</b>
-                <ul>
-                    <li><b>1. 持續力：</b>連續 3 個交易日皆符合「汪洋大魚」入池標準。</li>
-                    <li><b>2. 戰略意義：</b>代表籌碼與趨勢具備極強的延續性，為主力的波段進貨特徵。</li>
-                </ul>
-            </div>
-        </details>
-
-        <input type="text" id="global-search" class="search-box" placeholder="🛸 啟動聲納：輸入代碼開啟模擬探測...">
+    <!-- 頂部橫幅 -->
+    <div class="top-banner">
+        <h1>🌌 彼夫有擇模擬選股戰情室 <span class="version-badge">V8.6</span></h1>
+        <!-- 2-B 打字機動態標語 V8.6 -->
+        <div class="v86-typewriter-wrap">
+            <span id="v86-tw-text"></span><span class="v86-tw-cursor"></span>
+        </div>
+        <div class="subtitle" id="last-updated">載入中…</div>
     </div>
 
-    <!-- ===== V8.1 魚池快速導航列 ===== -->
-    <nav class="pool-quick-nav" id="pool-quick-nav">
-        <span class="pool-nav-label">跳至魚池</span>
-        <button class="pool-nav-btn" data-target="pool-0">🌟 黃金 <span class="pool-nav-count" id="nav-count-0">-</span></button>
-        <button class="pool-nav-btn" data-target="pool-1">🐅 猛虎 <span class="pool-nav-count" id="nav-count-1">-</span></button>
-        <button class="pool-nav-btn" data-target="pool-2">🔥 爆發 <span class="pool-nav-count" id="nav-count-2">-</span></button>
-        <button class="pool-nav-btn" data-target="pool-3">🍁 永動 <span class="pool-nav-count" id="nav-count-3">-</span></button>
-        <button class="pool-nav-btn" data-target="pool-4">🔭 觀察 <span class="pool-nav-count" id="nav-count-4">-</span></button>
-        <button class="pool-nav-btn" data-target="pool-5">🌊 汪洋 <span class="pool-nav-count" id="nav-count-5">-</span></button>
-    </nav>
-
-    <!-- ===== V7.9 維運狀態列 ===== -->
-    <div class="moly-status-bar" id="moly-status-bar" style="display:none;">
-        <div class="moly-bar-title">📡 Moly 維運狀態</div>
-        <div class="moly-divider"></div>
-        <div class="moly-stat">🕐 最後掃描：<b id="moly-last-update">--</b></div>
-        <div class="moly-divider"></div>
-        <div class="moly-stat">狀態：<span id="moly-status-badge" class="moly-status-badge">--</span></div>
-        <div class="moly-divider"></div>
-        <div class="moly-stat">⚡ API 消耗：<b id="moly-api-count">--</b> 次</div>
-        <div class="moly-divider"></div>
-        <div class="moly-stat">💾 快取命中：<b id="moly-cache-hits">--</b> 次</div>
-        <div class="moly-divider"></div>
-        <div class="moly-stat">📊 處理檔數：<b id="moly-stocks">--</b> 支</div>
+    <!-- 2-D 戰情室公式橫幅 V8.6 -->
+    <div class="v86-formula-banner">
+        <span>① 先選對題材</span> →
+        <span>② 籌碼與型態</span> →
+        <span>③ 量比價先</span> →
+        <span>④ 量增價漲做多</span> →
+        <span>⑤ 甜蜜點進場 ✦ 停利×1.5 停損×0.9</span>
+        <p style="color:var(--text-muted);font-size:.8rem;margin-top:7px;letter-spacing:.05em">先選對題材，再看籌碼與型態，量比價先，量增價漲做多 ✦ 彼夫有責戰情室 V8.6</p>
     </div>
 
-    <!-- ===== Dashboard 2.0 ===== -->
-    <div class="dashboard-section" id="dashboard-section" style="display:none;">
-        <div class="dash-grid-2">
-            <div class="dash-card">
-                <div class="dash-title">⚖️ 魚池多空佔比</div>
-                <div class="bull-bear-wrap">
-                    <canvas id="chart-bull-bear" width="160" height="160" style="max-width:160px;max-height:160px;"></canvas>
-                    <div class="bull-bear-legend" id="bull-bear-legend"></div>
+    <div id="app-wrapper">
+        <!-- 左側選單 -->
+        <nav id="sidebar">
+            <div class="sidebar-title">魚池選單</div>
+            <div id="pool-nav"></div>
+        </nav>
+
+        <!-- 主區域 -->
+        <main id="main-container">
+
+            <!-- 儀表板 -->
+            <section id="dashboard-section">
+                <div class="dash-card">
+                    <h4>📊 多空訊號</h4>
+                    <div class="dash-stat">
+                        <div class="dash-stat-item">
+                            <div class="dash-stat-num buy-num" id="buy-count">—</div>
+                            <div class="dash-stat-label">買入加碼</div>
+                        </div>
+                        <div class="dash-stat-item">
+                            <div class="dash-stat-num watch-num" id="watch-count">—</div>
+                            <div class="dash-stat-label">靜候觀察</div>
+                        </div>
+                    </div>
                 </div>
+                <div class="dash-card">
+                    <h4>🌊 汪洋大魚</h4>
+                    <canvas id="action-chart" height="80"></canvas>
+                </div>
+                <div class="dash-card">
+                    <h4>🏭 產業分佈</h4>
+                    <canvas id="industry-chart" height="80"></canvas>
+                </div>
+            </section>
+
+            <!-- 篩選列 -->
+            <div id="filter-bar">
+                <span class="filter-label">🔍</span>
+                <input type="text" id="search-input" placeholder="搜尋股票名稱或代號…" style="flex:1;min-width:160px;">
+                <select id="action-filter">
+                    <option value="">全部訊號</option>
+                    <option value="買入加碼">買入加碼</option>
+                    <option value="靜候觀察">靜候觀察</option>
+                </select>
+                <select id="sort-filter">
+                    <option value="strength">強勢評分↓</option>
+                    <option value="inst">法人買超↓</option>
+                    <option value="vol">成交量↓</option>
+                </select>
             </div>
-            <div class="dash-card">
-                <div class="dash-title">🌡️ 汪洋大魚產業熱力分佈 TOP 10</div>
-                <canvas id="chart-industry" style="width:100%;max-height:220px;"></canvas>
-            </div>
-        </div>
-        <div class="dash-grid-1">
-            <div class="dash-card">
-                <div class="dash-title">🎯 各魚池買入加碼健康指數</div>
-                <div class="pool-health-wrap" id="pool-health-wrap"></div>
-            </div>
-        </div>
+
+            <!-- 卡片網格 -->
+            <div id="cards-grid"></div>
+
+            <!-- 模擬面板 -->
+            <section id="sim-panel">
+                <h3>🧮 模擬試算</h3>
+                <div class="sim-grid">
+                    <div class="sim-field">
+                        <label>股票代號</label>
+                        <select id="sim-stock">
+                            <option value="">— 請先切換魚池 —</option>
+                        </select>
+                    </div>
+                    <div class="sim-field">
+                        <label>買入價格</label>
+                        <input type="number" id="sim-price" placeholder="自動帶入甜蜜點低點">
+                    </div>
+                    <div class="sim-field">
+                        <label>買入張數</label>
+                        <input type="number" id="sim-lots" value="1" min="1">
+                    </div>
+                    <div class="sim-field">
+                        <label>手續費率 (%)</label>
+                        <input type="number" id="sim-fee" value="0.1425" step="0.01">
+                    </div>
+                </div>
+                <div id="sim-result">← 請選擇股票並輸入數值後，結果自動顯示於此</div>
+            </section>
+
+        </main>
     </div>
 
-    <!-- ===== V8.4 回測績效報告 ===== -->
-    <details class="pool-section" id="backtest-section" open style="display:none; max-width:1400px; margin-left:auto; margin-right:auto;">
-        <summary><div class="pool-title">
-            <span>📈 回測績效報告</span>
-            <span id="backtest-generated-at" style="font-size:11px; color:var(--text-muted); font-weight:normal; margin-left:10px;">載入中...</span>
-            <div class="pool-desc">各魚池訊號勝率 / 平均報酬 / 超額報酬（vs 加權指數），資料累積中時顯示 --</div>
-        </div></summary>
-        <div id="backtest-content" class="backtest-pool-grid"></div>
-    </details>
-
-    <div id="search-result-container" class="pool-section" style="display:none;">
-        <details open>
-            <summary><div class="pool-title">🛰️ 搜尋結果探測</div></summary>
-            <div id="search-grid" class="grid-container"></div>
-        </details>
+    <!-- 狀態列 -->
+    <div id="status-bar">
+        <div class="dot"></div>
+        <span id="api-cost">—</span>
+        <span class="sep">|</span>
+        <span id="status-time">—</span>
     </div>
 
-    <main id="main-container"></main>
-
-    <!-- ===== 頁尾版本歷程 (V8.1) ===== -->
-    <div class="footer-log-section">
-        <button class="footer-log-toggle" id="footer-log-toggle">📜 展開改版歷程 ▾</button>
-        <div class="footer-log-content info-section" id="footer-log-content">
-            <div class="log-content">
-                <b>🌊 汪洋大魚選股邏輯（四關篩選）：</b>
-                <ul>
-                    <li><b>1. 動能：</b>成交量 >= 2,000 張</li>
-                    <li><b>2. 趨勢：</b>股價站穩 30MA</li>
-                    <li><b>3. MA5 預判：</b>股價 >= MA5，排除短線弱勢股</li>
-                    <li><b>4. 籌碼：</b>近 30 日三大法人淨買超（通過前三關才呼叫 FinMind）</li>
-                </ul>
-                <b>🐅 三日成猛虎：</b>連續 3 個交易日符合汪洋大魚標準，自動晉升，代表籌碼與趨勢具高延續性。
-                <hr style="border: 0; border-top: 1px dashed var(--panel-border); margin: 15px 0;">
-                <b>🆕 V8.5（2026-05-14）：</b>股票卡片新增六大籌碼與技術欄位 — 籌碼訊號（雙買／投信單買／外資單買）、法人評級、強勢評分（/100）、RSI14、量比、均線排列（多頭／非多頭）；均線顯示補上 MA10；法人列 UI 重排優化間距。<br>
-                <b>🆕 V8.4（2026-05-13）：</b>新增回測績效報告區塊（backtest_report.json），展示各魚池 5/30/126 日勝率、平均報酬、超額報酬，支援展開個股明細。<br>
-                <b>🆕 V8.3（2026-05-13）：</b>移除不穩定的 Goodinfo 按鈕；行動訊號 + 鉅亨新聞 + Yahoo 報價合併為單列；輕淡海洋主題改版為粉色海洋（`[data-theme="light-ocean"]` 全色系替換）。<br>
-                <b>🆕 V8.2（2026-05-12）：</b>每張股票卡新增三大資訊入口 — 📰 鉅亨新聞、📊 Yahoo 報價、📋 Goodinfo 深度研究；移除原 Yahoo 新聞單鈕，改為三欄等寬連結列。<br>
-                <b>🚀 V8.1（2026-05-10）：</b>柔霧深洋主題、魚池快速導航列、版本歷程移至頁尾、回頂端按鈕。<br>
-                <b>🚀 V8.0（2026-05-08）：</b>本地無菌主算 + 雲端靜態展示雙軌架構、Path Immunity 設計。<br>
-                <b>✅ V7.9（2026-05-02）：</b>log_report.json 維運日誌、git_sync.py 自動推送、例假日智慧跳出。<br>
-                <b>✅ V7.8（2026-05-01）：</b>快取 TTL 30h、即時寫盤、自動清理逾期快取。<br>
-                <b>📊 V7.6（2026-05-01）：</b>Dashboard 2.0（多空佔比、產業熱力、健康指數）。<br>
-                <b>🚀 V7.5（2026-05-01）：</b>API 三劍客降載，消耗 430 → 171 次（-60%）、Token 安全修復；量能門檻由 1,500 升至 <b>2,000 張</b>（精準縮圈）。<br>
-                <b>✅ V7.4（2026-04-28）：</b>finmind_cache.json 防呆快取、粗篩量能門檻 1,500 張。<br>
-                <b>✅ V7.3（2026-04-26）：</b>Yahoo 粗篩 + FinMind 深度精濾混合架構。
-            </div>
-        </div>
-    </div>
-
-    <footer class="footer-copyright">
-        <p>© <span id="current-year"></span> 彼夫有擇全域戰情室. All Rights Reserved.</p>
-    </footer>
-
-    <!-- ===== V8.1 回頂端懸浮按鈕 ===== -->
-    <button class="back-to-top-btn" id="back-to-top" title="回到頂端">↑</button>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <script>
-        // 1. 初始化與主題切換
-        document.getElementById('current-year').innerText = new Date().getFullYear();
-        const themeBtn = document.getElementById('theme-toggle');
+    // =====================================================================
+    // 彼夫有責戰情室 V8.6 前端邏輯
+    // =====================================================================
 
-        themeBtn.addEventListener('click', () => {
-            const isLight = document.documentElement.getAttribute('data-theme') === 'light-ocean';
-            document.documentElement.setAttribute('data-theme', isLight ? '' : 'light-ocean');
-            themeBtn.innerText = isLight ? '🌸 切換粉色海洋版' : '🌌 切換深海太空版';
-        });
+    // 2-E Canvas 粒子系統 V8.6
+    (function initParticles() {
+        const canvas = document.getElementById('v86-canvas-bg');
+        const ctx = canvas.getContext('2d');
+        let W, H, particles = [];
 
-        // 2. 模擬倉計算邏輯
-        function updateSim(uniqueId) {
-            const price = parseFloat(document.getElementById(`price-${uniqueId}`).value) || 0;
-            const targetPct = parseFloat(document.getElementById(`target-pct-${uniqueId}`).value) || 0;
-            const stopPct = parseFloat(document.getElementById(`stop-pct-${uniqueId}`).value) || 0;
-            
-            const profitEl = document.getElementById(`profit-${uniqueId}`);
-            const lossEl = document.getElementById(`loss-${uniqueId}`);
-
-            if (price > 0) {
-                profitEl.innerText = (price * (1 + targetPct/100)).toFixed(2);
-                lossEl.innerText = (price * (1 - stopPct/100)).toFixed(2);
-            } else {
-                profitEl.innerText = '--';
-                lossEl.innerText = '--';
-            }
+        function resize() {
+            W = canvas.width = window.innerWidth;
+            H = canvas.height = window.innerHeight;
         }
+        resize();
+        window.addEventListener('resize', resize);
 
-        // 3. 卡片生成模板
-        function createCard(s, isWangYang = false, prefix = "main-") {
-            const isBuy = s.action === '買入加碼';
-            const instText = s.inst_buy > 0 ? '+' + s.inst_buy : s.inst_buy;
-            const instColor = s.inst_buy > 0 ? 'var(--neon-green)' : 'var(--neon-red)';
-
-            const foreignText = (s.foreign_buy !== undefined) ? (s.foreign_buy > 0 ? '+' + s.foreign_buy : s.foreign_buy) : '--';
-            const foreignColor = (s.foreign_buy !== undefined) ? (s.foreign_buy > 0 ? 'var(--neon-green)' : 'var(--neon-red)') : 'var(--text-main)';
-
-            const trustText = (s.trust_buy !== undefined) ? (s.trust_buy > 0 ? '+' + s.trust_buy : s.trust_buy) : '--';
-            const trustColor = (s.trust_buy !== undefined) ? (s.trust_buy > 0 ? 'var(--neon-red)' : 'var(--neon-cyan)') : 'var(--text-main)';
-
-            const isTrustBuying = s.trust_buy > 0;
-            const trustBadge = isTrustBuying ? `<span style="color:var(--neon-red); font-size:12px; font-weight:bold; margin-left:8px;">🔥 投信認養</span>` : '';
-
-            const scoreVal = s.strength_score ?? 0;
-            const scoreColor = scoreVal >= 70 ? 'var(--neon-green)' : scoreVal >= 50 ? 'var(--neon-gold)' : 'var(--text-muted)';
-            const chipSignal = s.chip_signal || '無買';
-            const chipColor = chipSignal === '雙買' ? 'var(--neon-green)' : chipSignal === '投信單買' ? 'var(--neon-red)' : chipSignal === '外資單買' ? 'var(--neon-cyan)' : 'var(--text-muted)';
-            const instGrade = s.inst_grade || 'X';
-            const rsi14Val = s.rsi14 != null ? s.rsi14.toFixed(1) : '--';
-            const volRatioVal = s.vol_ratio != null ? s.vol_ratio.toFixed(2) : '--';
-            const bullAlignText = s.bull_align ? '✅ 多頭排列' : '⚠️ 非多頭';
-            const bullAlignColor = s.bull_align ? 'var(--neon-green)' : 'var(--text-muted)';
-
-            const indText = s.industry || '未分類';
-            const uniqueId = prefix + s.stock_id;
-
-            return `
-                <div class="card ${isBuy ? 'is-buy' : ''}">
-                    <div class="stock-header">
-                        <div>
-                            <span class="stock-id">${s.stock_id}</span>
-                            <span class="stock-name">${s.stock_name} <span class="industry-badge">${indText}</span>${trustBadge}</span>
-                        </div>
-                        <div class="inst-badge" style="color:${instColor}; font-size:12px; font-weight: bold;">總法人 ${instText}</div>
-                    </div>
-
-                    <div class="data-row" style="background: rgba(255,215,0,0.05); padding: 6px 10px; border-radius: 6px; border-left: 3px solid var(--neon-gold); margin-bottom: 8px;">
-                        <span style="font-size: 13px; color: var(--text-muted);">30日外資 <b style="color: ${foreignColor}; font-weight: bold;">${foreignText}</b></span>
-                        <span style="font-size: 13px; color: var(--text-muted);">30日投信 <b style="color: ${trustColor}; font-size: 15px; font-weight: bold;">${trustText}</b></span>
-                    </div>
-                    <div class="data-row" style="background: rgba(100,255,218,0.04); padding: 6px 10px; border-radius: 6px; border-left: 3px solid var(--neon-cyan); margin-bottom: 12px;">
-                        <span style="font-size: 13px; color: var(--text-muted);">籌碼訊號 <b style="color: ${chipColor}; font-weight: bold;">${chipSignal}</b></span>
-                        <span style="font-size: 13px; color: var(--text-muted);">評級 <b style="color: var(--neon-gold); font-size: 15px; font-weight: bold;">${instGrade}</b></span>
-                    </div>
-
-                    <div class="data-row"><span>現價</span><b class="highlight">${s.close}</b></div>
-                    <div class="data-row"><span>成交量</span><b>${s.volume.toLocaleString()}</b></div>
-                    <div class="data-row"><span>5MA/10MA/30MA</span><b>${s.ma5} / ${s.ma10 ?? '--'} / ${s.ma30}</b></div>
-                    <div class="data-row">
-                        <span>強勢評分</span>
-                        <b style="color: ${scoreColor}; font-size: 17px; font-weight: bold;">${scoreVal}/100</b>
-                    </div>
-                    <div class="data-row"><span>RSI14 / 量比</span><b>${rsi14Val} / ${volRatioVal}x</b></div>
-                    <div class="data-row"><span>均線排列</span><b style="color: ${bullAlignColor};">${bullAlignText}</b></div>
-                    
-                    <div style="display: flex; gap: 8px; margin-top: 15px;">
-                        <div class="action-box ${isBuy ? 'buy' : 'watch'}" style="flex: 2; margin-top: 0;">
-                            ${isBuy ? '🚀 買入加碼' : '📡 靜候觀察'}
-                        </div>
-                        <a href="https://www.cnyes.com/twstock/${s.stock_id}" target="_blank" style="text-decoration: none; flex: 1; display: flex; align-items: center; justify-content: center; padding: 0 6px; background: rgba(100, 255, 218, 0.05); color: var(--neon-cyan); border: 1px solid var(--panel-border); border-radius: 6px; font-size: 12px; font-weight: bold; transition: 0.3s; white-space: nowrap;" title="鉅亨網 — 即時新聞">
-                            📰 鉅亨
-                        </a>
-                        <a href="https://tw.stock.yahoo.com/quote/${s.stock_id}" target="_blank" style="text-decoration: none; flex: 1; display: flex; align-items: center; justify-content: center; padding: 0 6px; background: rgba(100, 255, 218, 0.05); color: var(--neon-cyan); border: 1px solid var(--panel-border); border-radius: 6px; font-size: 12px; font-weight: bold; transition: 0.3s; white-space: nowrap;" title="Yahoo Finance — 即時股價">
-                            📊 Yahoo
-                        </a>
-                    </div>
-
-                    <details style="margin-top: 15px;">
-                        <summary style="list-style: none; outline: none; cursor: pointer; background: rgba(0, 0, 0, 0.2); padding: 10px 12px; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: var(--neon-gold); font-weight: bold; letter-spacing: 0.5px; user-select: none;">
-                            <span>🛠️ Beta user 模擬倉</span>
-                            <span style="font-size: 10px; transition: transform 0.3s;">▼</span>
-                        </summary>
-                        <style>
-                            details[open] > summary span:last-child { transform: rotate(180deg); }
-                        </style>
-                        <div class="sim-panel" style="margin-top: 10px;">
-                            <div class="sim-input-grid">
-                                <div style="display: flex; flex-direction: column; gap: 4px;">
-                                    <span style="font-size: 10px; color: var(--text-muted); padding-left: 2px;">持股價位</span>
-                                    <input type="number" id="price-${uniqueId}" class="sim-input" placeholder="0.0" oninput="updateSim('${uniqueId}')">
-                                </div>
-                                <div style="display: flex; flex-direction: column; gap: 4px;">
-                                    <span style="font-size: 10px; color: var(--text-muted); padding-left: 2px;">持股股數</span>
-                                    <input type="number" id="shares-${uniqueId}" class="sim-input" placeholder="1000">
-                                </div>
-                                <div style="display: flex; flex-direction: column; gap: 4px;">
-                                    <span style="font-size: 10px; color: var(--text-muted); padding-left: 2px;">停利比例 (%)</span>
-                                    <input type="number" id="target-pct-${uniqueId}" class="sim-input" value="50" oninput="updateSim('${uniqueId}')">
-                                </div>
-                                <div style="display: flex; flex-direction: column; gap: 4px;">
-                                    <span style="font-size: 10px; color: var(--text-muted); padding-left: 2px;">停損比例 (%)</span>
-                                    <input type="number" id="stop-pct-${uniqueId}" class="sim-input" value="10" oninput="updateSim('${uniqueId}')">
-                                </div>
-                            </div>
-                            <div class="sim-result">
-                                <div class="result-row"><span>🎯 模擬停利點參考</span><b id="profit-${uniqueId}" style="color: var(--neon-cyan);">--</b></div>
-                                <div class="result-row"><span>✂️ 模擬停損點參考</span><b id="loss-${uniqueId}" style="color: var(--neon-red);">--</b></div>
-                            </div>
-                        </div>
-                    </details>
-                </div>
-            `;
-        }
-
-        // 4. 儀表板渲染（Dashboard 2.0）
-        let bullBearChart = null;
-        let industryChart = null;
-
-        function renderDashboard(stats) {
-            if (!stats) return;
-            document.getElementById('dashboard-section').style.display = 'block';
-
-            const CYAN   = 'rgba(100,255,218,0.75)';
-            const GREEN  = 'rgba(0,230,118,0.85)';
-            const MUTED  = 'rgba(136,146,176,0.45)';
-            const GOLD   = 'rgba(255,215,0,0.75)';
-            const GRID   = 'rgba(100,255,218,0.08)';
-            const TICK   = '#8892B0';
-
-            // ① 多空佔比 Doughnut
-            const buy   = stats.action_ratio?.buy   || 0;
-            const watch = stats.action_ratio?.watch || 0;
-            const total = buy + watch;
-            const buyPct = total > 0 ? Math.round(buy / total * 100) : 0;
-
-            if (bullBearChart) bullBearChart.destroy();
-            bullBearChart = new Chart(document.getElementById('chart-bull-bear'), {
-                type: 'doughnut',
-                data: {
-                    labels: ['買入加碼', '靜候觀察'],
-                    datasets: [{
-                        data: [buy, watch],
-                        backgroundColor: [GREEN, MUTED],
-                        borderColor: ['#00E676', '#8892B0'],
-                        borderWidth: 2,
-                        hoverOffset: 6,
-                    }]
-                },
-                options: {
-                    responsive: false,
-                    cutout: '68%',
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: { callbacks: {
-                            label: ctx => ` ${ctx.label}：${ctx.raw} 支`
-                        }}
-                    }
-                },
-                plugins: [{
-                    id: 'centerText',
-                    beforeDraw(chart) {
-                        const { width, height, ctx: c } = chart;
-                        c.save();
-                        c.font = 'bold 22px PingFang TC, sans-serif';
-                        c.fillStyle = '#64FFDA';
-                        c.textAlign = 'center';
-                        c.textBaseline = 'middle';
-                        c.fillText(buyPct + '%', width / 2, height / 2 - 8);
-                        c.font = '11px PingFang TC, sans-serif';
-                        c.fillStyle = '#8892B0';
-                        c.fillText('買入', width / 2, height / 2 + 14);
-                        c.restore();
-                    }
-                }]
-            });
-
-            document.getElementById('bull-bear-legend').innerHTML = `
-                <span><i class="legend-dot" style="background:#00E676"></i>買入加碼 <b style="color:#E6F1FF">${buy} 支</b></span>
-                <span><i class="legend-dot" style="background:#8892B0"></i>靜候觀察 <b style="color:#E6F1FF">${watch} 支</b></span>
-                <span style="font-size:11px;margin-top:4px;">共 ${total} 支持股</span>`;
-
-            // ② 產業熱力分佈 Horizontal Bar
-            const indData = (stats.industry_distribution || []).slice(0, 10);
-            if (industryChart) industryChart.destroy();
-            industryChart = new Chart(document.getElementById('chart-industry'), {
-                type: 'bar',
-                data: {
-                    labels: indData.map(d => d.industry),
-                    datasets: [{
-                        label: '進場支數',
-                        data: indData.map(d => d.count),
-                        backgroundColor: indData.map((_, i) =>
-                            i === 0 ? 'rgba(100,255,218,0.85)' :
-                            i <= 2  ? 'rgba(100,255,218,0.6)'  :
-                            i <= 5  ? 'rgba(100,255,218,0.4)'  : 'rgba(136,146,176,0.35)'),
-                        borderRadius: 4,
-                    }]
-                },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: { callbacks: { label: ctx => ` ${ctx.raw} 支` }}
-                    },
-                    scales: {
-                        x: { grid: { color: GRID }, ticks: { color: TICK, stepSize: 1 } },
-                        y: { grid: { display: false }, ticks: { color: TICK, font: { size: 11 } } }
-                    }
-                }
-            });
-
-            // ③ 各魚池買入健康指數（CSS bar，無需 Chart.js）
-            const poolStats = stats.pool_buy_stats || {};
-            const wrap = document.getElementById('pool-health-wrap');
-            wrap.innerHTML = '';
-            const poolOrder = ["🌟 彼神黃金魚池","🐅 三日成猛虎水池","🔥 姊夫爆發小魚池","🍁 楓大永動魚池","🔭 測試員觀察水域"];
-            poolOrder.forEach(pname => {
-                const d = poolStats[pname];
-                if (!d) return;
-                const pct = d.total > 0 ? Math.round(d.buy / d.total * 100) : 0;
-                const color = pct >= 50 ? '#00E676' : pct > 0 ? '#FFD700' : '#8892B0';
-                const shortName = pname.replace(/[🔥🍁🌟🔭🐅]/u, '').trim();
-                wrap.innerHTML += `
-                    <div class="pool-health-row">
-                        <div class="pool-health-name" title="${pname}">${shortName}</div>
-                        <div class="pool-health-track">
-                            <div class="pool-health-fill" style="width:${pct}%;background:${color};"></div>
-                        </div>
-                        <div class="pool-health-pct" style="color:${color}">${pct}%<br><span style="font-size:10px;color:#8892B0">${d.buy}/${d.total}</span></div>
-                    </div>`;
+        const PARTICLE_COUNT = 130;
+        for (let i = 0; i < PARTICLE_COUNT; i++) {
+            particles.push({
+                x: Math.random() * window.innerWidth,
+                y: Math.random() * window.innerHeight,
+                r: Math.random() * 1.4 + 0.3,
+                vx: (Math.random() - 0.5) * 0.3,
+                vy: (Math.random() - 0.5) * 0.3,
+                a: Math.random() * 0.5 + 0.15,
+                hue: Math.random() < 0.5 ? 210 : 270
             });
         }
 
-        // 排序函數
-        function sortStocks(stocks, sortBy) {
-            const copy = [...stocks];
-            switch(sortBy) {
-                case 'inst_buy':
-                    return copy.sort((a, b) => (b.inst_buy - a.inst_buy) || (b.close - a.close));
-                case 'close':
-                    return copy.sort((a, b) => (b.close - a.close) || (b.inst_buy - a.inst_buy));
-                case 'volume':
-                    return copy.sort((a, b) => (b.volume - a.volume) || (b.close - a.close));
-                default:
-                    return copy;
-            }
-        }
-
-        function renderGrid(stocks, isWangYang = false, poolName = '') {
-            const grid = document.createElement('div');
-            grid.className = 'grid-container';
-
-            if (isWangYang) {
-                const industryGroups = {};
-                stocks.forEach(s => {
-                    const ind = s.industry || "未分類產業";
-                    if (!industryGroups[ind]) industryGroups[ind] = [];
-                    industryGroups[ind].push(s);
-                });
-
-                const wrapper = document.createElement('div');
-                for (const [ind, indStocks] of Object.entries(industryGroups)) {
-                    const indDetails = document.createElement('details');
-                    indDetails.className = 'industry-details';
-                    indDetails.innerHTML = `<summary><div class="industry-section-title">🏷️ 【${ind}】族群 (${indStocks.length} 檔) <span class="ind-arrow">▼</span></div></summary>`;
-
-                    const indGrid = document.createElement('div');
-                    indGrid.className = 'grid-container';
-                    indGrid.style.paddingTop = "5px";
-                    indStocks.forEach(s => indGrid.innerHTML += createCard(s, true, 'main-'));
-
-                    indDetails.appendChild(indGrid);
-                    wrapper.appendChild(indDetails);
-                }
-                return wrapper;
-            } else {
-                stocks.forEach(s => grid.innerHTML += createCard(s, false, 'main-'));
-                return grid;
-            }
-        }
-
-        // 5. 數據讀取與渲染
-        let fullData = null;
-        fetch('plum_blossom_data.json?t=' + new Date().getTime())
-            .then(res => res.json())
-            .then(json_data => {
-                fullData = json_data;
-
-                // 更新時間顯示
-                const updateTimeEl = document.getElementById('update-time');
-                if(updateTimeEl && json_data.last_updated) {
-                    updateTimeEl.innerText = "⏱️ 雷達更新：" + json_data.last_updated;
-                }
-
-                renderDashboard(json_data.dashboard_stats);
-
-                const container = document.getElementById('main-container');
-                if (!container) return;
-
-                const displayOrder = ["🌟 彼神黃金魚池", "🔭 測試員觀察水域", "🐅 三日成猛虎水池", "🔥 姊夫爆發小魚池", "🍁 楓大永動魚池", "🌊 汪洋大魚"];
-
-                const poolDescriptions = {
-                    "🌟 彼神黃金魚池": "敬愛的股市大哥的選股題材",
-                    "🔭 測試員觀察水域": "此社群測試員的個人愛股",
-                    "🔥 姊夫爆發小魚池": "Jeff 個人觀察與持股",
-                    "🍁 楓大永動魚池": "Maple 從 2023 年學習股市後，持續買進、只進不出的永動機｜Stock Never Die，一張不賣，奇蹟自來 🌱",
-                    "🐅 三日成猛虎水池": "連續 3 日出現於汪洋大魚且符合買入訊號，自動晉升的強勢輪動股",
-                    "🌊 汪洋大魚": "全市場每日掃描，量能＋趨勢＋MA5＋三大法人四關篩選後符合條件的強勢股"
-                };
-
-                displayOrder.forEach(poolName => {
-                    if (json_data.pools[poolName] && json_data.pools[poolName].length > 0) {
-                        const stocks = json_data.pools[poolName];
-                        const section = document.createElement('details');
-                        section.className = 'pool-section';
-                        section.setAttribute('data-pool-name', poolName);
-
-                        const desc = poolDescriptions[poolName] || '';
-                        const descHtml = desc ? `<div class="pool-desc">💬 ${desc}</div>` : '';
-                        const sortSelector = `<select class="pool-sort-select" style="background: var(--input-bg); border: 1px solid var(--panel-border); color: var(--text-muted); padding: 4px 8px; border-radius: 4px; font-size: 12px; cursor: pointer; margin-left: auto; flex-shrink: 0;">
-                            <option value="default">排序：預設</option>
-                            <option value="inst_buy">排序：法人買超</option>
-                            <option value="close">排序：現價高低</option>
-                            <option value="volume">排序：成交量</option>
-                        </select>`;
-
-                        section.innerHTML = `<summary><div class="pool-title"><span>${poolName}</span>${sortSelector}${descHtml}</div></summary>`;
-
-                        const gridContainer = document.createElement('div');
-                        gridContainer.className = 'pool-grid-container';
-                        const isWangYang = poolName === "🌊 汪洋大魚";
-                        const sortedStocks = sortStocks(stocks, 'inst_buy');
-                        gridContainer.appendChild(renderGrid(sortedStocks, isWangYang, poolName));
-                        section.appendChild(gridContainer);
-
-                        // 排序事件綁定
-                        const sortSelect = section.querySelector('.pool-sort-select');
-                        sortSelect.addEventListener('change', (e) => {
-                            const sortBy = e.target.value === 'default' ? 'inst_buy' : e.target.value;
-                            const sortedStocks = sortStocks(stocks, sortBy);
-                            const newGrid = renderGrid(sortedStocks, isWangYang, poolName);
-                            gridContainer.innerHTML = '';
-                            gridContainer.appendChild(newGrid);
-                        });
-
-                        container.appendChild(section);
-                    }
-                });
-
-                // 防遺漏迴圈
-                for (const [poolName, stocks] of Object.entries(json_data.pools)) {
-                    if (!displayOrder.includes(poolName) && stocks.length > 0) {
-                        const section = document.createElement('details');
-                        section.className = 'pool-section';
-                        section.innerHTML = `<summary><div class="pool-title">${poolName}</div></summary>`;
-                        const grid = renderGrid(stocks, false, poolName);
-                        section.appendChild(grid);
-                        container.appendChild(section);
-                    }
-                }
-            })
-            .catch(err => {
-                console.error("JSON 讀取失敗:", err);
-                document.getElementById('update-time').innerText = "❌ 數據載入失敗，請檢查 JSON 檔案";
+        function tick() {
+            ctx.clearRect(0, 0, W, H);
+            particles.forEach(p => {
+                p.x += p.vx; p.y += p.vy;
+                if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
+                if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                ctx.fillStyle = `hsla(${p.hue},80%,70%,${p.a})`;
+                ctx.fill();
             });
-
-        // 6. 維運日誌讀取（V7.9）
-        fetch('log_report.json?t=' + new Date().getTime())
-            .then(res => res.json())
-            .then(log => {
-                const bar = document.getElementById('moly-status-bar');
-                bar.style.display = 'flex';
-
-                document.getElementById('moly-last-update').innerText = log.last_update || '--';
-                document.getElementById('moly-api-count').innerText = log.api_usage_count ?? '--';
-                document.getElementById('moly-cache-hits').innerText = log.cache_hits ?? '--';
-                document.getElementById('moly-stocks').innerText = log.stocks_processed ?? '--';
-
-                const badge = document.getElementById('moly-status-badge');
-                const s = log.status || '';
-                if (s === 'Success') {
-                    badge.textContent = '✅ 掃描成功';
-                    badge.className = 'moly-status-badge success';
-                } else if (s === 'Skipped-Holiday') {
-                    badge.textContent = '🏖️ 例假日跳出';
-                    badge.className = 'moly-status-badge holiday';
-                } else {
-                    badge.textContent = '❌ ' + s;
-                    badge.className = 'moly-status-badge error';
-                }
-            })
-            .catch(() => {});
-
-        // 7. 回測績效報告（V8.4）
-        function formatPct(val, isWinRate = false) {
-            if (val === null || val === undefined) return '<span style="color:var(--text-muted)">--</span>';
-            if (isWinRate) {
-                const pct = Math.round(val * 100);
-                const color = pct >= 50 ? 'var(--neon-green)' : 'var(--neon-red)';
-                return `<span style="color:${color};font-weight:bold">${pct}%</span>`;
-            }
-            const pct = (val * 100).toFixed(1);
-            const color = val > 0 ? 'var(--neon-green)' : val < 0 ? 'var(--neon-red)' : 'var(--text-muted)';
-            const prefix = val > 0 ? '+' : '';
-            return `<span style="color:${color};font-weight:bold">${prefix}${pct}%</span>`;
+            requestAnimationFrame(tick);
         }
+        tick();
+    })();
 
-        function renderBacktest(data) {
-            const section = document.getElementById('backtest-section');
-            section.style.display = '';
-
-            const genAt = (data.generated_at || '').replace('T', ' ').substring(0, 16);
-            document.getElementById('backtest-generated-at').textContent = genAt ? `產生時間：${genAt}` : '';
-
-            const poolOrder = [
-                { key: 'pool_姊夫爆發小魚池', label: '🔥 姊夫爆發小魚池' },
-                { key: 'pool_楓大永動魚池',   label: '🍁 楓大永動魚池' },
-                { key: 'pool_彼神黃金魚池',   label: '🌟 彼神黃金魚池' },
-                { key: 'pool_測試員觀察水域', label: '🔭 測試員觀察水域' },
-                { key: 'ocean',               label: '🌊 記憶海全體' },
-            ];
-
-            const detailsByPool = {};
-            (data.details || []).forEach(d => {
-                if (!detailsByPool[d.pool]) detailsByPool[d.pool] = [];
-                detailsByPool[d.pool].push(d);
-            });
-
-            const content = document.getElementById('backtest-content');
-            content.innerHTML = '';
-
-            poolOrder.forEach(({ key, label }) => {
-                const s = (data.summary || {})[key];
-                if (!s) return;
-
-                const isOcean = key === 'ocean';
-                const poolName = label.replace(/[🔥🍁🌟🔭🌊]/u, '').trim();
-                const poolDetails = detailsByPool[poolName] || [];
-
-                const card = document.createElement('div');
-                card.className = 'dash-card';
-
-                let detailRows = '';
-                if (!isOcean && poolDetails.length > 0) {
-                    poolDetails.forEach(d => {
-                        detailRows += `<tr>
-                            <td>${d.stock_id}</td>
-                            <td>${d.signal_date || '--'}</td>
-                            <td>${d.signal_price ?? '--'}</td>
-                            <td>${formatPct(d.return_5d)}</td>
-                            <td>${formatPct(d.return_30d)}</td>
-                            <td>${formatPct(d.return_126d)}</td>
-                        </tr>`;
-                    });
-                }
-
-                const detailBlock = (!isOcean && poolDetails.length > 0) ? `
-                    <details style="margin-top:10px;">
-                        <summary class="backtest-detail-toggle">▶ 展開個股明細（${poolDetails.length} 支）</summary>
-                        <div style="overflow-x:auto; margin-top:8px;">
-                            <table class="backtest-detail-table">
-                                <thead><tr>
-                                    <th>股號</th><th>訊號日</th><th>訊號價</th>
-                                    <th>5日報酬</th><th>30日報酬</th><th>126日報酬</th>
-                                </tr></thead>
-                                <tbody>${detailRows}</tbody>
-                            </table>
-                        </div>
-                    </details>` : '';
-
-                card.innerHTML = `
-                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
-                        <div class="dash-title" style="margin-bottom:0;">${label}</div>
-                        <span style="font-size:11px; background:var(--badge-bg); color:var(--text-muted); padding:1px 7px; border-radius:10px;">${s.count} 支</span>
-                    </div>
-                    <table class="backtest-table">
-                        <thead><tr>
-                            <th>週期</th><th>勝率</th><th>平均報酬</th><th>超額 vs TWII</th>
-                        </tr></thead>
-                        <tbody>
-                            <tr><td>5 日</td><td>${formatPct(s.win_rate_5d, true)}</td><td>${formatPct(s.avg_return_5d)}</td><td>${formatPct(s.excess_return_5d)}</td></tr>
-                            <tr><td>30 日</td><td>${formatPct(s.win_rate_30d, true)}</td><td>${formatPct(s.avg_return_30d)}</td><td>${formatPct(s.excess_return_30d)}</td></tr>
-                            <tr><td>126 日</td><td>${formatPct(s.win_rate_126d, true)}</td><td>${formatPct(s.avg_return_126d)}</td><td>${formatPct(s.excess_return_126d)}</td></tr>
-                        </tbody>
-                    </table>
-                    ${detailBlock}
-                `;
-                content.appendChild(card);
-            });
-        }
-
-        fetch('backtest_report.json?t=' + new Date().getTime())
-            .then(res => res.json())
-            .then(data => renderBacktest(data))
-            .catch(() => {});
-
-        // 5. 搜尋功能綁定 (模糊搜尋版 + 股名支援)
-        const searchInput = document.getElementById('global-search');
-        if(searchInput) {
-            searchInput.addEventListener('input', (e) => {
-                const query = e.target.value.trim().toLowerCase();
-                const searchGrid = document.getElementById('search-grid');
-                const searchContainer = document.getElementById('search-result-container');
-
-                if (query.length >= 1 && fullData) {
-                    searchGrid.innerHTML = '';
-                    const matches = [];
-
-                    for (const stocks of Object.values(fullData.pools)) {
-                        for (const s of stocks) {
-                            if (s.stock_id.toLowerCase().includes(query) ||
-                                (s.stock_name && s.stock_name.toLowerCase().includes(query))) {
-                                matches.push(s);
-                            }
-                        }
-                    }
-
-                    if (matches.length > 0) {
-                        matches.forEach(m => searchGrid.innerHTML += createCard(m, false, 'search-'));
-                        searchContainer.style.display = 'block';
-                    } else {
-                        searchContainer.style.display = 'none';
-                    }
-                } else {
-                    searchContainer.style.display = 'none';
-                }
-            });
-        }
-
-        // =========================================
-        // V8.1 魚池快速導航列
-        // =========================================
-        const navPoolMap = [
-            "🌟 彼神黃金魚池",
-            "🐅 三日成猛虎水池",
-            "🔥 姊夫爆發小魚池",
-            "🍁 楓大永動魚池",
-            "🔭 測試員觀察水域",
-            "🌊 汪洋大魚"
+    // 2-F Neural SVG V8.6
+    (function initNeural() {
+        const svg = document.getElementById('v86-neural-svg');
+        const nodes = [
+            {x:'12%',y:'20%'},{x:'30%',y:'10%'},{x:'50%',y:'18%'},
+            {x:'70%',y:'8%'}, {x:'88%',y:'22%'},{x:'20%',y:'55%'},
+            {x:'45%',y:'50%'},{x:'75%',y:'48%'},{x:'60%',y:'80%'}
         ];
+        const edges = [
+            [0,1],[1,2],[2,3],[3,4],[0,5],[1,6],[2,6],[3,7],[4,7],
+            [5,6],[6,7],[6,8],[7,8]
+        ];
+        let ns = '';
+        edges.forEach(([a,b]) => {
+            ns += `<line x1="${nodes[a].x}" y1="${nodes[a].y}" x2="${nodes[b].x}" y2="${nodes[b].y}" stroke="#58a6ff" stroke-width="0.8"/>`;
+        });
+        nodes.forEach(n => {
+            ns += `<circle cx="${n.x}" cy="${n.y}" r="3" fill="#bc8cff"/>`;
+        });
+        svg.innerHTML = ns;
+    })();
 
-        function initPoolNav(poolsData) {
-            document.querySelectorAll('.pool-section[data-pool-name]').forEach(sec => {
-                const pName = sec.getAttribute('data-pool-name');
-                const idx = navPoolMap.indexOf(pName);
-                if (idx >= 0) {
-                    sec.id = 'pool-nav-' + idx;
-                    const count = poolsData[pName] ? poolsData[pName].length : 0;
-                    const badge = document.getElementById('nav-count-' + idx);
-                    if (badge) badge.textContent = count;
-                }
-            });
-
-            document.querySelectorAll('.pool-nav-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const idx = btn.getAttribute('data-target').replace('pool-', '');
-                    const sec = document.getElementById('pool-nav-' + idx);
-                    if (!sec) return;
-                    sec.setAttribute('open', '');
-                    setTimeout(() => sec.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
-                    document.querySelectorAll('.pool-nav-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                });
-            });
+    // 2-G 打字機標語 V8.6
+    (function initTypewriter() {
+        const phrases = [
+            '先選對題材，再看籌碼與型態',
+            '量比價先，量增價漲做多',
+            '甜蜜點進場，停利×1.5 停損×0.9',
+            '法人三大籌碼：外資＋投信雙買最強',
+            '強勢評分 100 分，彼夫有責戰情室 V8.6'
+        ];
+        const el = document.getElementById('v86-tw-text');
+        let pi = 0, ci = 0, deleting = false;
+        function step() {
+            const phrase = phrases[pi];
+            if (!deleting) {
+                el.textContent = phrase.slice(0, ++ci);
+                if (ci === phrase.length) { deleting = true; setTimeout(step, 2200); return; }
+            } else {
+                el.textContent = phrase.slice(0, --ci);
+                if (ci === 0) { deleting = false; pi = (pi + 1) % phrases.length; }
+            }
+            setTimeout(step, deleting ? 38 : 68);
         }
+        step();
+    })();
 
-        window.addEventListener('scroll', () => {
-            let currentIdx = -1;
-            document.querySelectorAll('.pool-section[id^="pool-nav-"]').forEach(sec => {
-                if (sec.getBoundingClientRect().top <= 120) {
-                    currentIdx = parseInt(sec.id.replace('pool-nav-', ''));
-                }
-            });
-            document.querySelectorAll('.pool-nav-btn').forEach(btn => {
-                const idx = parseInt(btn.getAttribute('data-target').replace('pool-', ''));
-                btn.classList.toggle('active', idx === currentIdx);
-            });
-            const topBtn = document.getElementById('back-to-top');
-            if (topBtn) topBtn.style.display = window.scrollY > 400 ? 'flex' : 'none';
+    // ── 全域資料 ──
+    let allData = null;
+    let currentPool = '';
+    let currentStocks = [];
+
+    // ── 讀取資料 ──
+    async function loadData() {
+        try {
+            const res = await fetch('plum_blossom_data.json?t=' + Date.now());
+            allData = await res.json();
+            initUI();
+        } catch (e) {
+            document.getElementById('last-updated').textContent = '❌ 資料載入失敗，請確認 plum_blossom_data.json 存在';
+        }
+    }
+
+    function initUI() {
+        // 更新狀態列
+        document.getElementById('last-updated').textContent = '最後更新：' + (allData.last_updated || '—');
+        document.getElementById('api-cost').textContent = allData.api_cost_estimate || '—';
+        document.getElementById('status-time').textContent = allData.last_updated || '—';
+
+        // 儀表板
+        const stats = allData.dashboard_stats || {};
+        const ratio = stats.action_ratio || {};
+        document.getElementById('buy-count').textContent = ratio.buy ?? '—';
+        document.getElementById('watch-count').textContent = ratio.watch ?? '—';
+        renderActionChart(ratio);
+        renderIndustryChart(stats.industry_distribution || []);
+
+        // 建立側欄
+        const nav = document.getElementById('pool-nav');
+        nav.innerHTML = '';
+        const pools = allData.pools || {};
+        Object.entries(pools).forEach(([name, stocks]) => {
+            const btn = document.createElement('button');
+            btn.className = 'pool-btn';
+            btn.innerHTML = `<span>${name}</span><span class="badge">${stocks.length}</span>`;
+            btn.onclick = () => switchPool(name);
+            nav.appendChild(btn);
         });
 
-        const topBtn = document.getElementById('back-to-top');
-        if (topBtn) topBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+        // 預設顯示第一個魚池
+        const firstPool = Object.keys(pools)[0];
+        if (firstPool) switchPool(firstPool);
 
-        const footerToggle = document.getElementById('footer-log-toggle');
-        const footerContent = document.getElementById('footer-log-content');
-        if (footerToggle && footerContent) {
-            footerToggle.addEventListener('click', () => {
-                const isOpen = footerContent.classList.toggle('open');
-                footerToggle.textContent = isOpen ? '📜 收合改版歷程 ▴' : '📜 展開改版歷程 ▾';
-            });
+        // 篩選事件
+        document.getElementById('search-input').addEventListener('input', renderCards);
+        document.getElementById('action-filter').addEventListener('change', renderCards);
+        document.getElementById('sort-filter').addEventListener('change', renderCards);
+
+        // 模擬試算
+        ['sim-stock','sim-price','sim-lots','sim-fee'].forEach(id => {
+            document.getElementById(id).addEventListener('input', calcSim);
+            document.getElementById(id).addEventListener('change', calcSim);
+        });
+        document.getElementById('sim-stock').addEventListener('change', autoFillSimPrice);
+    }
+
+    function switchPool(name) {
+        currentPool = name;
+        const pools = allData.pools || {};
+        currentStocks = pools[name] || [];
+
+        document.querySelectorAll('.pool-btn').forEach((btn, i) => {
+            btn.classList.toggle('active', Object.keys(pools)[i] === name);
+        });
+
+        // 更新模擬選股下拉
+        const sel = document.getElementById('sim-stock');
+        sel.innerHTML = '<option value="">— 選擇股票 —</option>';
+        currentStocks.forEach(s => {
+            const opt = document.createElement('option');
+            opt.value = s.stock_id;
+            opt.textContent = `${s.stock_id} ${s.stock_name}`;
+            sel.appendChild(opt);
+        });
+
+        renderCards();
+    }
+
+    function renderCards() {
+        const grid = document.getElementById('cards-grid');
+        const q = document.getElementById('search-input').value.toLowerCase();
+        const actionFilter = document.getElementById('action-filter').value;
+        const sortBy = document.getElementById('sort-filter').value;
+
+        let stocks = [...currentStocks];
+
+        if (q) stocks = stocks.filter(s =>
+            s.stock_id?.includes(q) ||
+            s.stock_name?.toLowerCase().includes(q) ||
+            s.industry?.toLowerCase().includes(q)
+        );
+        if (actionFilter) stocks = stocks.filter(s => s.action === actionFilter);
+
+        if (sortBy === 'strength') stocks.sort((a,b) => (b.strength_score||0)-(a.strength_score||0));
+        else if (sortBy === 'inst') stocks.sort((a,b) => (b.inst_buy||0)-(a.inst_buy||0));
+        else if (sortBy === 'vol') stocks.sort((a,b) => (b.volume||0)-(a.volume||0));
+
+        if (stocks.length === 0) {
+            grid.innerHTML = '<div class="empty-state"><div class="icon">🌊</div><div>目前無符合條件的股票</div></div>';
+            return;
         }
 
-        new MutationObserver((_, obs) => {
-            if (fullData && document.querySelector('.pool-section[data-pool-name]')) {
-                obs.disconnect();
-                initPoolNav(fullData.pools);
+        grid.innerHTML = stocks.map(s => createCard(s)).join('');
+    }
+
+    function createCard(s) {
+        const isBuy = s.action === '買入加碼';
+
+        // V8.6 chip_signal 頂部色帶
+        const chipColors = {
+            '雙買': '#FFD700',
+            '投信單買': '#00E676',
+            '外資單買': '#4fc3f7',
+            '無買': 'rgba(139,148,158,0.3)'
+        };
+        const chipColor = chipColors[s.chip_signal] || chipColors['無買'];
+
+        const instGrade = s.inst_grade || 'X';
+        const gradeBadge = `<span class="grade-badge grade-${instGrade}">${instGrade}</span>`;
+
+        const scoreVal = Math.min(s.strength_score || 0, 100);
+        const scoreBarGrad = scoreVal >= 70
+            ? 'linear-gradient(90deg,#ffd700,#ff9500)'
+            : scoreVal >= 45
+            ? 'linear-gradient(90deg,#58a6ff,#bc8cff)'
+            : 'linear-gradient(90deg,#3fb950,#58a6ff)';
+
+        // V8.6 甜蜜點區塊
+        const sweetLow = s.sweet_buy_low || 0;
+        const sweetHigh = s.sweet_buy_high || 0;
+        const firstTarget = s.first_target || 0;
+        const hasSweetData = sweetLow > 0 && isBuy;
+
+        const sweetBlock = hasSweetData ? `
+            <div class="sweet-zone">
+                <div class="sweet-zone-title">🍯 Joe 甜蜜買進區間</div>
+                <div class="sweet-zone-range">${sweetLow} – ${sweetHigh}</div>
+                <div class="sweet-price-row">
+                    <div class="sweet-price-item">
+                        <div class="sweet-price-label">第一停利 +15%</div>
+                        <div class="sweet-price-val" style="color:#3fb950">${firstTarget}</div>
+                    </div>
+                    <div class="sweet-price-item">
+                        <div class="sweet-price-label">目標價 ×1.5</div>
+                        <div class="sweet-price-val" style="color:#ffd700">${s.target_price}</div>
+                    </div>
+                    <div class="sweet-price-item">
+                        <div class="sweet-price-label">停損 ×0.9</div>
+                        <div class="sweet-price-val" style="color:#f85149">${s.stop_loss}</div>
+                    </div>
+                </div>
+            </div>` : '';
+
+        const themeTag = s.theme_tag ? `<span class="tag tag-theme">${s.theme_tag}</span>` : '';
+
+        return `
+        <div class="stock-card" style="--chip-color:${chipColor}">
+            <div class="card-body">
+                <div class="card-header">
+                    <div>
+                        <div class="card-name">${s.stock_name || s.stock_id}</div>
+                        <div class="card-id">${s.stock_id}</div>
+                    </div>
+                    <span class="card-action ${isBuy ? 'action-buy' : 'action-watch'}">${s.action}</span>
+                </div>
+
+                <div class="card-price">${s.close}</div>
+                <div class="card-meta">量 ${(s.volume||0).toLocaleString()} 張 ｜ 量比 ${s.vol_ratio??'—'}×</div>
+
+                <div class="card-tags">
+                    ${s.industry ? `<span class="tag tag-industry">${s.industry}</span>` : ''}
+                    ${themeTag}
+                    ${s.chip_signal ? `<span class="tag" style="background:${chipColor}22;color:${chipColor};border:1px solid ${chipColor}44">${s.chip_signal}</span>` : ''}
+                    ${gradeBadge}
+                    ${s.bull_align ? '<span class="tag" style="background:rgba(255,215,0,.1);color:#ffd700;font-size:.68rem">多頭排列</span>' : ''}
+                </div>
+
+                <div class="score-bar-wrap">
+                    <div class="score-label">
+                        <span>強勢評分</span>
+                        <span style="color:${scoreVal>=70?'#ffd700':scoreVal>=45?'#58a6ff':'#3fb950'};font-weight:700">${scoreVal} 分</span>
+                    </div>
+                    <div class="score-bar-track">
+                        <div class="score-bar-fill" style="width:${scoreVal}%;background:${scoreBarGrad};"></div>
+                    </div>
+                </div>
+
+                ${sweetBlock}
+
+                <div class="card-metrics">
+                    <div class="metric-item">
+                        <div class="metric-label">MA5</div>
+                        <div class="metric-value">${s.ma5}</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-label">MA10</div>
+                        <div class="metric-value">${s.ma10||'—'}</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-label">RSI14</div>
+                        <div class="metric-value" style="color:${(s.rsi14||50)>70?'#f85149':(s.rsi14||50)<30?'#ffd700':'inherit'}">${s.rsi14||'—'}</div>
+                    </div>
+                </div>
+
+                <div class="card-inst">
+                    <div class="inst-item">
+                        <div class="inst-label">法人合計</div>
+                        <div class="inst-val" style="color:${(s.inst_buy||0)>0?'#3fb950':'#f85149'}">${(s.inst_buy||0).toLocaleString()}</div>
+                    </div>
+                    <div class="inst-item">
+                        <div class="inst-label">外資</div>
+                        <div class="inst-val" style="color:${(s.foreign_buy||0)>0?'#4fc3f7':'#f85149'}">${(s.foreign_buy||0).toLocaleString()}</div>
+                    </div>
+                    <div class="inst-item">
+                        <div class="inst-label">投信</div>
+                        <div class="inst-val" style="color:${(s.trust_buy||0)>0?'#00E676':'#f85149'}">${(s.trust_buy||0).toLocaleString()}</div>
+                    </div>
+                </div>
+
+                ${!hasSweetData ? `
+                <div class="card-targets">
+                    <div class="target-item">
+                        <div class="target-label">目標價 ×1.5</div>
+                        <div class="target-val" style="color:#ffd700">${s.target_price}</div>
+                    </div>
+                    <div class="target-item">
+                        <div class="target-label">停損 ×0.9</div>
+                        <div class="target-val" style="color:#f85149">${s.stop_loss}</div>
+                    </div>
+                </div>` : ''}
+            </div>
+        </div>`;
+    }
+
+    function renderActionChart(ratio) {
+        const ctx = document.getElementById('action-chart').getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['買入加碼', '靜候觀察'],
+                datasets: [{
+                    data: [ratio.buy || 0, ratio.watch || 0],
+                    backgroundColor: ['rgba(63,185,80,.7)', 'rgba(139,148,158,.3)'],
+                    borderColor: ['#3fb950', '#8b949e'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                plugins: { legend: { labels: { color: '#8b949e', font: { size: 11 } } } },
+                cutout: '65%'
             }
-        }).observe(document.getElementById('main-container'), { childList: true });
+        });
+    }
+
+    function renderIndustryChart(dist) {
+        if (!dist || dist.length === 0) return;
+        const ctx = document.getElementById('industry-chart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: dist.slice(0, 8).map(d => d.industry.slice(0, 6)),
+                datasets: [{
+                    data: dist.slice(0, 8).map(d => d.count),
+                    backgroundColor: 'rgba(88,166,255,.5)',
+                    borderColor: '#58a6ff',
+                    borderWidth: 1,
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { ticks: { color: '#8b949e', font: { size: 9 } }, grid: { display: false } },
+                    y: { ticks: { color: '#8b949e', font: { size: 9 } }, grid: { color: 'rgba(255,255,255,.04)' } }
+                }
+            }
+        });
+    }
+
+    // 2-E 模擬面板：自動帶入甜蜜點低點
+    function autoFillSimPrice() {
+        const sid = document.getElementById('sim-stock').value;
+        if (!sid) return;
+        const stock = currentStocks.find(s => s.stock_id === sid);
+        if (!stock) return;
+        const sweetLow = stock.sweet_buy_low || stock.close || '';
+        document.getElementById('sim-price').value = sweetLow || '';
+        calcSim();
+    }
+
+    function calcSim() {
+        const sid = document.getElementById('sim-stock').value;
+        const price = parseFloat(document.getElementById('sim-price').value);
+        const lots = parseInt(document.getElementById('sim-lots').value) || 1;
+        const feeRate = parseFloat(document.getElementById('sim-fee').value) / 100 || 0.001425;
+
+        const result = document.getElementById('sim-result');
+        if (!sid || isNaN(price) || price <= 0) {
+            result.innerHTML = '← 請選擇股票並輸入買入價格';
+            return;
+        }
+
+        const stock = currentStocks.find(s => s.stock_id === sid);
+        if (!stock) return;
+
+        const totalCost = price * lots * 1000;
+        const buyFee = Math.max(Math.round(totalCost * feeRate), 20);
+        const totalIn = totalCost + buyFee;
+
+        const target15 = (stock.first_target || price * 1.15);
+        const target15Cost = target15 * lots * 1000;
+        const sellFee15 = Math.max(Math.round(target15Cost * feeRate), 20);
+        const sellTax15 = Math.round(target15Cost * 0.003);
+        const profit15 = target15Cost - sellFee15 - sellTax15 - totalIn;
+
+        const target15p = ((target15 - price) / price * 100).toFixed(1);
+        const stopPrice = stock.stop_loss || price * 0.9;
+        const stopCost = stopPrice * lots * 1000;
+        const sellFeeStop = Math.max(Math.round(stopCost * feeRate), 20);
+        const sellTaxStop = Math.round(stopCost * 0.003);
+        const loss = stopCost - sellFeeStop - sellTaxStop - totalIn;
+
+        const targetPrice = stock.target_price || price * 1.5;
+        const targetCost = targetPrice * lots * 1000;
+        const sellFeeTarget = Math.max(Math.round(targetCost * feeRate), 20);
+        const sellTaxTarget = Math.round(targetCost * 0.003);
+        const profitTarget = targetCost - sellFeeTarget - sellTaxTarget - totalIn;
+
+        result.innerHTML = `
+        <div class="sim-row"><span>股票</span><span class="sim-highlight">${stock.stock_id} ${stock.stock_name}</span></div>
+        <div class="sim-row"><span>買入價格</span><span>${price} 元 × ${lots} 張</span></div>
+        <div class="sim-row"><span>買入成本（含手續費）</span><span>${totalIn.toLocaleString()} 元</span></div>
+        <hr class="sim-divider">
+        <div class="sim-row"><span>🍯 甜蜜區間</span><span style="color:#ffd700">${stock.sweet_buy_low||'—'} – ${stock.sweet_buy_high||'—'}</span></div>
+        <div class="sim-row"><span>🎯 第一停利 +${target15p}%（×1.15）</span><span class="sim-buy">+${profit15.toLocaleString()} 元</span></div>
+        <div class="sim-row"><span>🏆 目標價（×1.5）</span><span class="sim-buy">+${profitTarget.toLocaleString()} 元</span></div>
+        <div class="sim-row"><span>🛑 停損觸發（×0.9）</span><span class="sim-danger">${loss.toLocaleString()} 元</span></div>
+        <hr class="sim-divider">
+        <div class="sim-row"><span>⚠️ 風報比（停利第一目標/停損）</span><span class="sim-highlight">${Math.abs(profit15/loss).toFixed(2)}：1</span></div>
+        `;
+    }
+
+    loadData();
+
+    // ── 粒子啟動 ──
+    (function() {
+        const canvas = document.getElementById('v86-canvas-bg');
+        if (!canvas || !canvas.getContext) return;
+        const ctx = canvas.getContext('2d');
+        let W = canvas.width = window.innerWidth;
+        let H = canvas.height = window.innerHeight;
+        window.addEventListener('resize', () => {
+            W = canvas.width = window.innerWidth;
+            H = canvas.height = window.innerHeight;
+        });
+        const particles = Array.from({length: 130}, () => ({
+            x: Math.random() * W,
+            y: Math.random() * H,
+            r: Math.random() * 1.4 + 0.3,
+            vx: (Math.random() - 0.5) * 0.3,
+            vy: (Math.random() - 0.5) * 0.3,
+            a: Math.random() * 0.5 + 0.15,
+            hue: Math.random() < 0.5 ? 210 : 270
+        }));
+        function tick() {
+            ctx.clearRect(0, 0, W, H);
+            particles.forEach(p => {
+                p.x += p.vx; p.y += p.vy;
+                if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
+                if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                ctx.fillStyle = `hsla(${p.hue},80%,70%,${p.a})`;
+                ctx.fill();
+            });
+            requestAnimationFrame(tick);
+        }
+        tick();
+    })();
     </script>
 </body>
 </html>
