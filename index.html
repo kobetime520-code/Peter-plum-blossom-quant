@@ -282,6 +282,20 @@
         .grade-C { background: rgba(136,146,176,0.12); color: #8892B0; border: 1px solid rgba(136,146,176,0.3); }
         .grade-X { background: rgba(255,82,82,0.10); color: #FF5252; border: 1px solid rgba(255,82,82,0.3); }
 
+        /* V8.7 甜蜜點信心等級 */
+        .sweet-conf-HIGH { color: #ffd700; font-weight: 700; }
+        .sweet-conf-MID  { color: #58a6ff; font-weight: 600; }
+        .sweet-conf-LOW  { color: #8b949e; font-weight: 500; }
+
+        /* V8.7 標籤基礎 + 題材分色 */
+        .tag { display:inline-block; border-radius:4px; padding:2px 6px; font-size:.68rem; border:1px solid transparent; }
+        .tag-theme { background:rgba(188,140,255,.1); color:var(--neon-cyan); font-size:.68rem; }
+        .tag-theme[data-type="ai"]    { background:rgba(255,215,0,.1);   color:#ffd700; }
+        .tag-theme[data-type="semi"]  { background:rgba(88,166,255,.1);  color:#58a6ff; }
+        .tag-theme[data-type="bio"]   { background:rgba(63,185,80,.1);   color:#3fb950; }
+        .tag-theme[data-type="ship"]  { background:rgba(79,195,247,.1);  color:#4fc3f7; }
+        .tag-theme[data-type="green"] { background:rgba(102,187,106,.1); color:#66bb6a; }
+
         /* =========================================
            V8.6 四大概念 chip 標語
            ========================================= */
@@ -636,7 +650,28 @@
             const sweetLow   = s.sweet_buy_low  || 0;
             const sweetHigh  = s.sweet_buy_high || 0;
             const firstTarget = s.first_target  || 0;
-            const themeTag   = s.theme_tag || '';
+            const themeTypeMap = {
+                '🤖 AI/雲端':    'ai',
+                '🔬 半導體':     'semi',
+                '💊 生技醫療':   'bio',
+                '🚢 航運':       'ship',
+                '🌱 綠能':       'green',
+            };
+            const themeType = themeTypeMap[s.theme_tag] || '';
+            const themeTag = s.theme_tag
+                ? `<span class="tag tag-theme" data-type="${themeType}">${s.theme_tag}</span>`
+                : '';
+
+            // V8.7 突破標籤
+            const breakoutLabel = s.breakout_label || '';
+            const breakoutBadge = breakoutLabel
+                ? `<span class="tag" style="background:rgba(255,160,0,.13);color:#ffb347;border:1px solid rgba(255,160,0,.3);font-size:.68rem">${breakoutLabel}</span>`
+                : '';
+            const ma5Days = s.ma5_above_ma10_days || 0;
+            const ma5DaysBadge = ma5Days >= 5
+                ? `<span class="tag" style="background:rgba(63,185,80,.1);color:#3fb950;font-size:.67rem">MA5↑ 持續 ${ma5Days}日</span>`
+                : '';
+
             const hasSweetData = sweetLow > 0 && isBuy;
             // V8.6 評分條漸層
             const scoreBarGrad = scoreVal>=70 ? 'linear-gradient(90deg,#00E676,#64FFDA)'
@@ -651,7 +686,7 @@
                     <div class="stock-header">
                         <div>
                             <span class="stock-id">${s.stock_id}</span>
-                            <span class="stock-name">${s.stock_name} <span class="industry-badge">${indText}</span>${themeTag ? `<span style="margin-left:4px;font-size:11px;color:var(--neon-cyan);opacity:.85;">${themeTag}</span>` : ''}${trustBadge}</span>
+                            <span class="stock-name">${s.stock_name} <span class="industry-badge">${indText}</span>${themeTag ? `<span style="margin-left:4px;">${themeTag}</span>` : ''}${trustBadge}</span>
                         </div>
                         <div class="inst-badge" style="color:${instColor}; font-size:12px; font-weight: bold;">總法人 ${instText}</div>
                     </div>
@@ -677,10 +712,11 @@
                     </div>
                     <div class="data-row"><span>RSI14 / 量比</span><b>${rsi14Val} / ${volRatioVal}x</b></div>
                     <div class="data-row"><span>均線排列</span><b style="color: ${bullAlignColor};">${bullAlignText}</b></div>
-                    
+                    ${(breakoutBadge || ma5DaysBadge) ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0;">${breakoutBadge}${ma5DaysBadge}</div>` : ''}
+
                     ${hasSweetData ? `
                     <div class="sweet-zone">
-                        <div class="sweet-zone-title">🍬 甜蜜買進區間 <span style="font-size:10px;opacity:.7;">（MA均線中間帶）</span></div>
+                        <div class="sweet-zone-title">🍬 甜蜜買進區間 <span class="${({'HIGH':'sweet-conf-HIGH','MID':'sweet-conf-MID','LOW':'sweet-conf-LOW'})[s.sweet_confidence||'MID']||'sweet-conf-MID'}">${({'HIGH':'⭐ 高信心','MID':'🔵 中信心','LOW':'⚪ 觀察型'})[s.sweet_confidence||'MID']}</span></div>
                         <div class="sweet-zone-range">¥ ${sweetLow} ～ ¥ ${sweetHigh}</div>
                         <div class="sweet-price-row">
                             <div class="sweet-price-item">

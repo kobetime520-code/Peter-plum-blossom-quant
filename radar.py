@@ -1,5 +1,5 @@
 # ==========================================
-# 靜水流深戰情室：核心監控與全域雷達 V8.6
+# 靜水流深戰情室：核心監控與全域雷達 V8.7
 # ==========================================
 # V7.5 API 降載三劍客：
 #   ① Yahoo MA5 前置預篩  → 市場掃描省 ~40% 呼叫
@@ -286,33 +286,6 @@ def _calc_volume_score(vol_lots, vol_ratio) -> int:
 
 
 
-# =====================================================================
-# 🏷️ V8.6 題材標籤對應（Grace 規格，零 API 消耗）
-# =====================================================================
-_THEME_MAP = [
-    (["半導體", "積體電路", "晶圓", "IC", "封測"], "🔬 半導體"),
-    (["AI", "人工智慧", "伺服器", "雲端", "資料中心", "網路通訊"], "🤖 AI/雲端"),
-    (["電動車", "電池", "儲能", "新能源"], "🚗 電動車/儲能"),
-    (["被動元件", "電容", "電阻", "電感"], "🔩 被動元件"),
-    (["面板", "顯示器", "光電"], "📺 面板/光電"),
-    (["生技", "醫療", "製藥", "醫材"], "💊 生技醫療"),
-    (["金融", "銀行", "保險", "證券"], "🏦 金融"),
-    (["航運", "海運", "空運"], "🚢 航運"),
-    (["鋼鐵", "金屬", "原物料"], "🏗️ 原物料"),
-    (["軟體", "資訊服務", "遊戲"], "💻 軟體/遊戲"),
-    (["ETF", "指數"], "📊 ETF"),
-]
-
-def _get_theme_tag(industry: str) -> str:
-    """V8.6：依產業類別對應題材標籤（Grace 規格）"""
-    if not industry:
-        return "📌 其他"
-    for keywords, tag in _THEME_MAP:
-        for kw in keywords:
-            if kw.lower() in industry.lower():
-                return tag
-    return "📌 其他"
-
 def _calc_chip_score(inst_buy, foreign_buy, trust_buy) -> int:
     score = 0
     if foreign_buy > 0 and trust_buy > 0:
@@ -332,36 +305,109 @@ def _calc_chip_score(inst_buy, foreign_buy, trust_buy) -> int:
     return min(score, 35)
 
 
+def _calc_ma5_breakout(df_prices: pd.DataFrame) -> dict:
+    """V8.7 Joe：計算 MA5 突破 MA30 後第幾天（用現有 60 日 yfinance K 線，零 API）"""
+    try:
+        if len(df_prices) < 30:
+            return {"ma5_breakout_day": 0, "breakout_label": "", "ma5_above_ma10_days": 0}
+
+        closes = df_prices['Close']
+        ma5_series  = closes.rolling(window=5).mean()
+        ma10_series = closes.rolling(window=10).mean()
+        ma30_series = closes.rolling(window=30).mean()
+
+        breakout_day = 0
+        for i in range(1, min(len(df_prices), 30)):
+            ma5_now   = ma5_series.iloc[-i]
+            ma30_now  = ma30_series.iloc[-i]
+            if pd.isna(ma5_now) or pd.isna(ma30_now):
+                continue
+            if ma5_now > ma30_now:
+                breakout_day += 1
+            else:
+                break
+
+        ma5_above_ma10_days = 0
+        for i in range(1, min(len(df_prices), 30)):
+            ma5_val  = ma5_series.iloc[-i]
+            ma10_val = ma10_series.iloc[-i]
+            if pd.isna(ma5_val) or pd.isna(ma10_val):
+                continue
+            if ma5_val > ma10_val:
+                ma5_above_ma10_days += 1
+            else:
+                break
+
+        if breakout_day == 0:
+            breakout_label = ""
+        elif breakout_day == 1:
+            breakout_label = "🔥 第一日強勢突破"
+        elif breakout_day <= 3:
+            breakout_label = f"⚡ 突破確認中（第 {breakout_day} 日）"
+        elif breakout_day <= 7:
+            breakout_label = f"✅ 突破穩固（第 {breakout_day} 日）"
+        else:
+            breakout_label = f"📈 趨勢延伸（第 {breakout_day} 日）"
+
+        return {
+            "ma5_breakout_day":    breakout_day,
+            "breakout_label":      breakout_label,
+            "ma5_above_ma10_days": ma5_above_ma10_days,
+        }
+    except Exception:
+        return {"ma5_breakout_day": 0, "breakout_label": "", "ma5_above_ma10_days": 0}
+
+
 # =====================================================================
-# 🆕 V8.6 Grace 題材標籤對應表（零 API 消耗）
+# 🆕 V8.7 Grace：擴充版題材對應表（含英文關鍵字，yfinance 相容）
 # =====================================================================
 _THEME_MAP = [
-    (["半導體", "積體電路", "晶圓", "IC", "封測"], "🔬 半導體"),
-    (["AI", "人工智慧", "伺服器", "雲端", "資料中心", "網路通訊"], "🤖 AI/雲端"),
-    (["電動車", "電池", "儲能", "新能源"], "🚗 電動車/儲能"),
-    (["被動元件", "電容", "電阻", "電感"], "🔩 被動元件"),
-    (["面板", "顯示器", "光電"], "📺 面板/光電"),
-    (["生技", "醫療", "製藥", "醫材"], "💊 生技醫療"),
-    (["金融", "銀行", "保險", "證券"], "🏦 金融"),
-    (["航運", "海運", "空運"], "🚢 航運"),
-    (["鋼鐵", "金屬", "原物料"], "🏗️ 原物料"),
-    (["軟體", "資訊服務", "遊戲"], "💻 軟體/遊戲"),
-    (["ETF", "指數"], "📊 ETF"),
+    (["CoWoS", "HBM", "Chiplet", "Advanced Package", "先進封裝", "異質整合",
+      "AI", "人工智慧", "伺服器", "Server", "雲端", "Cloud",
+      "資料中心", "Data Center", "網路通訊", "GB200", "Blackwell"], "🤖 AI/雲端"),
+    (["半導體", "積體電路", "晶圓", "Wafer", "IC", "封測", "OSAT",
+      "Foundry", "晶圓代工", "製程"], "🔬 半導體"),
+    (["DRAM", "NAND", "Flash", "記憶體", "Memory", "SSD", "儲存"], "💾 記憶體"),
+    (["石英", "Quartz", "晶振", "Oscillator", "諧振", "TCXO", "OCXO",
+      "被動元件", "電容", "Capacitor", "電阻", "Resistor",
+      "電感", "Inductor", "MLCC"], "🔩 石英/被動元件"),
+    (["電動車", "EV", "Electric Vehicle", "電池", "Battery",
+      "儲能", "Energy Storage", "新能源", "BMS", "充電"], "🚗 電動車/儲能"),
+    (["衛星", "Satellite", "LEO", "Low Earth Orbit", "Starlink",
+      "航太", "Aerospace", "天線", "Antenna"], "🛰️ 低軌衛星"),
+    (["風電", "Wind", "太陽能", "Solar", "離岸風電", "Offshore",
+      "光伏", "綠能", "再生能源", "Renewable"], "🌱 綠能"),
+    (["面板", "Panel", "顯示器", "Display", "OLED", "光電",
+      "Optoelectronics", "背光", "Backlight"], "📺 面板/光電"),
+    (["生技", "Biotech", "醫療", "Medical", "製藥", "Pharma",
+      "醫材", "Healthcare", "新藥", "臨床"], "💊 生技醫療"),
+    (["金融", "Finance", "銀行", "Bank", "保險", "Insurance",
+      "證券", "Securities", "投信", "資產管理"], "🏦 金融"),
+    (["航運", "Shipping", "海運", "Marine", "空運", "Airline",
+      "貨運", "Freight", "貨櫃", "Container"], "🚢 航運"),
+    (["鋼鐵", "Steel", "金屬", "Metal", "原物料", "Commodity",
+      "銅", "Copper", "鋁", "Aluminum"], "🏗️ 原物料"),
+    (["軟體", "Software", "資訊服務", "IT Service", "遊戲", "Game",
+      "SaaS", "雲端服務", "數位", "Digital"], "💻 軟體/遊戲"),
+    (["網通", "Networking", "連接器", "Connector", "路由器", "Router",
+      "交換器", "Switch", "光纖", "Fiber", "5G", "Wi-Fi"], "📡 網通/連接器"),
+    (["ETF", "指數", "Index Fund", "基金"], "📊 ETF"),
 ]
 
 
-def _get_theme_tag(industry: str) -> str:
-    """V8.6 Grace：由 industry_category 對應題材標籤（不消耗 API）"""
-    if not industry:
+def _get_theme_tag(industry: str, yf_industry: str = "", yf_sector: str = "") -> str:
+    """V8.7 Grace：題材標籤對應（優先 yfinance industry/sector，備援 FinMind industry_category）"""
+    combined = " ".join(filter(None, [industry, yf_industry, yf_sector]))
+    if not combined.strip():
         return "📌 其他"
     for keywords, tag in _THEME_MAP:
         for kw in keywords:
-            if kw.lower() in industry.lower():
+            if kw.lower() in combined.lower():
                 return tag
     return "📌 其他"
 
 
-def calculate_stock_data(sid, name, industry, df_prices, df_inst, force_show=False):
+def calculate_stock_data(sid, name, industry, df_prices, df_inst, force_show=False, yf_info=None):
     try:
         if df_prices is not None and not df_prices.empty:
             if 'Close' not in df_prices.columns:
@@ -377,7 +423,9 @@ def calculate_stock_data(sid, name, industry, df_prices, df_inst, force_show=Fal
                     "ma10": 0, "rsi14": 50.0, "vol_ratio": 1.0, "bull_align": False,
                     "chip_signal": "無買", "inst_grade": "X", "strength_score": 0,
                     "first_target": 0, "sweet_buy_low": 0, "sweet_buy_high": 0,
+                    "sweet_confidence": "LOW",
                     "theme_tag": _get_theme_tag(industry),
+                    "ma5_breakout_day": 0, "breakout_label": "", "ma5_above_ma10_days": 0,
                 }
             return None
 
@@ -397,6 +445,12 @@ def calculate_stock_data(sid, name, industry, df_prices, df_inst, force_show=Fal
         vol_ratio = round(float(latest['Volume']) / float(vol_ma5), 2) if (pd.notna(vol_ma5) and vol_ma5 > 0) else 1.0
         rsi14 = _calc_rsi14(df_prices['Close'])
         bull_align = bool(ma5 > ma10 and ma10 > ma30)
+
+        # 🆕 V8.7 Joe：MA5 突破日數追蹤（零 API）
+        breakout_info = _calc_ma5_breakout(df_prices)
+        ma5_breakout_day    = breakout_info["ma5_breakout_day"]
+        breakout_label      = breakout_info["breakout_label"]
+        ma5_above_ma10_days = breakout_info["ma5_above_ma10_days"]
 
         # 🎯 V7.1 籌碼細分核心邏輯（完整保留）
         inst_buy_30d = 0
@@ -435,25 +489,29 @@ def calculate_stock_data(sid, name, industry, df_prices, df_inst, force_show=Fal
             + _calc_chip_score(inst_buy_30d, foreign_buy_30d, trust_buy_30d)
         )
 
-        # 🆕 V8.6 Joe 甜蜜買進區間 & 第一停利
-        ma_top = max(ma5, ma10)
-        sweet_buy_low  = round(ma_top * 0.990, 2)
-        sweet_buy_high = round(ma_top * 1.005, 2)
-        first_target   = round(close_price * 1.15, 2)
-
-        # 🆕 V8.6 Grace 題材標籤
-        theme_tag = _get_theme_tag(industry)
-
         action = "買入加碼" if close_price >= ma5 and inst_buy_30d > 0 else "靜候觀察"
 
-        # V8.6 甜蜜買進區間（Joe 計算法：MA5/MA10 上緣 -1% ~ +0.5%）
+        # 🆕 V8.7 Joe：三段式甜蜜點（依 RSI + 量比動態調整）
         ma_top = max(ma5, ma10)
-        sweet_buy_low  = round(ma_top * 0.990, 2)
-        sweet_buy_high = round(ma_top * 1.005, 2)
-        # V8.6 第一停利（+15%）& 最終目標（+50%，沿用）
+        if rsi14 >= 65 and vol_ratio >= 2.0:
+            sweet_buy_low  = round(ma_top * 1.000, 2)
+            sweet_buy_high = round(ma_top * 1.012, 2)
+            sweet_confidence = "HIGH"
+        elif rsi14 < 50 and vol_ratio < 1.0:
+            sweet_buy_low  = round(ma_top * 0.982, 2)
+            sweet_buy_high = round(ma_top * 1.000, 2)
+            sweet_confidence = "LOW"
+        else:
+            sweet_buy_low  = round(ma_top * 0.992, 2)
+            sweet_buy_high = round(ma_top * 1.008, 2)
+            if 50 <= rsi14 <= 65 and vol_ratio >= 1.5 and bull_align:
+                sweet_confidence = "HIGH"
+            else:
+                sweet_confidence = "MID"
         first_target = round(close_price * 1.15, 2)
-        # V8.6 題材標籤（Grace 規格）
-        theme_tag = _get_theme_tag(industry)
+        yf_ind = (yf_info or {}).get("industry", "")
+        yf_sec = (yf_info or {}).get("sector", "")
+        theme_tag = _get_theme_tag(industry, yf_ind, yf_sec)
 
         return {
             "stock_id": sid, "stock_name": name, "industry": industry,
@@ -473,10 +531,10 @@ def calculate_stock_data(sid, name, industry, df_prices, df_inst, force_show=Fal
             "chip_signal": chip_signal,
             "inst_grade": inst_grade,
             "strength_score": strength_score,
-            "first_target": first_target,
-            "sweet_buy_low": sweet_buy_low,
-            "sweet_buy_high": sweet_buy_high,
-            "theme_tag": theme_tag,
+            "sweet_confidence":    sweet_confidence,
+            "ma5_breakout_day":    ma5_breakout_day,
+            "breakout_label":      breakout_label,
+            "ma5_above_ma10_days": ma5_above_ma10_days,
         }
     except Exception:
         if force_show:
@@ -488,7 +546,9 @@ def calculate_stock_data(sid, name, industry, df_prices, df_inst, force_show=Fal
                 "ma10": 0, "rsi14": 50.0, "vol_ratio": 1.0, "bull_align": False,
                 "chip_signal": "無買", "inst_grade": "X", "strength_score": 0,
                 "first_target": 0, "sweet_buy_low": 0, "sweet_buy_high": 0,
+                "sweet_confidence": "LOW",
                 "theme_tag": _get_theme_tag(industry),
+                "ma5_breakout_day": 0, "breakout_label": "", "ma5_above_ma10_days": 0,
             }
         return None
 
@@ -582,6 +642,47 @@ def main():
     name_map = dict(zip(df_info['stock_id'].astype(str), df_info['stock_name']))
     industry_map = dict(zip(df_info['stock_id'].astype(str), df_info['industry_category']))
     market_map = dict(zip(df_info['stock_id'].astype(str), df_info['type']))
+
+    # 🆕 V8.7 Grace：yfinance industry/sector 批量快取（7日更新，零 FinMind API）
+    YF_INFO_CACHE_FILE = "yf_info_cache.json"
+    yf_industry_map = {}
+    yf_sector_map   = {}
+    try:
+        yf_info_cache = {}
+        if os.path.exists(YF_INFO_CACHE_FILE):
+            with open(YF_INFO_CACHE_FILE, 'r', encoding='utf-8') as f:
+                yf_info_cache = json.load(f)
+            cache_age = (taiwan_time - datetime.strptime(
+                yf_info_cache.get("date", "2000-01-01"), "%Y-%m-%d")).days
+            if cache_age < 7:
+                yf_industry_map = yf_info_cache.get("industry", {})
+                yf_sector_map   = yf_info_cache.get("sector", {})
+                print(f"  - 🏷️  yfinance info 快取命中（{cache_age}天前，省略重抓）")
+            else:
+                raise ValueError("快取過期")
+        else:
+            raise ValueError("無快取")
+    except Exception:
+        print("  - 🏷️  yfinance info 重新抓取（魚池核心股票）...")
+        target_sids = list(set(sid for tickers in POOL_SETTINGS.values() for sid in tickers))
+        for sid in target_sids[:60]:
+            try:
+                m_type = str(market_map.get(str(sid), "")).lower()
+                suffix = ".TWO" if ("tpex" in m_type or "上櫃" in m_type or "otc" in m_type) else ".TW"
+                info = yf.Ticker(f"{sid}{suffix}").info
+                yf_industry_map[sid] = info.get("industry", "")
+                yf_sector_map[sid]   = info.get("sector", "")
+                time.sleep(0.1)
+            except Exception:
+                pass
+        try:
+            with open(YF_INFO_CACHE_FILE, 'w', encoding='utf-8') as f:
+                json.dump({"date": today_str,
+                           "industry": yf_industry_map,
+                           "sector":   yf_sector_map}, f, ensure_ascii=False)
+            print(f"  - 💾 yfinance info 快取寫出（{len(yf_industry_map)} 支）")
+        except Exception:
+            pass
 
     history = {}
     if os.path.exists(HISTORY_FILE):
@@ -696,7 +797,10 @@ def main():
             time.sleep(0.2)
 
             ind = industry_map.get(sid, "未知產業")
-            s_data = calculate_stock_data(sid, name_map.get(sid, sid), ind, df_yf, df_i)
+            s_data = calculate_stock_data(
+                sid, name_map.get(sid, sid), ind, df_yf, df_i,
+                yf_info={"industry": yf_industry_map.get(sid, ""),
+                          "sector":   yf_sector_map.get(sid, "")})
             if s_data and s_data['action'] == "買入加碼":
                 market_pool.append(s_data)
                 added_market_sids.add(sid)
@@ -759,7 +863,11 @@ def main():
             df_i = fetch_finmind("TaiwanStockInstitutionalInvestorsBuySell", start_30d, today_str, sid)
 
             ind = industry_map.get(sid, "未分類")
-            s_data = calculate_stock_data(sid, name_map.get(sid, sid), ind, df_price_to_use, df_i, force_show=True)
+            s_data = calculate_stock_data(
+                sid, name_map.get(sid, sid), ind, df_price_to_use, df_i,
+                force_show=True,
+                yf_info={"industry": yf_industry_map.get(sid, ""),
+                          "sector":   yf_sector_map.get(sid, "")})
             if s_data:
                 results.append(s_data)
                 seen_in_pool.add(sid)
