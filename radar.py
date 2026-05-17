@@ -574,7 +574,7 @@ def main():
             _write_log_report(_check_time, status="Skipped-Holiday")
             return
 
-    print("🌊 啟動彼夫有責戰情室 (V8.6 選股法則版：theme_tag + 甜蜜點 + 第一停利 + 籌碼分級 + 汪洋排序)...")
+    print("🌊 啟動彼夫有責戰情室 (V8.7 選股法則版：theme_tag + 甜蜜點 + 第一停利 + 籌碼分級 + 汪洋排序)...")
 
     # ── 載入本地快取（含 TTL 清理） ─────────────────────────────────────
     # 🆕 V7.8：啟動時自動清除超過 CACHE_TTL_HOURS 的過期資料
@@ -926,7 +926,7 @@ def main():
     _write_log_report(taiwan_time, stocks_processed=_stocks_processed_count, status="Success")
 
     print(f"\n🎉 掃描完成！本次共消耗 FinMind API {_api_calls_count} 次（快取命中 {_cache_hits_count} 次）")
-    print(f"   V8.6 儀表板數據：產業 {len(industry_dist)} 類、魚池多空 {buy_n}/{watch_n}、處理 {_stocks_processed_count} 檔")
+    print(f"   V8.7 儀表板數據：產業 {len(industry_dist)} 類、魚池多空 {buy_n}/{watch_n}、處理 {_stocks_processed_count} 檔")
 
     # 🆕 V7.9：本地執行時自動呼叫 git_sync.py 推送戰報
     if not os.environ.get("GITHUB_ACTIONS"):
