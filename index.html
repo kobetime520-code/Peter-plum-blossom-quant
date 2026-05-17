@@ -196,23 +196,6 @@
         }
         .back-to-top-btn:hover { background: var(--badge-bg); transform: translateY(-2px); }
 
-        /* =========================================
-           回測績效報告 (V8.4)
-           ========================================= */
-        .backtest-pool-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; padding: 16px 0; }
-        .backtest-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
-        .backtest-table th { color: var(--text-muted); font-weight: normal; padding: 4px 8px; text-align: right; border-bottom: 1px dashed var(--panel-border); }
-        .backtest-table th:first-child { text-align: left; }
-        .backtest-table td { padding: 5px 8px; text-align: right; }
-        .backtest-table td:first-child { text-align: left; color: var(--text-muted); font-size: 12px; }
-        .backtest-detail-toggle { width: 100%; margin-top: 12px; background: transparent; border: 1px dashed var(--panel-border); border-radius: 6px; color: var(--text-muted); font-size: 12px; cursor: pointer; padding: 6px 10px; text-align: left; font-family: inherit; transition: 0.3s; }
-        .backtest-detail-toggle:hover { color: var(--neon-cyan); border-color: var(--neon-cyan); }
-        .backtest-detail-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; }
-        .backtest-detail-table th { color: var(--text-muted); font-weight: normal; padding: 3px 6px; text-align: right; border-bottom: 1px dashed var(--panel-border); }
-        .backtest-detail-table th:first-child, .backtest-detail-table th:nth-child(2), .backtest-detail-table th:nth-child(3) { text-align: left; }
-        .backtest-detail-table td { padding: 4px 6px; text-align: right; border-bottom: 1px solid rgba(255,255,255,0.03); }
-        .backtest-detail-table td:first-child, .backtest-detail-table td:nth-child(2), .backtest-detail-table td:nth-child(3) { text-align: left; }
-
         /* 頁尾版本歷程 (V8.1) */
         .footer-log-section { max-width: 900px; margin: 0 auto 10px; padding: 0 20px; }
         .footer-log-toggle { background: transparent; border: 1px dashed var(--panel-border); border-radius: 8px; color: var(--text-muted); font-size: 12px; cursor: pointer; padding: 8px 18px; width: 100%; text-align: center; font-family: inherit; transition: 0.3s; letter-spacing: 0.5px; }
@@ -481,15 +464,7 @@
         </div>
     </div>
 
-    <!-- ===== V8.4 回測績效報告 ===== -->
-    <details class="pool-section" id="backtest-section" open style="display:none; max-width:1400px; margin-left:auto; margin-right:auto;">
-        <summary><div class="pool-title">
-            <span>📈 回測績效報告</span>
-            <span id="backtest-generated-at" style="font-size:11px; color:var(--text-muted); font-weight:normal; margin-left:10px;">載入中...</span>
-            <div class="pool-desc">各魚池訊號勝率 / 平均報酬 / 超額報酬（vs 加權指數），資料累積中時顯示 --</div>
-        </div></summary>
-        <div id="backtest-content" class="backtest-pool-grid"></div>
-    </details>
+
 
     <div id="search-result-container" class="pool-section" style="display:none;">
         <details open>
@@ -1085,109 +1060,6 @@
                     badge.className = 'moly-status-badge error';
                 }
             })
-            .catch(() => {});
-
-        // 7. 回測績效報告（V8.4）
-        function formatPct(val, isWinRate = false) {
-            if (val === null || val === undefined) return '<span style="color:var(--text-muted)">--</span>';
-            if (isWinRate) {
-                const pct = Math.round(val * 100);
-                const color = pct >= 50 ? 'var(--neon-green)' : 'var(--neon-red)';
-                return `<span style="color:${color};font-weight:bold">${pct}%</span>`;
-            }
-            const pct = (val * 100).toFixed(1);
-            const color = val > 0 ? 'var(--neon-green)' : val < 0 ? 'var(--neon-red)' : 'var(--text-muted)';
-            const prefix = val > 0 ? '+' : '';
-            return `<span style="color:${color};font-weight:bold">${prefix}${pct}%</span>`;
-        }
-
-        function renderBacktest(data) {
-            const section = document.getElementById('backtest-section');
-            section.style.display = '';
-
-            const genAt = (data.generated_at || '').replace('T', ' ').substring(0, 16);
-            document.getElementById('backtest-generated-at').textContent = genAt ? `產生時間：${genAt}` : '';
-
-            const poolOrder = [
-                { key: 'pool_姊夫爆發小魚池', label: '🔥 姊夫爆發小魚池' },
-                { key: 'pool_楓大永動魚池',   label: '🍁 楓大永動魚池' },
-                { key: 'pool_彼神黃金魚池',   label: '🌟 彼神黃金魚池' },
-                { key: 'pool_測試員觀察水域', label: '🔭 測試員觀察水域' },
-                { key: 'ocean',               label: '🌊 記憶海全體' },
-            ];
-
-            const detailsByPool = {};
-            (data.details || []).forEach(d => {
-                if (!detailsByPool[d.pool]) detailsByPool[d.pool] = [];
-                detailsByPool[d.pool].push(d);
-            });
-
-            const content = document.getElementById('backtest-content');
-            content.innerHTML = '';
-
-            poolOrder.forEach(({ key, label }) => {
-                const s = (data.summary || {})[key];
-                if (!s) return;
-
-                const isOcean = key === 'ocean';
-                const poolName = label.replace(/[🔥🍁🌟🔭🌊]/u, '').trim();
-                const poolDetails = detailsByPool[poolName] || [];
-
-                const card = document.createElement('div');
-                card.className = 'dash-card';
-
-                let detailRows = '';
-                if (!isOcean && poolDetails.length > 0) {
-                    poolDetails.forEach(d => {
-                        detailRows += `<tr>
-                            <td>${d.stock_id}</td>
-                            <td>${d.signal_date || '--'}</td>
-                            <td>${d.signal_price ?? '--'}</td>
-                            <td>${formatPct(d.return_5d)}</td>
-                            <td>${formatPct(d.return_30d)}</td>
-                            <td>${formatPct(d.return_126d)}</td>
-                        </tr>`;
-                    });
-                }
-
-                const detailBlock = (!isOcean && poolDetails.length > 0) ? `
-                    <details style="margin-top:10px;">
-                        <summary class="backtest-detail-toggle">▶ 展開個股明細（${poolDetails.length} 支）</summary>
-                        <div style="overflow-x:auto; margin-top:8px;">
-                            <table class="backtest-detail-table">
-                                <thead><tr>
-                                    <th>股號</th><th>訊號日</th><th>訊號價</th>
-                                    <th>5日報酬</th><th>30日報酬</th><th>126日報酬</th>
-                                </tr></thead>
-                                <tbody>${detailRows}</tbody>
-                            </table>
-                        </div>
-                    </details>` : '';
-
-                card.innerHTML = `
-                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
-                        <div class="dash-title" style="margin-bottom:0;">${label}</div>
-                        <span style="font-size:11px; background:var(--badge-bg); color:var(--text-muted); padding:1px 7px; border-radius:10px;">${s.count} 支</span>
-                    </div>
-                    <table class="backtest-table">
-                        <thead><tr>
-                            <th>週期</th><th>勝率</th><th>平均報酬</th><th>超額 vs TWII</th>
-                        </tr></thead>
-                        <tbody>
-                            <tr><td>5 日</td><td>${formatPct(s.win_rate_5d, true)}</td><td>${formatPct(s.avg_return_5d)}</td><td>${formatPct(s.excess_return_5d)}</td></tr>
-                            <tr><td>30 日</td><td>${formatPct(s.win_rate_30d, true)}</td><td>${formatPct(s.avg_return_30d)}</td><td>${formatPct(s.excess_return_30d)}</td></tr>
-                            <tr><td>126 日</td><td>${formatPct(s.win_rate_126d, true)}</td><td>${formatPct(s.avg_return_126d)}</td><td>${formatPct(s.excess_return_126d)}</td></tr>
-                        </tbody>
-                    </table>
-                    ${detailBlock}
-                `;
-                content.appendChild(card);
-            });
-        }
-
-        fetch('backtest_report.json?t=' + new Date().getTime())
-            .then(res => res.json())
-            .then(data => renderBacktest(data))
             .catch(() => {});
 
         // 5. 搜尋功能綁定 (模糊搜尋版 + 股名支援)
