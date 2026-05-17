@@ -426,6 +426,7 @@ def calculate_stock_data(sid, name, industry, df_prices, df_inst, force_show=Fal
                     "sweet_confidence": "LOW",
                     "theme_tag": _get_theme_tag(industry),
                     "ma5_breakout_day": 0, "breakout_label": "", "ma5_above_ma10_days": 0,
+                    "price_date": "0000-00-00",
                 }
             return None
 
@@ -535,6 +536,7 @@ def calculate_stock_data(sid, name, industry, df_prices, df_inst, force_show=Fal
             "ma5_breakout_day":    ma5_breakout_day,
             "breakout_label":      breakout_label,
             "ma5_above_ma10_days": ma5_above_ma10_days,
+            "price_date":          str(df_prices.index[-1])[:10],
         }
     except Exception:
         if force_show:
@@ -549,6 +551,7 @@ def calculate_stock_data(sid, name, industry, df_prices, df_inst, force_show=Fal
                 "sweet_confidence": "LOW",
                 "theme_tag": _get_theme_tag(industry),
                 "ma5_breakout_day": 0, "breakout_label": "", "ma5_above_ma10_days": 0,
+                "price_date": "0000-00-00",
             }
         return None
 
