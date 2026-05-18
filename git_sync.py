@@ -93,8 +93,8 @@ def sync_to_github():
 
     # ── Step 3：stash 殘留變動，確保工作區乾淨再 pull --rebase ─────────────
     ok_stash, stash_out = run_git(["stash", "--include-untracked"])
-    # 修正：用否定判斷取代字串比對，相容不同 git/Windows 版本的輸出格式
-    stashed = ok_stash and "no local changes to save" not in stash_out.lower()
+    _, stash_list_out = run_git(["stash", "list"])
+    stashed = ok_stash and bool(stash_list_out.strip())
     if stashed:
         print(f"  📦 stash：暫存殘留變動，確保 rebase 可執行（{stash_out[:60]}）")
 

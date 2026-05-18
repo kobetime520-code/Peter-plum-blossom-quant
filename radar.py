@@ -943,15 +943,14 @@ def main():
         except Exception as e:
             push_status = "ERROR"
             print(f"  ⚠️ git_sync.py 呼叫失敗（不影響本次結果）：{e}")
-        if push_status != "OK":
-            try:
-                with open(LOG_REPORT_FILE, 'r', encoding='utf-8') as f:
-                    _log = json.load(f)
-                _log["push_status"] = push_status
-                with open(LOG_REPORT_FILE, 'w', encoding='utf-8') as f:
-                    json.dump(_log, f, ensure_ascii=False, indent=2)
-            except Exception:
-                pass
+        try:
+            with open(LOG_REPORT_FILE, 'r', encoding='utf-8') as f:
+                _log = json.load(f)
+            _log["push_status"] = push_status
+            with open(LOG_REPORT_FILE, 'w', encoding='utf-8') as f:
+                json.dump(_log, f, ensure_ascii=False, indent=2)
+        except Exception:
+            pass
 
 
 if __name__ == "__main__":
