@@ -44,16 +44,17 @@ FINMIND_TOKEN = os.environ.get("FINMIND_TOKEN", "")
 HISTORY_FILE = "ocean_history.json"
 CACHE_FILE = "finmind_cache.json"
 INFO_CACHE_FILE = "finmind_info_cache.json"   # 🆕 V7.5：TaiwanStockInfo 獨立快取
+RESULT_CACHE_FILE = "stock_result_cache.json" # 🆕 V8.8 PLAN H：前日低分股預篩快取（TTL 24h）
 INFO_CACHE_EXPIRY_DAYS = 7                    # 🆕 V7.5：股票基本資料 7 天更新一次
 CACHE_TTL_HOURS = 30                          # 🆕 V7.8：FinMind 快取有效期（30 小時，確保昨日資料今日仍可命中）
 LOG_REPORT_FILE = "log_report.json"           # 🆕 V7.9：維運日誌輸出路徑（供 Zoey 儀表板讀取）
 
 # --- 2. 魚池設定區 ---
 POOL_SETTINGS = {
-    "🔥 姊夫爆發小魚池": ["6155", "3060", "3236", "1513", "1519", "1605"],
+    "🔥 姊夫爆發小魚池": ["6155", "3060", "3236", "1513", "1519", "1711"],
     "🍁 楓大永動魚池": ["2308", "00923", "00910", "2327", "1785", "2344", "6485"],
     "🌟 彼神黃金魚池": ["3028", "2484", "3221", "8182", "8289", "3042"],
-    "🔭 測試員觀察水域": ["5289", "5292", "4749", "6770", "1711", "8299", "3673", "3675"],
+    "🔭 測試員觀察水域": ["5289", "5292", "4749", "6770", "8299", "3673", "3675", "5425", "6224", "3707", "3016"],
     "🐅 三日成猛虎水池": []
 }
 
@@ -358,6 +359,68 @@ def _calc_ma5_breakout(df_prices: pd.DataFrame) -> dict:
         return {"ma5_breakout_day": 0, "breakout_label": "", "ma5_above_ma10_days": 0}
 
 
+def _calc_trend_quality(df: pd.DataFrame) -> dict:
+    """
+    V8.8 PLAN G-v2：3/5/8 趨勢品質法則
+    輸入: 60 日 OHLCV DataFrame (yfinance，含 Close / Low 欄位)
+    輸出: trend_quality dict
+    零 API 消耗（純 yfinance 本地計算）
+    """
+    closes = df['Close'].values
+    lows   = df['Low'].values
+    n = len(closes)
+
+    if n < 9:
+        return {
+            "trend_quality": "N/A",
+            "above_ma5_streak": 0,
+            "low_guard_today": False,
+            "bottom_rising": False,
+            "node_3": False, "node_5": False, "node_8": False,
+        }
+
+    ma5_arr = pd.Series(closes).rolling(window=5).mean().values
+
+    above_ma5_streak = 0
+    for i in range(n - 1, max(n - 10, -1), -1):
+        if pd.isna(ma5_arr[i]):
+            break
+        if closes[i] >= ma5_arr[i]:
+            above_ma5_streak += 1
+        else:
+            break
+
+    low_guard_today = bool(lows[-1] >= lows[-2] * 0.995)
+
+    bottom_rising = bool(
+        lows[-1] >= lows[-2] * 0.995 and
+        lows[-2] >= lows[-3] * 0.995
+    )
+
+    node_3 = above_ma5_streak >= 3
+    node_5 = above_ma5_streak >= 5
+    node_8 = above_ma5_streak >= 8
+
+    if above_ma5_streak >= 8 and bottom_rising and low_guard_today:
+        trend_quality = "STRONG"
+    elif above_ma5_streak >= 5 and bottom_rising:
+        trend_quality = "HEALTHY"
+    elif above_ma5_streak >= 3 and low_guard_today:
+        trend_quality = "WATCH"
+    else:
+        trend_quality = "WEAK"
+
+    return {
+        "trend_quality":    trend_quality,
+        "above_ma5_streak": above_ma5_streak,
+        "low_guard_today":  low_guard_today,
+        "bottom_rising":    bottom_rising,
+        "node_3":           node_3,
+        "node_5":           node_5,
+        "node_8":           node_8,
+    }
+
+
 # =====================================================================
 # 🆕 V8.7 Grace：擴充版題材對應表（含英文關鍵字，yfinance 相容）
 # =====================================================================
@@ -453,6 +516,13 @@ def calculate_stock_data(sid, name, industry, df_prices, df_inst, force_show=Fal
         breakout_label      = breakout_info["breakout_label"]
         ma5_above_ma10_days = breakout_info["ma5_above_ma10_days"]
 
+        # 🆕 V8.8 PLAN G-v2：趨勢品質（零 API）
+        trend_info       = _calc_trend_quality(df_prices)
+        trend_quality    = trend_info["trend_quality"]
+        above_ma5_streak = trend_info["above_ma5_streak"]
+        low_guard_today  = trend_info["low_guard_today"]
+        bottom_rising    = trend_info["bottom_rising"]
+
         # 🎯 V7.1 籌碼細分核心邏輯（完整保留）
         inst_buy_30d = 0
         foreign_buy_30d = 0
@@ -483,12 +553,23 @@ def calculate_stock_data(sid, name, industry, df_prices, df_inst, force_show=Fal
             else "X"
         )
 
-        # V8.5 強勢評分（0-100，技術40 + 量能25 + 籌碼35）
-        strength_score = (
+        # V8.8 強勢評分（0-100，技術40 + 量能25 + 籌碼35 + 趨勢品質G最高12）
+        trend_bonus = {"STRONG": 12, "HEALTHY": 8, "WATCH": 3, "WEAK": 0}.get(trend_quality, 0)
+        strength_score = min(100,
             _calc_technical_score(close_price, ma5, ma10, ma30, rsi14)
             + _calc_volume_score(vol_lots, vol_ratio)
             + _calc_chip_score(inst_buy_30d, foreign_buy_30d, trust_buy_30d)
+            + trend_bonus
         )
+
+        # 🆕 V8.8 PLAN I：突破天數加分（最高 +8，min 封頂）
+        breakout_bonus = (
+            8 if ma5_breakout_day >= 8 else
+            5 if ma5_breakout_day >= 5 else
+            3 if ma5_breakout_day >= 3 else
+            1 if ma5_breakout_day >= 1 else 0
+        )
+        strength_score = min(100, strength_score + breakout_bonus)
 
         action = "買入加碼" if close_price >= ma5 and inst_buy_30d > 0 else "靜候觀察"
 
@@ -536,6 +617,10 @@ def calculate_stock_data(sid, name, industry, df_prices, df_inst, force_show=Fal
             "ma5_breakout_day":    ma5_breakout_day,
             "breakout_label":      breakout_label,
             "ma5_above_ma10_days": ma5_above_ma10_days,
+            "trend_quality":       trend_quality,
+            "above_ma5_streak":    above_ma5_streak,
+            "low_guard_today":     low_guard_today,
+            "bottom_rising":       bottom_rising,
             "price_date":          str(df_prices.index[-1])[:10],
         }
     except Exception:
@@ -551,6 +636,8 @@ def calculate_stock_data(sid, name, industry, df_prices, df_inst, force_show=Fal
                 "sweet_confidence": "LOW",
                 "theme_tag": _get_theme_tag(industry),
                 "ma5_breakout_day": 0, "breakout_label": "", "ma5_above_ma10_days": 0,
+                "trend_quality": "N/A", "above_ma5_streak": 0,
+                "low_guard_today": False, "bottom_rising": False,
                 "price_date": "0000-00-00",
             }
         return None
@@ -601,6 +688,19 @@ def main():
     except Exception:
         _finmind_cache = {}
         print("  - ⚠️ 快取讀取失敗，使用空快取繼續執行")
+
+    # 🆕 V8.8 PLAN H：載入前日低分股快取（TTL 24h）
+    _result_cache: dict = {}
+    try:
+        if os.path.exists(RESULT_CACHE_FILE):
+            with open(RESULT_CACHE_FILE, 'r', encoding='utf-8') as f:
+                _rc_raw = json.load(f)
+            _cutoff_ts = time.time() - 86400  # 24 小時
+            _result_cache = {k: v for k, v in _rc_raw.items()
+                             if isinstance(v, dict) and v.get("ts", 0) >= _cutoff_ts}
+            print(f"  - 📦 低分股快取：{len(_result_cache)} 筆有效（TTL 24h）")
+    except Exception:
+        _result_cache = {}
 
     taiwan_time = datetime.utcnow() + timedelta(hours=8)
     today_str = taiwan_time.strftime("%Y-%m-%d")
@@ -767,9 +867,15 @@ def main():
     market_pool = []
     added_market_sids = set()
     yf_skipped_ma5 = 0
+    yf_skipped_volratio = 0
     yf_passed_filter = 0
 
     for sid in set(market_sids):
+        # 🆕 V8.8 PLAN H：前日低分股預篩（strength_score < 15 直接略過）
+        _cached_result = _result_cache.get(sid, {})
+        if _cached_result.get("strength_score", 100) < 15:
+            continue
+
         df_yf = valid_dfs.get(sid)
         if df_yf is None or df_yf.empty:
             continue
@@ -795,6 +901,13 @@ def main():
                 yf_skipped_ma5 += 1
                 continue
 
+            # 🆕 V8.8 PLAN F：第四關：量比 >= 1.2（縮圈戰術）
+            vol_ma5_yf = float(df_yf['Volume'].rolling(window=5).mean().iloc[-1])
+            vol_ratio_yf = float(df_yf['Volume'].iloc[-1]) / vol_ma5_yf if vol_ma5_yf > 0 else 1.0
+            if vol_ratio_yf < 1.2:
+                yf_skipped_volratio += 1
+                continue
+
             yf_passed_filter += 1
             df_i = fetch_finmind("TaiwanStockInstitutionalInvestorsBuySell", start_30d, today_str, sid)
             time.sleep(0.2)
@@ -810,7 +923,7 @@ def main():
         except Exception:
             continue
 
-    print(f"  - 📊 MA5 預篩：攔截 {yf_skipped_ma5} 支（必靜候），{yf_passed_filter} 支進入籌碼精篩")
+    print(f"  - 📊 MA5 預篩：攔截 {yf_skipped_ma5} 支，量比第四關攔截 {yf_skipped_volratio} 支，{yf_passed_filter} 支進入籌碼精篩")
 
     # V8.5：汪洋大魚依強勢評分由高到低排序
     market_pool.sort(key=lambda x: x.get('strength_score', 0), reverse=True)
@@ -835,6 +948,17 @@ def main():
 
         if count >= 3 and sid not in POOL_SETTINGS["🐅 三日成猛虎水池"]:
             POOL_SETTINGS["🐅 三日成猛虎水池"].append(sid)
+
+    # 🆕 V8.8 PLAN J：猛虎池精銳上限 8 支（依強勢評分排序）
+    TIGER_MAX = 8
+    if len(POOL_SETTINGS["🐅 三日成猛虎水池"]) > TIGER_MAX:
+        _mpool_score = {r["stock_id"]: r.get("strength_score", 0) for r in market_pool}
+        POOL_SETTINGS["🐅 三日成猛虎水池"] = sorted(
+            POOL_SETTINGS["🐅 三日成猛虎水池"],
+            key=lambda s: _mpool_score.get(s, 0),
+            reverse=True
+        )[:TIGER_MAX]
+        print(f"  - 🐅 猛虎池縮圈：保留前 {TIGER_MAX} 支（依強勢評分）")
 
     print(f"  - 🔥 姊夫魚池：{POOL_SETTINGS['🔥 姊夫爆發小魚池']}")
 
@@ -920,6 +1044,19 @@ def main():
 
     _save_cache_to_disk()
     print(f"  - 💾 快取最終寫盤完成，共 {len(_finmind_cache)} 筆（下次執行可直接命中）")
+
+    # 🆕 V8.8 PLAN H：寫入低分股預篩快取（供下次排程跳過 strength_score < 15 的個股）
+    _ts_now = time.time()
+    _new_result_cache = {
+        s["stock_id"]: {"strength_score": s.get("strength_score", 0), "ts": _ts_now}
+        for s in market_pool
+    }
+    try:
+        with open(RESULT_CACHE_FILE, 'w', encoding='utf-8') as f:
+            json.dump(_new_result_cache, f, ensure_ascii=False)
+        print(f"  - 💾 低分股快取寫盤完成，共 {len(_new_result_cache)} 筆")
+    except Exception:
+        print("  - ⚠️ 低分股快取寫盤失敗（不影響主流程）")
 
     _stocks_processed_count = sum(len(v) for v in final_data_structure.values())
 
