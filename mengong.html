@@ -32,6 +32,20 @@
         .section-title { font-size: 1.5rem; font-weight: 800; color: #0A192F; letter-spacing: -0.5px; }
         .tag-pill { display:inline-block; font-size:11px; font-weight:700; border:1px solid #BFDBFE; color:#1E3A8A; background:white; padding:2px 8px; border-radius:99px; }
         .fb-iframe-wrap { border-radius:1rem; overflow:hidden; border:1px solid #e2e8f0; background:white; }
+        .filter-btn { font-size:12px; font-weight:700; padding:4px 12px; border-radius:99px; border:1px solid #e2e8f0; background:white; color:#64748b; cursor:pointer; transition:0.2s; }
+        .filter-btn:hover { border-color:#1E3A8A; color:#1E3A8A; }
+        .filter-btn.active { background:#0A192F; color:white; border-color:#0A192F; }
+        .emotion-bar-wrap { height:6px; background:#e2e8f0; border-radius:99px; overflow:hidden; }
+        .emotion-bar { height:100%; border-radius:99px; transition:width 0.6s ease; }
+        .highlight { background:#fef08a; border-radius:2px; padding:0 1px; }
+        .sentiment-badge { font-size:11px; font-weight:800; padding:2px 8px; border-radius:99px; }
+        .sentiment-多    { background:#dcfce7; color:#166534; }
+        .sentiment-空    { background:#fee2e2; color:#991b1b; }
+        .sentiment-盤整  { background:#fef9c3; color:#854d0e; }
+        .type-badge { font-size:11px; font-weight:700; padding:2px 8px; border-radius:4px; }
+        .type-操作 { background:#eff6ff; color:#1e40af; }
+        .type-心態 { background:#f5f3ff; color:#6d28d9; }
+        .type-產業 { background:#fff7ed; color:#9a3412; }
     </style>
 </head>
 <body class="text-slate-800 min-h-screen">
@@ -191,9 +205,9 @@
         </div>
     </div>
 
-    <!-- ===== 歷史航跡：手動集數典藏庫 ===== -->
+    <!-- ===== 歷史航跡：集數典藏庫 ===== -->
     <section id="logs">
-        <div class="flex flex-col md:flex-row justify-between items-end mb-6 gap-4">
+        <div class="flex flex-col md:flex-row justify-between items-end mb-4 gap-4">
             <div>
                 <div class="flex items-center gap-3 mb-1">
                     <span class="section-title">📚 歷史航跡典藏庫</span>
@@ -203,10 +217,27 @@
                 <p class="text-gray-400 text-sm">精選集數結構化摘要，戰術行動永久存檔</p>
             </div>
             <div class="relative w-full md:w-72">
-                <input type="text" id="logSearch" onkeyup="filterLogs()" placeholder="搜尋題材、集數..." class="w-full px-5 py-2.5 rounded-full border border-gray-200 focus:border-ocean-blue focus:ring-4 focus:ring-blue-100 outline-none transition text-sm">
+                <input type="text" id="logSearch" oninput="filterLogs()" placeholder="搜尋題材、集數、關鍵字..." class="w-full px-5 py-2.5 rounded-full border border-gray-200 focus:border-ocean-blue focus:ring-4 focus:ring-blue-100 outline-none transition text-sm">
                 <span class="absolute right-4 top-2.5 opacity-30 text-lg">🔍</span>
             </div>
         </div>
+
+        <!-- 篩選列 C方案 -->
+        <div class="flex flex-wrap gap-2 mb-5">
+            <span class="text-xs text-gray-400 self-center font-bold mr-1">篩選：</span>
+            <!-- 類型 -->
+            <button onclick="setFilter('type','')"     class="filter-btn active" data-group="type" data-val="">全部</button>
+            <button onclick="setFilter('type','操作')" class="filter-btn" data-group="type" data-val="操作">📋 操作</button>
+            <button onclick="setFilter('type','心態')" class="filter-btn" data-group="type" data-val="心態">🧠 心態</button>
+            <button onclick="setFilter('type','產業')" class="filter-btn" data-group="type" data-val="產業">🏭 產業</button>
+            <span class="w-px bg-gray-200 mx-1 self-stretch"></span>
+            <!-- 情境 -->
+            <button onclick="setFilter('sentiment','')"   class="filter-btn active" data-group="sentiment" data-val="">全情境</button>
+            <button onclick="setFilter('sentiment','多')" class="filter-btn" data-group="sentiment" data-val="多">📈 多</button>
+            <button onclick="setFilter('sentiment','空')" class="filter-btn" data-group="sentiment" data-val="空">📉 空</button>
+            <button onclick="setFilter('sentiment','盤整')" class="filter-btn" data-group="sentiment" data-val="盤整">↔️ 盤整</button>
+        </div>
+
         <div class="space-y-4" id="logContainer"></div>
     </section>
 
@@ -407,51 +438,110 @@ async function loadLogs() {
             '<div class="text-center text-gray-400 py-8">⚠️ 無法載入 mengong_logs.json</div>';
         return;
     }
-    renderLogs(logData);
-    document.getElementById('logCount').textContent = `共 ${logData.length} 筆`;
+    filterLogs();
+    document.getElementById('logCount').textContent = `${logData.length} / ${logData.length} 筆`;
 }
 
-function renderLogs(data) {
+// 情緒溫度計顏色
+function emotionColor(v) {
+    if (v >= 70) return '#22c55e';
+    if (v >= 45) return '#f59e0b';
+    return '#ef4444';
+}
+
+// 關鍵字高亮
+function highlight(text, kw) {
+    if (!kw) return text;
+    const re = new RegExp(`(${kw.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi');
+    return text.replace(re, '<mark class="highlight">$1</mark>');
+}
+
+function renderLogs(data, kw='') {
     const container = document.getElementById('logContainer');
     if (!data.length) {
-        container.innerHTML = '<div class="text-center text-gray-400 py-8">找不到相符記錄</div>';
+        container.innerHTML = '<div class="text-center text-gray-400 py-10">找不到相符記錄</div>';
         return;
     }
-    container.innerHTML = data.map(item => `
+    container.innerHTML = data.map(item => {
+        const emotion  = item.emotion  ?? 50;
+        const sentiment = item.sentiment || '';
+        const type     = item.type     || '';
+        const quote    = item.quote    || '';
+        const eColor   = emotionColor(emotion);
+        const h = t => highlight(t, kw);
+
+        return `
         <div class="navy-card p-5 border-l-4 border-ocean-blue">
+            <!-- 頂列：集數 + 徽章 + 標籤 -->
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
-                <div class="flex items-center gap-3 flex-wrap">
+                <div class="flex items-center gap-2 flex-wrap">
                     <span class="text-xs font-bold bg-gray-100 px-2.5 py-1 rounded border border-gray-200 flex items-center gap-1">
                         <span class="${item.source==='facebook'?'text-blue-600':'text-red-600'}">${item.source==='facebook'?'FB':'YT'}</span>
                         <span class="text-gray-400">${item.date}</span>
                     </span>
-                    <h5 class="text-lg font-bold text-deep-navy">${item.id} | ${item.title}</h5>
+                    ${type      ? `<span class="type-badge type-${type}">${type}</span>` : ''}
+                    ${sentiment ? `<span class="sentiment-badge sentiment-${sentiment}">${sentiment==='多'?'📈':sentiment==='空'?'📉':'↔️'} ${sentiment}</span>` : ''}
+                    <h5 class="text-lg font-bold text-deep-navy">${h(item.id)} | ${h(item.title)}</h5>
                 </div>
-                <div class="flex flex-wrap gap-1.5">
-                    ${item.tags.map(t=>`<span class="tag-pill">#${t}</span>`).join('')}
+                <div class="flex flex-wrap gap-1.5 flex-shrink-0">
+                    ${item.tags.map(t=>`<span class="tag-pill">${h('#'+t)}</span>`).join('')}
                 </div>
             </div>
+
+            <!-- 情緒溫度計 -->
+            <div class="flex items-center gap-3 mb-4">
+                <span class="text-xs text-gray-400 flex-shrink-0">情緒溫度</span>
+                <div class="emotion-bar-wrap flex-1">
+                    <div class="emotion-bar" style="width:${emotion}%;background:${eColor}"></div>
+                </div>
+                <span class="text-xs font-bold flex-shrink-0" style="color:${eColor}">${emotion}</span>
+            </div>
+
+            <!-- 關鍵金句 -->
+            ${quote ? `<div class="bg-slate-50 border-l-2 border-slate-300 px-3 py-2 mb-4 rounded-r-lg">
+                <p class="text-sm text-slate-500 italic">"${h(quote)}"</p>
+            </div>` : ''}
+
+            <!-- TL;DR + 行動 -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
                     <p class="text-xs font-bold text-ocean-blue mb-1.5 uppercase tracking-wide">● 航跡摘要 TL;DR</p>
-                    <p class="text-sm text-gray-600 leading-relaxed">"${item.tldr}"</p>
+                    <p class="text-sm text-gray-600 leading-relaxed">${h(item.tldr)}</p>
                 </div>
                 <div class="bg-amber-50 p-4 rounded-xl border border-amber-100">
                     <p class="text-xs font-bold text-amber-600 mb-1.5 uppercase tracking-wide">● 戰術行動修正</p>
-                    <p class="text-sm text-gray-800 font-bold">${item.action}</p>
+                    <p class="text-sm text-gray-800 font-bold">${h(item.action)}</p>
                 </div>
             </div>
-        </div>
-    `).join('');
+        </div>`;
+    }).join('');
+}
+
+// ==========================================
+// 篩選邏輯（C 方案）
+// ==========================================
+const activeFilter = { type: '', sentiment: '' };
+
+function setFilter(group, val) {
+    activeFilter[group] = val;
+    // 更新按鈕樣式
+    document.querySelectorAll(`.filter-btn[data-group="${group}"]`).forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.val === val);
+    });
+    filterLogs();
 }
 
 function filterLogs() {
-    const q = document.getElementById('logSearch').value.toLowerCase();
-    renderLogs(logData.filter(l =>
-        l.title.toLowerCase().includes(q) ||
-        l.id.toLowerCase().includes(q) ||
-        l.tags.some(t => t.toLowerCase().includes(q))
-    ));
+    const kw = document.getElementById('logSearch').value.trim().toLowerCase();
+    const filtered = logData.filter(l => {
+        const matchType      = !activeFilter.type      || l.type      === activeFilter.type;
+        const matchSentiment = !activeFilter.sentiment || l.sentiment === activeFilter.sentiment;
+        const matchKw = !kw || [l.title, l.id, l.tldr, l.action, l.quote||'', ...(l.tags||[])]
+            .some(s => s.toLowerCase().includes(kw));
+        return matchType && matchSentiment && matchKw;
+    });
+    document.getElementById('logCount').textContent = `${filtered.length} / ${logData.length} 筆`;
+    renderLogs(filtered, kw);
 }
 
 // ==========================================
