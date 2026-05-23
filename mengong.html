@@ -197,7 +197,8 @@
             <div>
                 <div class="flex items-center gap-3 mb-1">
                     <span class="section-title">📚 歷史航跡典藏庫</span>
-                    <span class="text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded border border-gray-200">手動記錄</span>
+                    <span class="text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded border border-gray-200">mengong_logs.json</span>
+                    <span id="logCount" class="text-xs bg-ocean-blue text-white px-2 py-1 rounded font-bold"></span>
                 </div>
                 <p class="text-gray-400 text-sm">精選集數結構化摘要，戰術行動永久存檔</p>
             </div>
@@ -391,14 +392,24 @@ function refreshAll() {
 }
 
 // ==========================================
-// 手動集數典藏庫
+// 歷史航跡典藏庫（從 mengong_logs.json 載入）
 // ==========================================
-let logData = [
-    { id: 'EP662', title: '⛑️ 風險控管與位階檢視', date: '2026.05.16', tags: ['風險控管', '現金比例', '位階'], tldr: '市場進入高位震盪，建議提高現金比例，切換至防禦姿態。', action: '現金水位調升至 30%，檢視個股乖離率。', source: 'youtube' },
-    { id: 'EP655', title: '🐯 財報季與猛虎市場',    date: '2026.04',    tags: ['AI核心', '季報', '強勢股'],    tldr: '財報驗證期，強勢股展現韌性，弱勢股可能快速修正。',    action: '汰換弱勢二線廠，資金集中於財報亮眼的 AI 龍頭。', source: 'youtube' },
-    { id: 'EP646', title: '🦙 邊緣AI與草泥馬效應',  date: '2026.03.21', tags: ['邊緣運算', 'AI PC', 'Llama'],  tldr: 'AI 應用向終端滲透，帶動硬體換機潮想像空間。',        action: '佈局散熱與關鍵零組件之低位階標的。',              source: 'youtube' },
-    { id: 'EP640', title: '🐈 春季躁動與靈活選股',  date: '2026.02.28', tags: ['中小股', '春季躁動', '短線'],  tldr: '資金活躍，中小標的表現優於大盤，考驗選股敏捷度。',  action: '參與趨勢但嚴格執行 10% 停損，不重倉單一題材。', source: 'youtube' }
-];
+let logData = [];
+
+async function loadLogs() {
+    try {
+        const res = await fetch(`mengong_logs.json?t=${Date.now()}`);
+        if (!res.ok) throw new Error('無法載入');
+        logData = await res.json();
+    } catch(e) {
+        logData = [];
+        document.getElementById('logContainer').innerHTML =
+            '<div class="text-center text-gray-400 py-8">⚠️ 無法載入 mengong_logs.json</div>';
+        return;
+    }
+    renderLogs(logData);
+    document.getElementById('logCount').textContent = `共 ${logData.length} 筆`;
+}
 
 function renderLogs(data) {
     const container = document.getElementById('logContainer');
@@ -516,7 +527,7 @@ function appendMsg(sender, text) {
 // 初始化
 // ==========================================
 window.onload = async () => {
-    renderLogs(logData);
+    loadLogs();
     // 優先讀 JSON（Claude 彙整 + 影片），失敗再用即時 RSS
     const hasJson = await loadSummaryJson();
     if (!hasJson) {
