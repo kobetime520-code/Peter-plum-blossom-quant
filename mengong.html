@@ -20,325 +20,513 @@
     </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700&display=swap');
-
-        body {
-            font-family: 'Noto Sans TC', sans-serif;
-            background-color: #F8FAFC;
-            scroll-behavior: smooth;
-        }
-
-        .navy-card {
-            background: white;
-            border-radius: 1rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-        }
+        body { font-family: 'Noto Sans TC', sans-serif; background-color: #F1F5F9; scroll-behavior: smooth; }
+        .navy-card { background: white; border-radius: 1rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.06), 0 2px 4px -1px rgba(0,0,0,0.04); }
+        .yt-thumb { aspect-ratio: 16/9; object-fit: cover; border-radius: 0.5rem; width: 100%; background: #e2e8f0; }
+        .yt-card:hover { transform: translateY(-3px); box-shadow: 0 12px 24px rgba(0,0,0,0.12); }
+        .yt-card { transition: all 0.25s ease; }
+        .ai-summary-box { background: linear-gradient(135deg, #0A192F, #1E3A8A); border-radius: 1rem; color: white; }
+        .pulse-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; animation: pulse-green 1.5s infinite; }
+        @keyframes pulse-green { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.4)} }
+        .config-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:100; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
+        .section-title { font-size: 1.5rem; font-weight: 800; color: #0A192F; letter-spacing: -0.5px; }
+        .tag-pill { display:inline-block; font-size:11px; font-weight:700; border:1px solid #BFDBFE; color:#1E3A8A; background:white; padding:2px 8px; border-radius:99px; }
+        .fb-iframe-wrap { border-radius:1rem; overflow:hidden; border:1px solid #e2e8f0; background:white; }
     </style>
 </head>
-<body class="text-slate-800 min-h-screen relative">
+<body class="text-slate-800 min-h-screen">
 
-    <nav class="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
-        <div class="max-w-7xl mx-auto px-6 h-18 flex items-center justify-between py-4">
-            <div class="flex items-center gap-3">
-                <a href="index.html" class="text-gray-400 hover:text-ocean-blue transition text-sm mr-2">← 返回戰情室</a>
-                <span class="text-2xl">⚓</span>
-                <h1 class="font-bold text-2xl tracking-tighter text-deep-navy">孟恭的道路指引 <span class="text-ocean-blue">2026</span></h1>
-            </div>
-            <div class="hidden md:flex gap-8 font-bold text-sm uppercase tracking-widest text-gray-500 items-center">
-                <a href="#logs" class="hover:text-ocean-blue transition">歷史航跡</a>
-                <button id="syncBtn" onclick="triggerSync()" class="ml-4 flex items-center gap-2 bg-blue-50 text-ocean-blue px-4 py-2 rounded-full hover:bg-blue-100 transition shadow-sm border border-blue-200">
-                    <span id="syncIcon" class="text-lg">🔄</span>
-                    <span id="syncText">資料同步</span>
-                </button>
+<!-- ===== 設定 Modal ===== -->
+<div id="configOverlay" class="config-overlay hidden">
+    <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md mx-4">
+        <div class="flex items-center gap-3 mb-6">
+            <span class="text-3xl">⚙️</span>
+            <div>
+                <h2 class="text-xl font-bold text-deep-navy">首次設定</h2>
+                <p class="text-xs text-gray-400">設定後存於本機，不會上傳</p>
             </div>
         </div>
-        <div id="syncStatusBar" class="bg-blue-600 text-white text-xs font-bold text-center py-1.5 hidden">
-            <span class="animate-pulse">📡 正在透過 API 擷取 YouTube (@Gooaye) 與 Facebook 粉絲專頁最新動態...</span>
-        </div>
-    </nav>
-
-    <main class="max-w-7xl mx-auto px-6 py-12">
-
-        <!-- Hero Banner -->
-        <div class="navy-card p-8 mb-12 border-l-4 border-amber-gold bg-gradient-to-r from-white to-amber-50">
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <div class="flex items-center gap-4">
-                    <span class="text-4xl">🧭</span>
-                    <div>
-                        <h2 class="text-3xl font-bold text-deep-navy">蔚藍深海：2026 股癌戰略導航系統</h2>
-                        <p class="text-gray-500 mt-1">追蹤孟恭（Gooaye / 股癌）每週觀點，結構化記錄，AI 輔助解析</p>
-                        <p class="text-xs text-gray-400 mt-1">V8.8 ｜ 2026-05-23 新增股癌彙整報</p>
-                    </div>
-                </div>
-                <!-- 快速連結 -->
-                <div class="flex gap-3 flex-shrink-0">
-                    <a href="https://www.youtube.com/@Gooaye" target="_blank" rel="noopener noreferrer"
-                       class="flex items-center gap-2 bg-red-50 text-red-600 border border-red-200 px-5 py-2.5 rounded-full font-bold text-sm hover:bg-red-100 transition shadow-sm">
-                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
-                        YouTube
-                    </a>
-                    <a href="https://www.facebook.com/Gooaye" target="_blank" rel="noopener noreferrer"
-                       class="flex items-center gap-2 bg-blue-50 text-blue-700 border border-blue-200 px-5 py-2.5 rounded-full font-bold text-sm hover:bg-blue-100 transition shadow-sm">
-                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                        Facebook
-                    </a>
-                </div>
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-bold text-gray-700 mb-1">YouTube Channel ID <span class="text-red-400">*</span></label>
+                <input id="inputChannelId" type="text" placeholder="例：UCxxxxxxxxxxxxxxxxxxxxxxxx"
+                    class="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:border-ocean-blue focus:ring-2 focus:ring-blue-100">
+                <p class="text-xs text-gray-400 mt-1">YouTube 頻道頁面 → 關於 → 分享頻道 → 複製頻道 ID</p>
+            </div>
+            <div class="bg-blue-50 border border-blue-100 rounded-lg p-3">
+                <p class="text-xs font-bold text-ocean-blue mb-1">🤖 Claude AI 彙整說明</p>
+                <p class="text-xs text-gray-500">AI 彙整由本機 Python 腳本執行，不需在此填入 API Key。<br>執行方式：<code class="bg-white px-1 rounded border">python mengong_summary.py</code></p>
             </div>
         </div>
+        <div class="flex gap-3 mt-6">
+            <button onclick="saveConfig()" class="flex-1 bg-deep-navy text-white py-2.5 rounded-lg font-bold hover:bg-ocean-blue transition">儲存並載入</button>
+            <button onclick="closeConfig()" class="px-4 py-2.5 border border-gray-200 rounded-lg text-gray-500 hover:bg-gray-50 transition text-sm">略過</button>
+        </div>
+    </div>
+</div>
 
-        <!-- Section: Logs -->
-        <section id="logs" class="mb-24">
-            <div class="flex flex-col md:flex-row justify-between items-end mb-10 gap-6">
+<!-- ===== NAV ===== -->
+<nav class="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+    <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <a href="index.html" class="text-gray-400 hover:text-ocean-blue transition text-sm">← 返回戰情室</a>
+            <span class="text-gray-200">|</span>
+            <span class="text-xl">⚓</span>
+            <h1 class="font-bold text-xl tracking-tight text-deep-navy">孟恭的道路指引 <span class="text-ocean-blue text-base">2026</span></h1>
+        </div>
+        <div class="flex items-center gap-3">
+            <div class="flex items-center gap-1.5">
+                <div class="pulse-dot" id="liveIndicator"></div>
+                <span class="text-xs text-gray-400 hidden md:block" id="lastFetchTime">載入中...</span>
+            </div>
+            <button onclick="refreshAll()" id="refreshBtn" class="flex items-center gap-1.5 bg-slate-100 text-slate-600 px-3 py-1.5 rounded-full text-sm font-bold hover:bg-slate-200 transition">
+                <span id="refreshIcon">🔄</span> 更新
+            </button>
+            <button onclick="openConfig()" class="flex items-center gap-1.5 bg-blue-50 text-ocean-blue px-3 py-1.5 rounded-full text-sm font-bold hover:bg-blue-100 transition border border-blue-200">
+                ⚙️ 設定
+            </button>
+        </div>
+    </div>
+</nav>
+
+<main class="max-w-7xl mx-auto px-4 md:px-6 py-8 space-y-10">
+
+    <!-- ===== Hero Banner ===== -->
+    <div class="navy-card p-6 md:p-8 border-l-4 border-amber-400 bg-gradient-to-r from-white to-amber-50">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-5">
+            <div class="flex items-center gap-4">
+                <span class="text-4xl">🧭</span>
                 <div>
-                    <div class="flex items-center gap-3 mb-2">
-                        <h3 class="text-3xl font-bold text-deep-navy">歷史航跡：集數典藏庫</h3>
-                        <span id="lastUpdatedTag" class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded border border-gray-200">上次同步：系統預設</span>
-                    </div>
-                    <p class="text-gray-500">2026 年度每週觀點之結構化紀錄，支援社群動態自動抓取。</p>
-                </div>
-                <div class="relative w-full md:w-80">
-                    <input type="text" id="logSearch" onkeyup="filterLogs()" placeholder="搜尋題材、集數或關鍵字..." class="w-full px-5 py-3 rounded-full border border-gray-200 focus:border-ocean-blue focus:ring-4 focus:ring-blue-100 outline-none transition">
-                    <span class="absolute right-5 top-3.5 opacity-30">🔍</span>
+                    <h2 class="text-2xl md:text-3xl font-bold text-deep-navy">蔚藍深海：2026 股癌戰略導航</h2>
+                    <p class="text-gray-500 mt-1 text-sm">追蹤孟恭（Gooaye / 股癌）每週觀點，AI 即時彙整，結構化存檔</p>
+                    <p class="text-xs text-gray-400 mt-1">V8.8 ｜ 2026-05-23 新增即時動態抓取</p>
                 </div>
             </div>
-
-            <div class="space-y-6" id="logContainer">
-                <!-- Dynamic Logs will be rendered here -->
-            </div>
-        </section>
-    </main>
-
-    <!-- AI Chatbot Widget -->
-    <div id="aiChatWidget" class="fixed bottom-6 right-6 z-50 flex flex-col items-end">
-        <div id="aiChatPanel" class="hidden w-80 md:w-96 bg-white border border-blue-200 rounded-2xl shadow-2xl mb-4 flex flex-col overflow-hidden transition-all duration-300">
-            <div class="bg-deep-navy text-white px-4 py-3 flex justify-between items-center shadow-md">
-                <div class="flex items-center gap-2">
-                    <span class="text-xl">🤖</span>
-                    <h4 class="font-bold tracking-wider text-sm">AI 戰略顧問 (彼夫有擇)</h4>
-                </div>
-                <button onclick="toggleChat()" class="hover:text-gray-300 transition text-lg leading-none">&times;</button>
-            </div>
-            <div id="chatHistory" class="flex-1 p-4 h-80 overflow-y-auto bg-slate-50 flex flex-col gap-3 text-sm scroll-smooth">
-                <div class="bg-blue-100 text-blue-900 p-3 rounded-xl rounded-tl-sm self-start max-w-[85%] leading-relaxed shadow-sm">
-                    指揮官您好！我是搭載 Gemini 模型的 AI 顧問。我已連線至 2026 航跡資料庫，請問有什麼我可以協助分析的嗎？<br><br>💡 <b>你可以問我：</b><br>「總結近期對 AI 產業的看法」<br>「遇到震盪時的防禦策略是什麼？」
-                </div>
-            </div>
-            <div class="p-3 bg-white border-t border-gray-200 flex gap-2">
-                <input type="text" id="chatInput" placeholder="輸入戰略提問..." class="flex-1 px-3 py-2 border border-gray-300 rounded-lg outline-none focus:border-ocean-blue focus:ring-2 focus:ring-blue-100 transition" onkeypress="handleChatKeyPress(event)">
-                <button onclick="sendMessage()" id="sendBtn" class="bg-ocean-blue text-white px-4 py-2 rounded-lg hover:bg-blue-800 transition font-bold shadow-sm">發送</button>
+            <div class="flex gap-3 flex-shrink-0">
+                <a href="https://www.youtube.com/@Gooaye" target="_blank" rel="noopener noreferrer"
+                   class="flex items-center gap-2 bg-red-50 text-red-600 border border-red-200 px-4 py-2 rounded-full font-bold text-sm hover:bg-red-100 transition">
+                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                    YouTube
+                </a>
+                <a href="https://www.facebook.com/Gooaye" target="_blank" rel="noopener noreferrer"
+                   class="flex items-center gap-2 bg-blue-50 text-blue-700 border border-blue-200 px-4 py-2 rounded-full font-bold text-sm hover:bg-blue-100 transition">
+                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                    Facebook
+                </a>
             </div>
         </div>
-        <button onclick="toggleChat()" class="bg-deep-navy text-white w-14 h-14 rounded-full shadow-xl flex items-center justify-center text-2xl hover:scale-105 hover:shadow-blue-900/50 transition-all duration-300 border-2 border-white">
-            🤖
-        </button>
     </div>
 
-    <script>
-        let logData = [
-            { id: 'EP662', title: '⛑️ 風險控管與位階檢視', date: '2026.05.16', type: 'tactic', tags: ['風險控管', '現金比例', '位階'], tldr: '市場進入高位震盪，建議提高現金比例，切換至防禦姿態。', action: '現金水位調升至 30%，檢視個股乖離率。', emotion: 35, source: 'youtube' },
-            { id: 'EP655', title: '🐯 財報季與猛虎市場', date: '2026.04', type: 'sector', tags: ['AI核心', '季報', '強勢股'], tldr: '財報驗證期，強勢股展現韌性，弱勢股可能快速修正。', action: '汰換弱勢二線廠，資金集中於財報亮眼的 AI 龍頭。', emotion: 72, source: 'youtube' },
-            { id: 'EP646', title: '🦙 邊緣 AI 與草泥馬效應', date: '2026.03.21', type: 'sector', tags: ['邊緣運算', 'AI PC', 'Llama'], tldr: 'AI 應用向終端滲透，帶動硬體換機潮想像空間。', action: '佈局散熱與關鍵零組件之低位階標的。', emotion: 65, source: 'youtube' },
-            { id: 'EP640', title: '🐈 春季躁動與靈活選股', date: '2026.02.28', type: 'psych', tags: ['中小股', '春季躁動', '短線'], tldr: '資金活躍，中小標的表現優於大盤，考驗選股敏捷度。', action: '參與趨勢但嚴格執行 10% 停損，不重倉單一題材。', emotion: 88, source: 'youtube' }
-        ];
+    <!-- ===== AI 彙整區 ===== -->
+    <div class="ai-summary-box p-6 md:p-8">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+            <div>
+                <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                    🤖 Claude AI 投資要點彙整
+                    <span class="text-xs font-normal bg-white/20 px-2 py-0.5 rounded-full text-blue-200">本機運算</span>
+                </h3>
+                <p class="text-blue-300 text-sm mt-1">由本機 <code class="bg-white/10 px-1 rounded">mengong_summary.py</code> 執行 Claude API 彙整，結果存入 JSON 供頁面讀取</p>
+            </div>
+            <div class="flex-shrink-0 text-right">
+                <p class="text-blue-400 text-xs">上次彙整</p>
+                <p id="summaryTimestamp" class="text-white font-bold text-sm">載入中...</p>
+            </div>
+        </div>
+        <div id="aiSummaryResult" class="bg-white/10 rounded-xl p-4 text-blue-100 text-sm leading-relaxed border border-white/20 min-h-[60px]">
+            <span class="text-blue-400 animate-pulse">讀取彙整結果中...</span>
+        </div>
+        <p class="text-blue-500 text-xs mt-3">※ 更新彙整：本機執行 <code class="bg-white/10 px-1 rounded">python mengong_summary.py</code> → git push</p>
+    </div>
 
-        function renderLogs(data) {
-            const container = document.getElementById('logContainer');
-            if (data.length === 0) {
-                container.innerHTML = `<div class="text-center text-gray-500 py-10">找不到相符的航跡紀錄。</div>`;
-                return;
-            }
-            container.innerHTML = data.map(item => `
-                <div class="navy-card p-6 border-l-4 border-ocean-blue transition-all duration-500">
-                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
-                        <div class="flex items-center gap-4">
-                            <span class="text-sm font-bold bg-gray-100 px-3 py-1 rounded flex items-center gap-1 border border-gray-200">
-                                ${item.source === 'facebook' ? '<span class="text-blue-600">FB</span>' : '<span class="text-red-600">YT</span>'} <span class="text-gray-500">${item.date}</span>
-                            </span>
-                            <h5 class="text-xl font-bold text-deep-navy">${item.id} | ${item.title}</h5>
-                        </div>
-                        <div class="flex flex-wrap gap-2">
-                            ${item.tags.map(tag => `<span class="text-xs font-bold border border-blue-200 text-ocean-blue px-2 py-1 rounded bg-white">#${tag}</span>`).join('')}
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                        <div class="bg-blue-50/50 p-4 rounded-lg border border-blue-100/50">
-                            <p class="text-xs font-bold text-ocean-blue mb-1 uppercase tracking-tighter">● 航跡摘要 (TL;DR)</p>
-                            <p class="text-sm text-gray-600 leading-relaxed">"${item.tldr}"</p>
-                        </div>
-                        <div class="bg-amber-50/50 p-4 rounded-lg border border-amber-100/50">
-                            <p class="text-xs font-bold text-amber-600 mb-1 uppercase tracking-tighter">● 戰術行動修正</p>
-                            <p class="text-sm text-gray-800 font-bold">${item.action}</p>
-                        </div>
-                    </div>
+    <!-- ===== 即時動態：YouTube + Facebook ===== -->
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+
+        <!-- YouTube 最新影片 (佔 2/3) -->
+        <div class="xl:col-span-2 space-y-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <svg class="w-5 h-5 fill-red-600" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                    <span class="section-title">YouTube 最新影片</span>
                 </div>
-            `).join('');
+                <span id="ytCount" class="text-xs text-gray-400"></span>
+            </div>
+
+            <!-- 載入狀態 -->
+            <div id="ytLoading" class="navy-card p-8 text-center text-gray-400">
+                <div class="animate-pulse text-2xl mb-2">📡</div>
+                <p class="text-sm">正在抓取最新影片...</p>
+            </div>
+
+            <!-- 錯誤狀態 -->
+            <div id="ytError" class="hidden navy-card p-8 text-center">
+                <div class="text-3xl mb-2">⚠️</div>
+                <p class="text-gray-600 font-bold mb-1">無法載入影片</p>
+                <p class="text-gray-400 text-sm mb-4" id="ytErrorMsg">請確認 Channel ID 設定正確</p>
+                <button onclick="openConfig()" class="bg-ocean-blue text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-800 transition">開啟設定</button>
+            </div>
+
+            <!-- 影片列表 -->
+            <div id="ytContainer" class="hidden grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+        </div>
+
+        <!-- Facebook 動態 (佔 1/3) -->
+        <div class="space-y-4">
+            <div class="flex items-center gap-2">
+                <svg class="w-5 h-5 fill-blue-700" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                <span class="section-title">Facebook 粉專動態</span>
+            </div>
+            <div class="fb-iframe-wrap">
+                <iframe
+                    src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2FGooaye&tabs=timeline&width=380&height=600&small_header=true&adapt_container_width=true&hide_cover=false&show_facepile=false"
+                    width="100%" height="600"
+                    style="border:none;overflow:hidden;display:block;"
+                    scrolling="no" frameborder="0" allowfullscreen="true"
+                    allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share">
+                </iframe>
+            </div>
+            <a href="https://www.facebook.com/Gooaye" target="_blank" rel="noopener noreferrer"
+               class="flex items-center justify-center gap-2 bg-blue-700 text-white py-2.5 rounded-xl font-bold text-sm hover:bg-blue-800 transition">
+                前往 Facebook 粉絲專頁 →
+            </a>
+        </div>
+    </div>
+
+    <!-- ===== 歷史航跡：手動集數典藏庫 ===== -->
+    <section id="logs">
+        <div class="flex flex-col md:flex-row justify-between items-end mb-6 gap-4">
+            <div>
+                <div class="flex items-center gap-3 mb-1">
+                    <span class="section-title">📚 歷史航跡典藏庫</span>
+                    <span class="text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded border border-gray-200">手動記錄</span>
+                </div>
+                <p class="text-gray-400 text-sm">精選集數結構化摘要，戰術行動永久存檔</p>
+            </div>
+            <div class="relative w-full md:w-72">
+                <input type="text" id="logSearch" onkeyup="filterLogs()" placeholder="搜尋題材、集數..." class="w-full px-5 py-2.5 rounded-full border border-gray-200 focus:border-ocean-blue focus:ring-4 focus:ring-blue-100 outline-none transition text-sm">
+                <span class="absolute right-4 top-2.5 opacity-30 text-lg">🔍</span>
+            </div>
+        </div>
+        <div class="space-y-4" id="logContainer"></div>
+    </section>
+
+</main>
+
+<!-- ===== AI 顧問 Chatbot ===== -->
+<div id="aiChatWidget" class="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+    <div id="aiChatPanel" class="hidden w-80 md:w-96 bg-white border border-blue-200 rounded-2xl shadow-2xl mb-4 flex flex-col overflow-hidden">
+        <div class="bg-deep-navy text-white px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <span class="text-xl">🤖</span>
+                <h4 class="font-bold text-sm tracking-wide">AI 戰略顧問（彼夫有擇）</h4>
+            </div>
+            <button onclick="toggleChat()" class="hover:text-gray-300 transition text-xl leading-none">&times;</button>
+        </div>
+        <div id="chatHistory" class="flex-1 p-4 h-72 overflow-y-auto bg-slate-50 flex flex-col gap-3 text-sm">
+            <div class="bg-blue-100 text-blue-900 p-3 rounded-xl rounded-tl-sm self-start max-w-[85%] leading-relaxed">
+                指揮官好！已連線至孟恭航跡資料庫。<br><br>💡 可問：<br>「最新影片說了什麼？」<br>「遇到震盪的防禦策略？」
+            </div>
+        </div>
+        <div class="p-3 bg-white border-t border-gray-200 flex gap-2">
+            <input type="text" id="chatInput" placeholder="輸入戰略提問..." class="flex-1 px-3 py-2 border border-gray-300 rounded-lg outline-none focus:border-ocean-blue transition text-sm" onkeypress="if(event.key==='Enter')sendMessage()">
+            <button onclick="sendMessage()" id="sendBtn" class="bg-ocean-blue text-white px-4 py-2 rounded-lg hover:bg-blue-800 transition font-bold text-sm">發送</button>
+        </div>
+    </div>
+    <button onclick="toggleChat()" class="bg-deep-navy text-white w-14 h-14 rounded-full shadow-xl flex items-center justify-center text-2xl hover:scale-105 transition-all border-2 border-white">
+        🤖
+    </button>
+</div>
+
+<script>
+// ==========================================
+// 設定管理（只保留 Channel ID，Gemini 已移除）
+// ==========================================
+const CFG = {
+    get channelId() { return localStorage.getItem('mg_channel_id') || ''; },
+    set channelId(v) { localStorage.setItem('mg_channel_id', v); }
+};
+
+function openConfig() {
+    document.getElementById('inputChannelId').value = CFG.channelId;
+    document.getElementById('configOverlay').classList.remove('hidden');
+}
+function closeConfig() { document.getElementById('configOverlay').classList.add('hidden'); }
+function saveConfig() {
+    const cid = document.getElementById('inputChannelId').value.trim();
+    if (!cid) { alert('請輸入 YouTube Channel ID'); return; }
+    CFG.channelId = cid;
+    closeConfig();
+    fetchYouTube();
+}
+
+// ==========================================
+// 載入 mengong_summary.json（Claude 本機彙整結果）
+// ==========================================
+let ytVideos = [];
+
+async function loadSummaryJson() {
+    try {
+        const res = await fetch(`mengong_summary.json?t=${Date.now()}`);
+        if (!res.ok) throw new Error('尚未產生');
+        const data = await res.json();
+
+        // 顯示 Claude 彙整
+        const summaryEl = document.getElementById('aiSummaryResult');
+        const timestampEl = document.getElementById('summaryTimestamp');
+        if (data.summary) {
+            summaryEl.innerHTML = data.summary
+                .replace(/・/g, '<br>・')
+                .replace(/\n/g, '<br>')
+                .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+        } else {
+            summaryEl.innerHTML = '<span class="text-blue-400">尚無彙整內容，請本機執行 mengong_summary.py</span>';
         }
+        timestampEl.textContent = data.last_updated || '—';
 
-        function filterLogs() {
-            const query = document.getElementById('logSearch').value.toLowerCase();
-            const filtered = logData.filter(log =>
-                log.title.toLowerCase().includes(query) ||
-                log.id.toLowerCase().includes(query) ||
-                log.tags.some(t => t.toLowerCase().includes(query))
-            );
-            renderLogs(filtered);
+        // 若 JSON 有影片資料，優先用於顯示
+        if (data.videos && data.videos.length) {
+            ytVideos = data.videos;
+            renderYouTube(ytVideos, 'json');
+            document.getElementById('ytCount').textContent = `共 ${ytVideos.length} 支影片`;
+            document.getElementById('lastFetchTime').textContent = data.last_updated || '已載入';
+            return true;
         }
+    } catch(e) {
+        document.getElementById('aiSummaryResult').innerHTML =
+            '<span class="text-blue-400">尚無彙整檔案，請本機執行：<code class="bg-white/10 px-1 rounded">python mengong_summary.py</code></span>';
+        document.getElementById('summaryTimestamp').textContent = '—';
+    }
+    return false;
+}
 
-        function triggerSync() {
-            const btn = document.getElementById('syncBtn');
-            const icon = document.getElementById('syncIcon');
-            const text = document.getElementById('syncText');
-            const bar = document.getElementById('syncStatusBar');
-            const updateTag = document.getElementById('lastUpdatedTag');
+// ==========================================
+// YouTube RSS 即時抓取（備援 / 手動更新用）
+// ==========================================
+async function fetchYouTube() {
+    const channelId = CFG.channelId;
+    if (!channelId) {
+        showYtError('尚未設定 Channel ID，請點右上角 ⚙️ 設定');
+        return;
+    }
+    document.getElementById('ytLoading').classList.remove('hidden');
+    document.getElementById('ytError').classList.add('hidden');
+    document.getElementById('ytContainer').classList.add('hidden');
 
-            btn.classList.add('opacity-50', 'cursor-not-allowed');
-            icon.classList.add('animate-spin');
-            text.innerText = "同步中...";
-            bar.classList.remove('hidden');
+    try {
+        const rssUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`;
+        const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}&count=6`;
+        const res = await fetch(apiUrl);
+        if (!res.ok) throw new Error('RSS2JSON 連線失敗');
+        const data = await res.json();
+        if (data.status !== 'ok') throw new Error('RSS 解析失敗，請確認 Channel ID');
 
-            setTimeout(() => {
-                const newFeeds = [
-                    { id: 'FB 快訊', title: '市場雜音與操作紀律', date: '剛剛', type: 'psych', tags: ['FB動態', '心態', '雜音'], tldr: '別被每天的新聞牽著鼻子走，關注你原本設定的進出場邏輯。', action: '關閉多餘的新聞推播，重新檢視持股清單的原始買進理由。', source: 'facebook' },
-                    { id: 'EP644', title: '🦇 醫美與操作', date: '2026.03.14', type: 'psych', tags: ['生活觀察', '消費'], tldr: '從生活中尋找投資機會，消費趨勢往往領先財報。', action: '觀察周遭消費行為改變，尋找尚未發酵的傳產或內需標的。', source: 'youtube', emotion: 60 }
-                ];
+        ytVideos = data.items || [];
+        renderYouTube(ytVideos, 'rss');
+        const now = new Date();
+        document.getElementById('lastFetchTime').textContent =
+            `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')} 即時`;
+        document.getElementById('ytCount').textContent = `共 ${ytVideos.length} 支影片`;
+    } catch(e) {
+        showYtError(e.message);
+    }
+}
 
-                const existingIds = new Set(logData.map(item => item.id));
-                const uniqueNewFeeds = newFeeds.filter(item => !existingIds.has(item.id));
+function showYtError(msg) {
+    document.getElementById('ytLoading').classList.add('hidden');
+    document.getElementById('ytContainer').classList.add('hidden');
+    document.getElementById('ytError').classList.remove('hidden');
+    document.getElementById('ytErrorMsg').textContent = msg;
+}
 
-                if (uniqueNewFeeds.length > 0) {
-                    logData = [...uniqueNewFeeds, ...logData];
-                    renderLogs(logData);
-                    const container = document.getElementById('logContainer');
-                    const firstItem = container.firstElementChild;
-                    firstItem.classList.add('bg-blue-50', 'border-ocean-blue', 'scale-[1.01]');
-                    setTimeout(() => firstItem.classList.remove('bg-blue-50', 'border-ocean-blue', 'scale-[1.01]'), 3000);
-                }
+function renderYouTube(items, source) {
+    document.getElementById('ytLoading').classList.add('hidden');
+    document.getElementById('ytError').classList.add('hidden');
+    const container = document.getElementById('ytContainer');
+    container.classList.remove('hidden');
 
-                btn.classList.remove('opacity-50', 'cursor-not-allowed');
-                icon.classList.remove('animate-spin');
-                text.innerText = "已更新";
-                bar.classList.add('hidden');
+    if (!items.length) {
+        container.innerHTML = '<p class="text-gray-400 text-sm col-span-2">目前無影片資料</p>';
+        return;
+    }
 
-                const now = new Date();
-                const timeString = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-                updateTag.innerText = `最新同步：${timeString}`;
-                updateTag.className = "text-xs bg-green-100 text-green-700 px-2 py-1 rounded border border-green-200";
-                setTimeout(() => { text.innerText = "資料同步"; }, 3000);
-            }, 2000);
+    container.innerHTML = items.map(item => {
+        // 相容 rss2json 格式與 mengong_summary.json 格式
+        const link  = item.link  || item.url || '#';
+        const title = item.title || '(無標題)';
+        const thumb = item.thumbnail || (item.video_id ? `https://i.ytimg.com/vi/${item.video_id}/mqdefault.jpg` : '');
+        const pub   = item.pubDate || item.published || '';
+        const pubDate = pub ? new Date(pub) : null;
+        const dateStr = pubDate && !isNaN(pubDate)
+            ? `${pubDate.getFullYear()}/${String(pubDate.getMonth()+1).padStart(2,'0')}/${String(pubDate.getDate()).padStart(2,'0')}`
+            : '';
+        const desc = (item.description || '').replace(/<[^>]+>/g, '').slice(0, 80);
+
+        return `
+        <a href="${link}" target="_blank" rel="noopener noreferrer" class="yt-card navy-card p-3 block group">
+            ${thumb
+                ? `<img src="${thumb}" alt="" class="yt-thumb mb-3 group-hover:opacity-90 transition">`
+                : `<div class="yt-thumb mb-3 flex items-center justify-center text-gray-300 text-4xl bg-slate-100 rounded-lg">▶</div>`}
+            <div class="flex items-start gap-2 mb-1">
+                <span class="flex-shrink-0 mt-0.5 text-xs font-bold bg-red-100 text-red-600 px-2 py-0.5 rounded">YT</span>
+                <h4 class="text-sm font-bold text-deep-navy leading-snug group-hover:text-ocean-blue transition line-clamp-2">${title}</h4>
+            </div>
+            <p class="text-xs text-gray-400 mt-1">${dateStr}</p>
+            ${desc ? `<p class="text-xs text-gray-500 mt-1 line-clamp-2">${desc}…</p>` : ''}
+        </a>`;
+    }).join('');
+}
+
+// ==========================================
+// 全頁更新
+// ==========================================
+function refreshAll() {
+    const icon = document.getElementById('refreshIcon');
+    icon.classList.add('animate-spin');
+    const loaded = loadSummaryJson();
+    // 若有 Channel ID 也同步抓即時資料
+    if (CFG.channelId) {
+        fetchYouTube().finally(() => setTimeout(() => icon.classList.remove('animate-spin'), 800));
+    } else {
+        loaded.finally(() => setTimeout(() => icon.classList.remove('animate-spin'), 800));
+    }
+}
+
+// ==========================================
+// 手動集數典藏庫
+// ==========================================
+let logData = [
+    { id: 'EP662', title: '⛑️ 風險控管與位階檢視', date: '2026.05.16', tags: ['風險控管', '現金比例', '位階'], tldr: '市場進入高位震盪，建議提高現金比例，切換至防禦姿態。', action: '現金水位調升至 30%，檢視個股乖離率。', source: 'youtube' },
+    { id: 'EP655', title: '🐯 財報季與猛虎市場',    date: '2026.04',    tags: ['AI核心', '季報', '強勢股'],    tldr: '財報驗證期，強勢股展現韌性，弱勢股可能快速修正。',    action: '汰換弱勢二線廠，資金集中於財報亮眼的 AI 龍頭。', source: 'youtube' },
+    { id: 'EP646', title: '🦙 邊緣AI與草泥馬效應',  date: '2026.03.21', tags: ['邊緣運算', 'AI PC', 'Llama'],  tldr: 'AI 應用向終端滲透，帶動硬體換機潮想像空間。',        action: '佈局散熱與關鍵零組件之低位階標的。',              source: 'youtube' },
+    { id: 'EP640', title: '🐈 春季躁動與靈活選股',  date: '2026.02.28', tags: ['中小股', '春季躁動', '短線'],  tldr: '資金活躍，中小標的表現優於大盤，考驗選股敏捷度。',  action: '參與趨勢但嚴格執行 10% 停損，不重倉單一題材。', source: 'youtube' }
+];
+
+function renderLogs(data) {
+    const container = document.getElementById('logContainer');
+    if (!data.length) {
+        container.innerHTML = '<div class="text-center text-gray-400 py-8">找不到相符記錄</div>';
+        return;
+    }
+    container.innerHTML = data.map(item => `
+        <div class="navy-card p-5 border-l-4 border-ocean-blue">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
+                <div class="flex items-center gap-3 flex-wrap">
+                    <span class="text-xs font-bold bg-gray-100 px-2.5 py-1 rounded border border-gray-200 flex items-center gap-1">
+                        <span class="${item.source==='facebook'?'text-blue-600':'text-red-600'}">${item.source==='facebook'?'FB':'YT'}</span>
+                        <span class="text-gray-400">${item.date}</span>
+                    </span>
+                    <h5 class="text-lg font-bold text-deep-navy">${item.id} | ${item.title}</h5>
+                </div>
+                <div class="flex flex-wrap gap-1.5">
+                    ${item.tags.map(t=>`<span class="tag-pill">#${t}</span>`).join('')}
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                    <p class="text-xs font-bold text-ocean-blue mb-1.5 uppercase tracking-wide">● 航跡摘要 TL;DR</p>
+                    <p class="text-sm text-gray-600 leading-relaxed">"${item.tldr}"</p>
+                </div>
+                <div class="bg-amber-50 p-4 rounded-xl border border-amber-100">
+                    <p class="text-xs font-bold text-amber-600 mb-1.5 uppercase tracking-wide">● 戰術行動修正</p>
+                    <p class="text-sm text-gray-800 font-bold">${item.action}</p>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function filterLogs() {
+    const q = document.getElementById('logSearch').value.toLowerCase();
+    renderLogs(logData.filter(l =>
+        l.title.toLowerCase().includes(q) ||
+        l.id.toLowerCase().includes(q) ||
+        l.tags.some(t => t.toLowerCase().includes(q))
+    ));
+}
+
+// ==========================================
+// AI 顧問 Chatbot（基於已載入資料，無需 API）
+// ==========================================
+let isChatOpen = false;
+function toggleChat() {
+    const panel = document.getElementById('aiChatPanel');
+    isChatOpen = !isChatOpen;
+    panel.classList.toggle('hidden', !isChatOpen);
+    if (isChatOpen) document.getElementById('chatInput').focus();
+}
+
+function sendMessage() {
+    const inputEl = document.getElementById('chatInput');
+    const msg = inputEl.value.trim();
+    if (!msg) return;
+    appendMsg('user', msg);
+    inputEl.value = '';
+
+    // 簡易關鍵字回覆（基於載入資料，無需外部 API）
+    const reply = smartReply(msg);
+    setTimeout(() => appendMsg('ai', reply), 400);
+}
+
+function smartReply(query) {
+    const q = query.toLowerCase();
+
+    // 優先：查最新彙整摘要
+    const summaryEl = document.getElementById('aiSummaryResult');
+    if ((q.includes('彙整') || q.includes('摘要') || q.includes('最新') || q.includes('本週')) && summaryEl) {
+        const txt = summaryEl.innerText.trim();
+        if (txt && !txt.includes('尚無')) return `📋 最新 Claude 彙整要點：<br><br>${summaryEl.innerHTML}`;
+    }
+
+    // 查歷史航跡
+    const matched = logData.filter(l =>
+        l.title.toLowerCase().includes(q) ||
+        l.tags.some(t => t.toLowerCase().includes(q)) ||
+        l.tldr.toLowerCase().includes(q)
+    );
+    if (matched.length) {
+        return matched.map(l =>
+            `<b>【${l.id}】${l.title}</b><br>摘要：${l.tldr}<br>行動：${l.action}`
+        ).join('<br><br>');
+    }
+
+    // 查最新影片
+    if (ytVideos.length && (q.includes('影片') || q.includes('youtube') || q.includes('yt'))) {
+        return '最新影片：<br>' + ytVideos.slice(0,4).map((v,i) =>
+            `${i+1}. <a href="${v.link||'#'}" target="_blank" class="underline text-blue-700">${v.title}</a>`
+        ).join('<br>');
+    }
+
+    return '目前資料庫中找不到相符內容。<br>可嘗試關鍵字：「最新」「彙整」「風險」「AI」「影片」等。';
+}
+
+function appendMsg(sender, text) {
+    const h = document.getElementById('chatHistory');
+    const d = document.createElement('div');
+    const id = 'msg-' + Date.now();
+    d.id = id;
+    d.className = sender === 'user'
+        ? 'bg-ocean-blue text-white p-3 rounded-xl rounded-tr-sm self-end max-w-[85%] break-words text-sm'
+        : 'bg-blue-100 text-blue-900 p-3 rounded-xl rounded-tl-sm self-start max-w-[85%] break-words leading-relaxed text-sm';
+    d.innerHTML = text;
+    h.appendChild(d);
+    h.scrollTop = h.scrollHeight;
+    return id;
+}
+
+// ==========================================
+// 初始化
+// ==========================================
+window.onload = async () => {
+    renderLogs(logData);
+    // 優先讀 JSON（Claude 彙整 + 影片），失敗再用即時 RSS
+    const hasJson = await loadSummaryJson();
+    if (!hasJson) {
+        if (CFG.channelId) {
+            fetchYouTube();
+        } else {
+            showYtError('尚未設定 Channel ID，請點右上角 ⚙️ 設定');
         }
-
-        window.onload = () => { renderLogs(logData); };
-
-        // ==========================================
-        // AI Gemini API 整合模組
-        // ==========================================
-        let isChatOpen = false;
-
-        function toggleChat() {
-            const panel = document.getElementById('aiChatPanel');
-            isChatOpen = !isChatOpen;
-            panel.classList.toggle('hidden', !isChatOpen);
-            if (isChatOpen) document.getElementById('chatInput').focus();
-        }
-
-        function handleChatKeyPress(e) {
-            if (e.key === 'Enter') sendMessage();
-        }
-
-        async function sendMessage() {
-            const inputEl = document.getElementById('chatInput');
-            const sendBtn = document.getElementById('sendBtn');
-            const message = inputEl.value.trim();
-            if (!message) return;
-
-            appendMessage('user', message);
-            inputEl.value = '';
-            inputEl.disabled = true;
-            sendBtn.disabled = true;
-            sendBtn.classList.add('opacity-50');
-
-            const typingId = appendMessage('ai', '連線主機中，正在解析航跡資料...');
-
-            try {
-                const response = await callGeminiAPI(message);
-                updateMessage(typingId, response);
-            } catch (error) {
-                updateMessage(typingId, '⚠️ 系統連線異常或超時，請檢查網路連線後再試。');
-                console.error("Gemini API Error:", error);
-            } finally {
-                inputEl.disabled = false;
-                sendBtn.disabled = false;
-                sendBtn.classList.remove('opacity-50');
-                inputEl.focus();
-            }
-        }
-
-        function appendMessage(sender, text) {
-            const chatHistory = document.getElementById('chatHistory');
-            const msgDiv = document.createElement('div');
-            const id = 'msg-' + Date.now();
-            msgDiv.id = id;
-            if (sender === 'user') {
-                msgDiv.className = 'bg-ocean-blue text-white p-3 rounded-xl rounded-tr-sm self-end max-w-[85%] break-words shadow-sm';
-            } else {
-                msgDiv.className = 'bg-blue-100 text-blue-900 p-3 rounded-xl rounded-tl-sm self-start max-w-[85%] break-words leading-relaxed shadow-sm';
-            }
-            msgDiv.innerHTML = text;
-            chatHistory.appendChild(msgDiv);
-            chatHistory.scrollTop = chatHistory.scrollHeight;
-            return id;
-        }
-
-        function updateMessage(id, text) {
-            const msgDiv = document.getElementById(id);
-            if (msgDiv) {
-                let formattedText = text.replace(/\*\*(.*?)\*\*/g, '<b class="text-blue-800">$1</b>');
-                formattedText = formattedText.replace(/\*(.*?)\*/g, '<i>$1</i>');
-                formattedText = formattedText.replace(/\n/g, '<br>');
-                msgDiv.innerHTML = formattedText;
-                document.getElementById('chatHistory').scrollTop = document.getElementById('chatHistory').scrollHeight;
-            }
-        }
-
-        async function callGeminiAPI(userQuery) {
-            const apiKey = "";
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-
-            const contextData = logData.map(log =>
-                `[${log.id} | ${log.date}] 標籤:${log.tags.join(',')} | 摘要:${log.tldr} | 行動:${log.action}`
-            ).join('\n');
-
-            const systemPrompt = `你是一位名為「彼夫有擇」的高階投資戰略顧問 AI。
-你的任務是根據下方提供的「2026年股癌(Gooaye)節目航跡資料庫」來回答使用者的問題。
-回答風格必須專業、簡潔、冷靜。
-
-【嚴格規則】：
-1. 你的回答必須盡量奠基於下方的【航跡資料庫】。
-2. 如果使用者的問題超出資料庫範圍，請使用你的既有投資知識回答。
-3. 排版使用條列式有助於閱讀。
-
-【當前航跡資料庫】：
-${contextData}
-`;
-
-            const payload = {
-                contents: [{ parts: [{ text: userQuery }] }],
-                systemInstruction: { parts: [{ text: systemPrompt }] }
-            };
-
-            const response = await fetch(apiUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-
-            const result = await response.json();
-            if (result.candidates && result.candidates[0] && result.candidates[0].content) {
-                return result.candidates[0].content.parts[0].text;
-            }
-            return "抱歉，分析模組目前無法解讀訊號。";
-        }
-    </script>
+    }
+};
+</script>
 </body>
 </html>

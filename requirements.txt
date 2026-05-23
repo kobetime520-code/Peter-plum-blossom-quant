@@ -3,3 +3,4 @@ pandas
 requests
 FinMind
 beautifulsoup4
+anthropic
