@@ -22,7 +22,7 @@ import anthropic
 # ==========================================
 # 設定區（僅需修改此處）
 # ==========================================
-CHANNEL_ID = "UCxxxxxxxxxxxxxxxxxxxxxx"   # 填入股癌 YouTube Channel ID
+CHANNEL_ID = "UC23rnlQU_qE3cec9x709peA"   # 股癌 Gooaye YouTube Channel ID
 FETCH_COUNT = 8                            # 抓取最新幾支影片
 OUTPUT_FILE = "mengong_summary.json"
 CLAUDE_MODEL = "claude-sonnet-4-6"
