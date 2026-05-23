@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>孟恭的道路指引 — 蔚藍深海 2026</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'deep-navy': '#0A192F',
+                        'ocean-blue': '#1E3A8A',
+                        'amber-gold': '#F59E0B'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700&display=swap');
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #F8FAFC;
+            scroll-behavior: smooth;
+        }
+
+        .navy-card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+    </style>
+</head>
+<body class="text-slate-800 min-h-screen relative">
+
+    <nav class="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-6 h-18 flex items-center justify-between py-4">
+            <div class="flex items-center gap-3">
+                <a href="index.html" class="text-gray-400 hover:text-ocean-blue transition text-sm mr-2">← 返回戰情室</a>
+                <span class="text-2xl">⚓</span>
+                <h1 class="font-bold text-2xl tracking-tighter text-deep-navy">孟恭的道路指引 <span class="text-ocean-blue">2026</span></h1>
+            </div>
+            <div class="hidden md:flex gap-8 font-bold text-sm uppercase tracking-widest text-gray-500 items-center">
+                <a href="#logs" class="hover:text-ocean-blue transition">歷史航跡</a>
+                <button id="syncBtn" onclick="triggerSync()" class="ml-4 flex items-center gap-2 bg-blue-50 text-ocean-blue px-4 py-2 rounded-full hover:bg-blue-100 transition shadow-sm border border-blue-200">
+                    <span id="syncIcon" class="text-lg">🔄</span>
+                    <span id="syncText">資料同步</span>
+                </button>
+            </div>
+        </div>
+        <div id="syncStatusBar" class="bg-blue-600 text-white text-xs font-bold text-center py-1.5 hidden">
+            <span class="animate-pulse">📡 正在透過 API 擷取 YouTube (@Gooaye) 與 Facebook 粉絲專頁最新動態...</span>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-6 py-12">
+
+        <!-- Hero Banner -->
+        <div class="navy-card p-8 mb-12 border-l-4 border-amber-gold bg-gradient-to-r from-white to-amber-50">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div class="flex items-center gap-4">
+                    <span class="text-4xl">🧭</span>
+                    <div>
+                        <h2 class="text-3xl font-bold text-deep-navy">蔚藍深海：2026 股癌戰略導航系統</h2>
+                        <p class="text-gray-500 mt-1">追蹤孟恭（Gooaye / 股癌）每週觀點，結構化記錄，AI 輔助解析</p>
+                        <p class="text-xs text-gray-400 mt-1">V8.8 ｜ 2026-05-23 新增股癌彙整報</p>
+                    </div>
+                </div>
+                <!-- 快速連結 -->
+                <div class="flex gap-3 flex-shrink-0">
+                    <a href="https://www.youtube.com/@Gooaye" target="_blank" rel="noopener noreferrer"
+                       class="flex items-center gap-2 bg-red-50 text-red-600 border border-red-200 px-5 py-2.5 rounded-full font-bold text-sm hover:bg-red-100 transition shadow-sm">
+                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                        YouTube
+                    </a>
+                    <a href="https://www.facebook.com/Gooaye" target="_blank" rel="noopener noreferrer"
+                       class="flex items-center gap-2 bg-blue-50 text-blue-700 border border-blue-200 px-5 py-2.5 rounded-full font-bold text-sm hover:bg-blue-100 transition shadow-sm">
+                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                        Facebook
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section: Logs -->
+        <section id="logs" class="mb-24">
+            <div class="flex flex-col md:flex-row justify-between items-end mb-10 gap-6">
+                <div>
+                    <div class="flex items-center gap-3 mb-2">
+                        <h3 class="text-3xl font-bold text-deep-navy">歷史航跡：集數典藏庫</h3>
+                        <span id="lastUpdatedTag" class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded border border-gray-200">上次同步：系統預設</span>
+                    </div>
+                    <p class="text-gray-500">2026 年度每週觀點之結構化紀錄，支援社群動態自動抓取。</p>
+                </div>
+                <div class="relative w-full md:w-80">
+                    <input type="text" id="logSearch" onkeyup="filterLogs()" placeholder="搜尋題材、集數或關鍵字..." class="w-full px-5 py-3 rounded-full border border-gray-200 focus:border-ocean-blue focus:ring-4 focus:ring-blue-100 outline-none transition">
+                    <span class="absolute right-5 top-3.5 opacity-30">🔍</span>
+                </div>
+            </div>
+
+            <div class="space-y-6" id="logContainer">
+                <!-- Dynamic Logs will be rendered here -->
+            </div>
+        </section>
+    </main>
+
+    <!-- AI Chatbot Widget -->
+    <div id="aiChatWidget" class="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+        <div id="aiChatPanel" class="hidden w-80 md:w-96 bg-white border border-blue-200 rounded-2xl shadow-2xl mb-4 flex flex-col overflow-hidden transition-all duration-300">
+            <div class="bg-deep-navy text-white px-4 py-3 flex justify-between items-center shadow-md">
+                <div class="flex items-center gap-2">
+                    <span class="text-xl">🤖</span>
+                    <h4 class="font-bold tracking-wider text-sm">AI 戰略顧問 (彼夫有擇)</h4>
+                </div>
+                <button onclick="toggleChat()" class="hover:text-gray-300 transition text-lg leading-none">&times;</button>
+            </div>
+            <div id="chatHistory" class="flex-1 p-4 h-80 overflow-y-auto bg-slate-50 flex flex-col gap-3 text-sm scroll-smooth">
+                <div class="bg-blue-100 text-blue-900 p-3 rounded-xl rounded-tl-sm self-start max-w-[85%] leading-relaxed shadow-sm">
+                    指揮官您好！我是搭載 Gemini 模型的 AI 顧問。我已連線至 2026 航跡資料庫，請問有什麼我可以協助分析的嗎？<br><br>💡 <b>你可以問我：</b><br>「總結近期對 AI 產業的看法」<br>「遇到震盪時的防禦策略是什麼？」
+                </div>
+            </div>
+            <div class="p-3 bg-white border-t border-gray-200 flex gap-2">
+                <input type="text" id="chatInput" placeholder="輸入戰略提問..." class="flex-1 px-3 py-2 border border-gray-300 rounded-lg outline-none focus:border-ocean-blue focus:ring-2 focus:ring-blue-100 transition" onkeypress="handleChatKeyPress(event)">
+                <button onclick="sendMessage()" id="sendBtn" class="bg-ocean-blue text-white px-4 py-2 rounded-lg hover:bg-blue-800 transition font-bold shadow-sm">發送</button>
+            </div>
+        </div>
+        <button onclick="toggleChat()" class="bg-deep-navy text-white w-14 h-14 rounded-full shadow-xl flex items-center justify-center text-2xl hover:scale-105 hover:shadow-blue-900/50 transition-all duration-300 border-2 border-white">
+            🤖
+        </button>
+    </div>
+
+    <script>
+        let logData = [
+            { id: 'EP662', title: '⛑️ 風險控管與位階檢視', date: '2026.05.16', type: 'tactic', tags: ['風險控管', '現金比例', '位階'], tldr: '市場進入高位震盪，建議提高現金比例，切換至防禦姿態。', action: '現金水位調升至 30%，檢視個股乖離率。', emotion: 35, source: 'youtube' },
+            { id: 'EP655', title: '🐯 財報季與猛虎市場', date: '2026.04', type: 'sector', tags: ['AI核心', '季報', '強勢股'], tldr: '財報驗證期，強勢股展現韌性，弱勢股可能快速修正。', action: '汰換弱勢二線廠，資金集中於財報亮眼的 AI 龍頭。', emotion: 72, source: 'youtube' },
+            { id: 'EP646', title: '🦙 邊緣 AI 與草泥馬效應', date: '2026.03.21', type: 'sector', tags: ['邊緣運算', 'AI PC', 'Llama'], tldr: 'AI 應用向終端滲透，帶動硬體換機潮想像空間。', action: '佈局散熱與關鍵零組件之低位階標的。', emotion: 65, source: 'youtube' },
+            { id: 'EP640', title: '🐈 春季躁動與靈活選股', date: '2026.02.28', type: 'psych', tags: ['中小股', '春季躁動', '短線'], tldr: '資金活躍，中小標的表現優於大盤，考驗選股敏捷度。', action: '參與趨勢但嚴格執行 10% 停損，不重倉單一題材。', emotion: 88, source: 'youtube' }
+        ];
+
+        function renderLogs(data) {
+            const container = document.getElementById('logContainer');
+            if (data.length === 0) {
+                container.innerHTML = `<div class="text-center text-gray-500 py-10">找不到相符的航跡紀錄。</div>`;
+                return;
+            }
+            container.innerHTML = data.map(item => `
+                <div class="navy-card p-6 border-l-4 border-ocean-blue transition-all duration-500">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                        <div class="flex items-center gap-4">
+                            <span class="text-sm font-bold bg-gray-100 px-3 py-1 rounded flex items-center gap-1 border border-gray-200">
+                                ${item.source === 'facebook' ? '<span class="text-blue-600">FB</span>' : '<span class="text-red-600">YT</span>'} <span class="text-gray-500">${item.date}</span>
+                            </span>
+                            <h5 class="text-xl font-bold text-deep-navy">${item.id} | ${item.title}</h5>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            ${item.tags.map(tag => `<span class="text-xs font-bold border border-blue-200 text-ocean-blue px-2 py-1 rounded bg-white">#${tag}</span>`).join('')}
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                        <div class="bg-blue-50/50 p-4 rounded-lg border border-blue-100/50">
+                            <p class="text-xs font-bold text-ocean-blue mb-1 uppercase tracking-tighter">● 航跡摘要 (TL;DR)</p>
+                            <p class="text-sm text-gray-600 leading-relaxed">"${item.tldr}"</p>
+                        </div>
+                        <div class="bg-amber-50/50 p-4 rounded-lg border border-amber-100/50">
+                            <p class="text-xs font-bold text-amber-600 mb-1 uppercase tracking-tighter">● 戰術行動修正</p>
+                            <p class="text-sm text-gray-800 font-bold">${item.action}</p>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterLogs() {
+            const query = document.getElementById('logSearch').value.toLowerCase();
+            const filtered = logData.filter(log =>
+                log.title.toLowerCase().includes(query) ||
+                log.id.toLowerCase().includes(query) ||
+                log.tags.some(t => t.toLowerCase().includes(query))
+            );
+            renderLogs(filtered);
+        }
+
+        function triggerSync() {
+            const btn = document.getElementById('syncBtn');
+            const icon = document.getElementById('syncIcon');
+            const text = document.getElementById('syncText');
+            const bar = document.getElementById('syncStatusBar');
+            const updateTag = document.getElementById('lastUpdatedTag');
+
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+            icon.classList.add('animate-spin');
+            text.innerText = "同步中...";
+            bar.classList.remove('hidden');
+
+            setTimeout(() => {
+                const newFeeds = [
+                    { id: 'FB 快訊', title: '市場雜音與操作紀律', date: '剛剛', type: 'psych', tags: ['FB動態', '心態', '雜音'], tldr: '別被每天的新聞牽著鼻子走，關注你原本設定的進出場邏輯。', action: '關閉多餘的新聞推播，重新檢視持股清單的原始買進理由。', source: 'facebook' },
+                    { id: 'EP644', title: '🦇 醫美與操作', date: '2026.03.14', type: 'psych', tags: ['生活觀察', '消費'], tldr: '從生活中尋找投資機會，消費趨勢往往領先財報。', action: '觀察周遭消費行為改變，尋找尚未發酵的傳產或內需標的。', source: 'youtube', emotion: 60 }
+                ];
+
+                const existingIds = new Set(logData.map(item => item.id));
+                const uniqueNewFeeds = newFeeds.filter(item => !existingIds.has(item.id));
+
+                if (uniqueNewFeeds.length > 0) {
+                    logData = [...uniqueNewFeeds, ...logData];
+                    renderLogs(logData);
+                    const container = document.getElementById('logContainer');
+                    const firstItem = container.firstElementChild;
+                    firstItem.classList.add('bg-blue-50', 'border-ocean-blue', 'scale-[1.01]');
+                    setTimeout(() => firstItem.classList.remove('bg-blue-50', 'border-ocean-blue', 'scale-[1.01]'), 3000);
+                }
+
+                btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                icon.classList.remove('animate-spin');
+                text.innerText = "已更新";
+                bar.classList.add('hidden');
+
+                const now = new Date();
+                const timeString = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+                updateTag.innerText = `最新同步：${timeString}`;
+                updateTag.className = "text-xs bg-green-100 text-green-700 px-2 py-1 rounded border border-green-200";
+                setTimeout(() => { text.innerText = "資料同步"; }, 3000);
+            }, 2000);
+        }
+
+        window.onload = () => { renderLogs(logData); };
+
+        // ==========================================
+        // AI Gemini API 整合模組
+        // ==========================================
+        let isChatOpen = false;
+
+        function toggleChat() {
+            const panel = document.getElementById('aiChatPanel');
+            isChatOpen = !isChatOpen;
+            panel.classList.toggle('hidden', !isChatOpen);
+            if (isChatOpen) document.getElementById('chatInput').focus();
+        }
+
+        function handleChatKeyPress(e) {
+            if (e.key === 'Enter') sendMessage();
+        }
+
+        async function sendMessage() {
+            const inputEl = document.getElementById('chatInput');
+            const sendBtn = document.getElementById('sendBtn');
+            const message = inputEl.value.trim();
+            if (!message) return;
+
+            appendMessage('user', message);
+            inputEl.value = '';
+            inputEl.disabled = true;
+            sendBtn.disabled = true;
+            sendBtn.classList.add('opacity-50');
+
+            const typingId = appendMessage('ai', '連線主機中，正在解析航跡資料...');
+
+            try {
+                const response = await callGeminiAPI(message);
+                updateMessage(typingId, response);
+            } catch (error) {
+                updateMessage(typingId, '⚠️ 系統連線異常或超時，請檢查網路連線後再試。');
+                console.error("Gemini API Error:", error);
+            } finally {
+                inputEl.disabled = false;
+                sendBtn.disabled = false;
+                sendBtn.classList.remove('opacity-50');
+                inputEl.focus();
+            }
+        }
+
+        function appendMessage(sender, text) {
+            const chatHistory = document.getElementById('chatHistory');
+            const msgDiv = document.createElement('div');
+            const id = 'msg-' + Date.now();
+            msgDiv.id = id;
+            if (sender === 'user') {
+                msgDiv.className = 'bg-ocean-blue text-white p-3 rounded-xl rounded-tr-sm self-end max-w-[85%] break-words shadow-sm';
+            } else {
+                msgDiv.className = 'bg-blue-100 text-blue-900 p-3 rounded-xl rounded-tl-sm self-start max-w-[85%] break-words leading-relaxed shadow-sm';
+            }
+            msgDiv.innerHTML = text;
+            chatHistory.appendChild(msgDiv);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+            return id;
+        }
+
+        function updateMessage(id, text) {
+            const msgDiv = document.getElementById(id);
+            if (msgDiv) {
+                let formattedText = text.replace(/\*\*(.*?)\*\*/g, '<b class="text-blue-800">$1</b>');
+                formattedText = formattedText.replace(/\*(.*?)\*/g, '<i>$1</i>');
+                formattedText = formattedText.replace(/\n/g, '<br>');
+                msgDiv.innerHTML = formattedText;
+                document.getElementById('chatHistory').scrollTop = document.getElementById('chatHistory').scrollHeight;
+            }
+        }
+
+        async function callGeminiAPI(userQuery) {
+            const apiKey = "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+            const contextData = logData.map(log =>
+                `[${log.id} | ${log.date}] 標籤:${log.tags.join(',')} | 摘要:${log.tldr} | 行動:${log.action}`
+            ).join('\n');
+
+            const systemPrompt = `你是一位名為「彼夫有擇」的高階投資戰略顧問 AI。
+你的任務是根據下方提供的「2026年股癌(Gooaye)節目航跡資料庫」來回答使用者的問題。
+回答風格必須專業、簡潔、冷靜。
+
+【嚴格規則】：
+1. 你的回答必須盡量奠基於下方的【航跡資料庫】。
+2. 如果使用者的問題超出資料庫範圍，請使用你的既有投資知識回答。
+3. 排版使用條列式有助於閱讀。
+
+【當前航跡資料庫】：
+${contextData}
+`;
+
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] }
+            };
+
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+            const result = await response.json();
+            if (result.candidates && result.candidates[0] && result.candidates[0].content) {
+                return result.candidates[0].content.parts[0].text;
+            }
+            return "抱歉，分析模組目前無法解讀訊號。";
+        }
+    </script>
+</body>
+</html>
