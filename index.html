@@ -735,21 +735,21 @@
                     ${hasSweetData ? `
                     <div class="sweet-zone">
                         <div class="sweet-zone-title">🍬 甜蜜買進區間 <span class="${({'HIGH':'sweet-conf-HIGH','MID':'sweet-conf-MID','LOW':'sweet-conf-LOW'})[s.sweet_confidence||'MID']||'sweet-conf-MID'}">${({'HIGH':'⭐ 高信心','MID':'🔵 中信心','LOW':'⚪ 觀察型'})[s.sweet_confidence||'MID']}</span></div>
-                        <div class="sweet-zone-range">¥ ${sweetLow} ～ ¥ ${sweetHigh}</div>
+                        <div class="sweet-zone-range">NTD ${sweetLow} ～ NTD ${sweetHigh}</div>
                         <div class="sweet-price-row">
                             <div class="sweet-price-item">
                                 <span class="sweet-price-label">🎯 第一停利</span>
-                                <span class="sweet-price-val" style="color:var(--neon-green);">¥ ${firstTarget}</span>
+                                <span class="sweet-price-val" style="color:var(--neon-green);">NTD ${firstTarget}</span>
                                 <span style="font-size:10px;color:var(--neon-green);opacity:.8;">+15%</span>
                             </div>
                             <div class="sweet-price-item">
                                 <span class="sweet-price-label">🏆 最終目標</span>
-                                <span class="sweet-price-val" style="color:var(--neon-gold);">¥ ${s.target_price}</span>
+                                <span class="sweet-price-val" style="color:var(--neon-gold);">NTD ${s.target_price}</span>
                                 <span style="font-size:10px;color:var(--neon-gold);opacity:.8;">+50%</span>
                             </div>
                             <div class="sweet-price-item">
                                 <span class="sweet-price-label">🛡️ 停損價</span>
-                                <span class="sweet-price-val" style="color:var(--neon-red);">¥ ${s.stop_loss}</span>
+                                <span class="sweet-price-val" style="color:var(--neon-red);">NTD ${s.stop_loss}</span>
                                 <span style="font-size:10px;color:var(--neon-red);opacity:.8;">-10%</span>
                             </div>
                         </div>
