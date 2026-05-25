@@ -4,8 +4,17 @@ import os
 import sys
 import json
 
-# 設定 Moly 的日誌格式
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - Moly 🌸 - %(message)s')
+LOCAL_PATH = os.path.dirname(os.path.abspath(__file__))
+_log_file = os.path.join(LOCAL_PATH, "moly.log")
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - Moly 🌸 - %(message)s',
+    handlers=[
+        logging.FileHandler(_log_file, encoding='utf-8', mode='a'),
+        logging.StreamHandler(sys.stdout)
+    ]
+)
 
 # ============================================================
 # 方案 B：本地主算核心（2026-05-04 架構重心轉移）
@@ -17,7 +26,6 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - Moly 🌸 - %(mess
 # moly.py 不重複執行 push，避免 non-fast-forward 衝突。
 # ============================================================
 
-LOCAL_PATH = os.path.dirname(os.path.abspath(__file__))
 RADAR_SCRIPT = os.path.join(LOCAL_PATH, "radar.py")
 
 

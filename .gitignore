@@ -5,6 +5,7 @@ finmind_info_cache.json
 # === 本地執行日誌與報告 ===
 # log_report.json 需推送 GitHub，供 Zoey 儀表板讀取，故不排除
 morning_report.log
+moly.log
 晨報/
 
 # === 回測績效報告（已移轉至 Magic Lab，不再由此倉庫追蹤）===
