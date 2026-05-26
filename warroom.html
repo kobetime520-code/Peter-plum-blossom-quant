@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧠 彼夫有責戰情室 — AI 分析師晨報</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: radial-gradient(circle at 30% 20%, #0D2137 0%, #061428 50%, #010810 100%);
+            --panel-bg: rgba(16, 32, 64, 0.85);
+            --panel-border: rgba(100, 255, 218, 0.2);
+            --text-main: #E6F1FF;
+            --text-muted: #8892B0;
+            --neon-cyan: #64FFDA;
+            --neon-green: #00E676;
+            --neon-red: #FF5252;
+            --neon-gold: #FFD700;
+            --card-shadow: rgba(0,0,0,0.4);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: var(--bg);
+            background-attachment: fixed;
+            color: var(--text-main);
+            font-family: "Noto Sans TC", "Inter", sans-serif;
+            min-height: 100vh;
+            padding: 0 0 40px;
+        }
+
+        /* ── 頁首 ── */
+        #wr-header {
+            background: linear-gradient(90deg, #002040 0%, #004080 50%, #002040 100%);
+            border-bottom: 2px solid var(--neon-cyan);
+            padding: 22px 32px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+        }
+
+        #wr-header h1 {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: var(--neon-cyan);
+        }
+
+        #wr-header .meta {
+            font-size: 12px;
+            color: var(--text-muted);
+            line-height: 1.7;
+            text-align: right;
+        }
+
+        #wr-header .meta b { color: var(--text-main); }
+
+        .wr-badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        /* ── 市場溫度計 ── */
+        #wr-gauge-bar {
+            max-width: 1200px;
+            margin: 24px auto 0;
+            padding: 0 24px;
+        }
+
+        .gauge-wrap {
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 14px;
+            padding: 20px 28px;
+            display: flex;
+            align-items: center;
+            gap: 32px;
+            flex-wrap: wrap;
+            backdrop-filter: blur(10px);
+        }
+
+        .gauge-title { font-size: 12px; color: var(--neon-gold); font-weight: bold; letter-spacing: 1px; white-space: nowrap; }
+
+        .gauge-body { flex: 1; min-width: 200px; }
+
+        .gauge-track {
+            height: 18px;
+            background: rgba(255,255,255,0.07);
+            border-radius: 9px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .gauge-fill {
+            height: 100%;
+            border-radius: 9px;
+            transition: width 1s ease;
+        }
+
+        .gauge-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+
+        .gauge-score {
+            font-size: 40px;
+            font-weight: 700;
+            line-height: 1;
+            white-space: nowrap;
+        }
+
+        .gauge-level {
+            font-size: 13px;
+            font-weight: bold;
+            margin-top: 4px;
+        }
+
+        .gauge-stats {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .gauge-stat-item {
+            text-align: center;
+        }
+
+        .gauge-stat-val {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--neon-cyan);
+        }
+
+        .gauge-stat-label {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        /* ── 分析師列 ── */
+        #wr-analysts {
+            max-width: 1200px;
+            margin: 20px auto 0;
+            padding: 0 24px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 16px;
+        }
+
+        .analyst-card {
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 14px;
+            padding: 18px 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px var(--card-shadow);
+            border-top: 3px solid var(--neon-cyan);
+            transition: transform 0.25s;
+        }
+
+        .analyst-card:hover { transform: translateY(-2px); }
+
+        .analyst-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .analyst-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .analyst-name { font-size: 14px; font-weight: 700; color: var(--text-main); }
+        .analyst-role { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+
+        .analyst-verdict {
+            font-size: 13px;
+            color: var(--text-main);
+            line-height: 1.75;
+            margin-bottom: 12px;
+        }
+
+        .analyst-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .chip {
+            display: inline-block;
+            padding: 3px 9px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            border: 1px solid transparent;
+        }
+
+        .chip-cyan   { background: rgba(100,255,218,0.1); color: #64FFDA; border-color: rgba(100,255,218,0.3); }
+        .chip-green  { background: rgba(0,230,118,0.1);  color: #00E676; border-color: rgba(0,230,118,0.3); }
+        .chip-gold   { background: rgba(255,215,0,0.1);  color: #FFD700; border-color: rgba(255,215,0,0.3); }
+        .chip-red    { background: rgba(255,82,82,0.1);  color: #FF5252; border-color: rgba(255,82,82,0.3); }
+        .chip-muted  { background: rgba(136,146,176,0.1);color: #8892B0; border-color: rgba(136,146,176,0.25); }
+        .chip-purple { background: rgba(188,140,255,0.12);color: #bc8cff; border-color: rgba(188,140,255,0.3); }
+
+        /* ── Top 10 排行榜 ── */
+        #wr-top10 {
+            max-width: 1200px;
+            margin: 20px auto 0;
+            padding: 0 24px;
+        }
+
+        .section-panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 14px;
+            padding: 20px 24px;
+            backdrop-filter: blur(10px);
+        }
+
+        .section-title {
+            font-size: 13px;
+            font-weight: bold;
+            color: var(--neon-gold);
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .rank-table { width: 100%; border-collapse: collapse; }
+
+        .rank-table th {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: normal;
+            text-align: left;
+            padding: 4px 8px 10px;
+            border-bottom: 1px solid var(--panel-border);
+        }
+
+        .rank-table td {
+            padding: 9px 8px;
+            font-size: 13px;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+
+        .rank-num {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-muted);
+            width: 28px;
+        }
+
+        .rank-num.top3 { color: var(--neon-gold); }
+
+        .stock-id-cell { color: var(--neon-cyan); font-weight: 700; font-size: 14px; }
+
+        .score-mini-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .score-mini-track {
+            flex: 1;
+            height: 6px;
+            background: rgba(255,255,255,0.07);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .score-mini-fill {
+            height: 100%;
+            border-radius: 3px;
+        }
+
+        .score-val { font-size: 13px; font-weight: 700; width: 32px; text-align: right; }
+
+        .grade-badge {
+            display: inline-block;
+            padding: 1px 7px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .grade-S { background: rgba(255,215,0,0.15); color: #FFD700; border: 1px solid rgba(255,215,0,0.4); }
+        .grade-A { background: rgba(100,255,218,0.1); color: #64FFDA; border: 1px solid rgba(100,255,218,0.35); }
+        .grade-B { background: rgba(0,230,118,0.1);  color: #00E676; border: 1px solid rgba(0,230,118,0.35); }
+        .grade-C { background: rgba(136,146,176,0.1);color: #8892B0; border: 1px solid rgba(136,146,176,0.25); }
+        .grade-X { background: rgba(255,82,82,0.08); color: #FF5252; border: 1px solid rgba(255,82,82,0.25); }
+
+        /* ── 魚池健康度 ── */
+        #wr-pools {
+            max-width: 1200px;
+            margin: 20px auto 0;
+            padding: 0 24px;
+        }
+
+        .pool-health-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .pool-name-cell {
+            width: 150px;
+            font-size: 12px;
+            color: var(--text-muted);
+            flex-shrink: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .pool-track {
+            flex: 1;
+            height: 14px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 7px;
+            overflow: hidden;
+        }
+
+        .pool-fill {
+            height: 100%;
+            border-radius: 7px;
+            transition: width 0.8s ease;
+        }
+
+        .pool-pct-cell {
+            font-size: 12px;
+            width: 70px;
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        /* ── 雙買排行 ── */
+        #wr-dualbuy {
+            max-width: 1200px;
+            margin: 20px auto 0;
+            padding: 0 24px;
+        }
+
+        .dualbuy-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .dualbuy-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(255,215,0,0.1);
+            color: #FFD700;
+            border: 1px solid rgba(255,215,0,0.3);
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        /* ── 頁尾 ── */
+        #wr-footer {
+            max-width: 1200px;
+            margin: 24px auto 0;
+            padding: 0 24px;
+            text-align: center;
+            font-size: 11px;
+            color: var(--text-muted);
+            line-height: 2;
+        }
+
+        /* ── 返回按鈕 ── */
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--neon-cyan);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: bold;
+            border: 1px solid var(--neon-cyan);
+            padding: 5px 14px;
+            border-radius: 20px;
+            transition: 0.3s;
+        }
+
+        .back-link:hover {
+            background: rgba(100,255,218,0.1);
+        }
+
+        @media (max-width: 768px) {
+            #wr-header { padding: 16px 20px; }
+            #wr-gauge-bar, #wr-analysts, #wr-top10, #wr-pools, #wr-dualbuy, #wr-footer { padding: 0 14px; }
+            .gauge-wrap { gap: 16px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ── 頁首 ── -->
+<div id="wr-header">
+    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+        <a href="index.html" class="back-link">← 戰情室主頁</a>
+        <h1>🧠 彼夫有責 — AI 分析師晨報</h1>
+    </div>
+    <div class="meta">
+        <div>資料時間：<b id="wr-last-updated">載入中...</b></div>
+        <div>產生時間：<b id="wr-gen-time">--</b></div>
+    </div>
+</div>
+
+<!-- ── 市場溫度計 ── -->
+<div id="wr-gauge-bar">
+    <div class="gauge-wrap">
+        <div>
+            <div class="gauge-title">🌡️ 今日市場溫度</div>
+            <div class="gauge-score" id="wr-temp-score" style="color:#64FFDA">--</div>
+            <div class="gauge-level" id="wr-temp-level">--</div>
+        </div>
+        <div class="gauge-body">
+            <div class="gauge-track">
+                <div class="gauge-fill" id="wr-temp-fill" style="width:0%;background:linear-gradient(90deg,#00E676,#FFD700,#FF5252);"></div>
+            </div>
+            <div class="gauge-labels">
+                <span>冷靜（0）</span>
+                <span>中性（50）</span>
+                <span>過熱（100）</span>
+            </div>
+        </div>
+        <div class="gauge-stats">
+            <div class="gauge-stat-item">
+                <div class="gauge-stat-val" id="wr-buy-count">--</div>
+                <div class="gauge-stat-label">買入加碼</div>
+            </div>
+            <div class="gauge-stat-item">
+                <div class="gauge-stat-val" id="wr-total-count">--</div>
+                <div class="gauge-stat-label">總個股</div>
+            </div>
+            <div class="gauge-stat-item">
+                <div class="gauge-stat-val" id="wr-buy-rate">--</div>
+                <div class="gauge-stat-label">買入率</div>
+            </div>
+            <div class="gauge-stat-item">
+                <div class="gauge-stat-val" id="wr-ocean-total">--</div>
+                <div class="gauge-stat-label">汪洋大魚</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── 四大分析師區 ── -->
+<div id="wr-analysts">
+    <!-- Joe 技術面 -->
+    <div class="analyst-card" id="analyst-joe" style="border-top-color:#64FFDA;">
+        <div class="analyst-header">
+            <div class="analyst-avatar" style="background:rgba(100,255,218,0.15);">📈</div>
+            <div>
+                <div class="analyst-name">Joe</div>
+                <div class="analyst-role">技術面研究員</div>
+            </div>
+        </div>
+        <div class="analyst-verdict" id="joe-verdict">分析中...</div>
+        <div class="analyst-chips" id="joe-chips"></div>
+    </div>
+
+    <!-- Eric 籌碼面 -->
+    <div class="analyst-card" id="analyst-eric" style="border-top-color:#FFD700;">
+        <div class="analyst-header">
+            <div class="analyst-avatar" style="background:rgba(255,215,0,0.15);">💰</div>
+            <div>
+                <div class="analyst-name">Eric</div>
+                <div class="analyst-role">籌碼分析研究員</div>
+            </div>
+        </div>
+        <div class="analyst-verdict" id="eric-verdict">分析中...</div>
+        <div class="analyst-chips" id="eric-chips"></div>
+    </div>
+
+    <!-- Grace 題材面 -->
+    <div class="analyst-card" id="analyst-grace" style="border-top-color:#bc8cff;">
+        <div class="analyst-header">
+            <div class="analyst-avatar" style="background:rgba(188,140,255,0.15);">🔭</div>
+            <div>
+                <div class="analyst-name">Grace</div>
+                <div class="analyst-role">題材面研究員</div>
+            </div>
+        </div>
+        <div class="analyst-verdict" id="grace-verdict">分析中...</div>
+        <div class="analyst-chips" id="grace-chips"></div>
+    </div>
+
+    <!-- Tim 魚池面 -->
+    <div class="analyst-card" id="analyst-tim" style="border-top-color:#00E676;">
+        <div class="analyst-header">
+            <div class="analyst-avatar" style="background:rgba(0,230,118,0.15);">📊</div>
+            <div>
+                <div class="analyst-name">Tim</div>
+                <div class="analyst-role">基本面研究員</div>
+            </div>
+        </div>
+        <div class="analyst-verdict" id="tim-verdict">分析中...</div>
+        <div class="analyst-chips" id="tim-chips"></div>
+    </div>
+</div>
+
+<!-- ── Top 10 強勢排行 ── -->
+<div id="wr-top10">
+    <div class="section-panel">
+        <div class="section-title">🏆 今日 Top 10 強勢買入股（依強勢評分）</div>
+        <table class="rank-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>代號</th>
+                    <th>名稱</th>
+                    <th>強勢分</th>
+                    <th>評級</th>
+                    <th>籌碼</th>
+                    <th>題材</th>
+                </tr>
+            </thead>
+            <tbody id="wr-top10-body">
+                <tr><td colspan="7" style="color:var(--text-muted);text-align:center;padding:20px;">載入中...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ── 魚池健康度 ── -->
+<div id="wr-pools">
+    <div class="section-panel">
+        <div class="section-title">🎯 各魚池買入加碼健康指數</div>
+        <div id="wr-pool-health"></div>
+    </div>
+</div>
+
+<!-- ── 雙買個股清單 ── -->
+<div id="wr-dualbuy">
+    <div class="section-panel">
+        <div class="section-title">⭐ 今日雙買個股（外資 + 投信同步買超）</div>
+        <div class="dualbuy-grid" id="wr-dualbuy-tags">載入中...</div>
+    </div>
+</div>
+
+<!-- ── 頁尾 ── -->
+<div id="wr-footer">
+    <p>彼夫有責戰情室 · 晨報系統 · 僅供 Magic Lab 內部參考</p>
+    <p>資料由 FinMind API + Yahoo Finance 驅動 · Claude 自動整理</p>
+</div>
+
+<!-- ============================================================
+     晨報摘要 — 由排程自動插入，每日覆蓋
+     ============================================================ -->
+<div id="morning-brief-bar" style="background:linear-gradient(90deg,#002870,#0058a8);color:#fff;padding:14px 24px;margin-top:0;font-size:.82rem;line-height:1.9">
+  <strong>📰 Grace 今日題材掃描（2026-05-26）</strong><br>
+  【🔬 半導體】力積電打入英特爾EMIB供應鏈傳聞發酵，盤中漲停，黃崇仁看好2026可期 — 相關：6770 力積電、5483 中美晶、3016 嘉晶 |
+  【📈 大盤籌碼】三大法人5/25買超破千億，外資761億創歷史第4大，台股再創新高43644點 — 相關：全市場買入股 |
+  【⚙️ 機械設備】東台連3漲，PCB鑽孔機龍頭法人持續買超，強勢評分滿分100 — 相關：4526 東台、4533 協易機<br>
+  <span style="opacity:.7;font-size:.72rem">新聞由 Claude 自動搜尋整理，請自行查證原始來源 · 僅供 Magic Lab 內部參考</span>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+// ============================================================
+// 彼夫有責戰情室 — warroom.js Phase 1/2/3
+// 從 GitHub 動態載入 plum_blossom_data.json，渲染晨報
+// ============================================================
+
+// Phase 1：資料來源 URL（從 GitHub Pages 動態取得最新資料）
+const DATA_URL = 'plum_blossom_data.json?t=' + Date.now();
+
+// Phase 2：分析統計函數
+function analyzeData(data) {
+    const pools = data.pools || {};
+
+    // 跨池去重，保留最高 strength_score
+    const allStocksMap = {};
+    for (const [pname, stocks] of Object.entries(pools)) {
+        for (const s of stocks) {
+            const sid = s.stock_id;
+            if (!allStocksMap[sid] || s.strength_score > allStocksMap[sid].strength_score) {
+                allStocksMap[sid] = Object.assign({}, s, { _pool: pname });
+            }
+        }
+    }
+
+    const allList = Object.values(allStocksMap);
+    const buyList = allList.filter(s => s.action && s.action.includes('買入'));
+
+    // 市場溫度
+    const buyRate = buyList.length / (allList.length || 1);
+    const avgStrength = buyList.length > 0
+        ? buyList.reduce((a, s) => a + (s.strength_score || 0), 0) / buyList.length
+        : 0;
+    const bullCount = buyList.filter(s => s.bull_align).length;
+    const bullRate = bullCount / (buyList.length || 1);
+    const aGrade = buyList.filter(s => ['S','A'].includes(s.inst_grade)).length;
+    const aRate = aGrade / (buyList.length || 1);
+    const tempScore = Math.min(100, Math.round(buyRate * 35 + (avgStrength / 100) * 30 + bullRate * 20 + aRate * 15));
+
+    // Top 10 買入股
+    const top10 = [...buyList].sort((a, b) => (b.strength_score || 0) - (a.strength_score || 0)).slice(0, 10);
+
+    // Joe 技術面
+    const strongCount  = allList.filter(s => s.trend_quality === 'STRONG').length;
+    const healthyCount = allList.filter(s => s.trend_quality === 'HEALTHY').length;
+    const weakCount    = allList.filter(s => s.trend_quality === 'WEAK').length;
+    const watchCount   = allList.filter(s => s.trend_quality === 'WATCH').length;
+    const avgStreak    = buyList.length > 0
+        ? (buyList.reduce((a, s) => a + (s.above_ma5_streak || 0), 0) / buyList.length).toFixed(1)
+        : 0;
+    const bullBuyCount = buyList.filter(s => s.bull_align).length;
+    const bullBuyPct   = buyList.length > 0 ? Math.round(bullBuyCount / buyList.length * 100) : 0;
+    const rsiOverbuy   = buyList.filter(s => (s.rsi14 || 0) > 70).length;
+    const champs       = [...buyList]
+        .filter(s => (s.ma5_breakout_day || 0) >= 8)
+        .sort((a, b) => (b.ma5_breakout_day || 0) - (a.ma5_breakout_day || 0))
+        .slice(0, 3);
+
+    // Eric 籌碼
+    const sGrade  = buyList.filter(s => s.inst_grade === 'S').length;
+    const aGradeCnt = buyList.filter(s => s.inst_grade === 'A').length;
+    const bGradeCnt = buyList.filter(s => s.inst_grade === 'B').length;
+    const dualBuy = buyList.filter(s => s.chip_signal === '雙買');
+    const topForeign = [...buyList]
+        .sort((a, b) => (b.foreign_buy || 0) - (a.foreign_buy || 0))
+        .slice(0, 3);
+
+    // Grace 題材
+    const themeCount = {};
+    buyList.forEach(s => {
+        const t = s.theme_tag || '📌 其他';
+        themeCount[t] = (themeCount[t] || 0) + 1;
+    });
+    const topThemes = Object.entries(themeCount).sort((a, b) => b[1] - a[1]).slice(0, 5);
+    const mainTheme = topThemes[0] ? topThemes[0][0] : '--';
+
+    // Tim 魚池
+    const poolStats = data.dashboard_stats?.pool_buy_stats || {};
+
+    return {
+        allList, buyList, tempScore, top10,
+        strongCount, healthyCount, weakCount, watchCount,
+        avgStreak, bullBuyCount, bullBuyPct, rsiOverbuy, champs,
+        sGrade, aGradeCnt, bGradeCnt, dualBuy, topForeign,
+        topThemes, mainTheme, poolStats,
+        buyRate, avgStrength,
+        oceanTotal: data.dashboard_stats?.ocean_total || 0
+    };
+}
+
+// Phase 3：渲染函數
+function loadWarroom() {
+    fetch(DATA_URL)
+        .then(r => r.json())
+        .then(data => renderWarroom(data))
+        .catch(err => {
+            console.error('warroom 資料載入失敗:', err);
+            document.getElementById('wr-last-updated').textContent = '❌ 資料載入失敗';
+        });
+}
+
+function renderWarroom(data) {
+    const now = new Date();
+    document.getElementById('wr-last-updated').textContent = data.last_updated || '--';
+    document.getElementById('wr-gen-time').textContent =
+        now.toLocaleDateString('zh-TW') + ' ' + now.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' });
+
+    const a = analyzeData(data);
+
+    // ── 市場溫度計 ──
+    const tempLevel = a.tempScore >= 85 ? '🔥 極度樂觀'
+        : a.tempScore >= 70 ? '📈 強勢偏多'
+        : a.tempScore >= 55 ? '✅ 健康做多'
+        : a.tempScore >= 40 ? '📡 中性觀望'
+        : '❄️ 偏空謹慎';
+
+    document.getElementById('wr-temp-score').textContent = a.tempScore;
+    document.getElementById('wr-temp-level').textContent = tempLevel;
+    document.getElementById('wr-temp-fill').style.width = a.tempScore + '%';
+    document.getElementById('wr-buy-count').textContent = a.buyList.length;
+    document.getElementById('wr-total-count').textContent = a.allList.length;
+    document.getElementById('wr-buy-rate').textContent = Math.round(a.buyRate * 100) + '%';
+    document.getElementById('wr-ocean-total').textContent = a.oceanTotal;
+
+    const tempFill = document.getElementById('wr-temp-fill');
+    if (a.tempScore >= 85) tempFill.style.background = 'linear-gradient(90deg,#FF5252,#FF8C00)';
+    else if (a.tempScore >= 70) tempFill.style.background = 'linear-gradient(90deg,#FFD700,#FF8C00)';
+    else if (a.tempScore >= 55) tempFill.style.background = 'linear-gradient(90deg,#00E676,#64FFDA)';
+    else tempFill.style.background = 'linear-gradient(90deg,#8892B0,#4fc3f7)';
+
+    // ── Joe 技術面 ──
+    const champStr = a.champs.length > 0
+        ? '📐 趨勢持久王：' + a.champs.map(s => s.stock_name + '(' + s.ma5_breakout_day + '日)').join('、')
+        : '';
+    const joeVerdict =
+        `今日技術面：買入且多頭排列 ${a.bullBuyCount} 檔（佔買入 ${a.bullBuyPct}%）。` +
+        `RSI 超買（>70）共 ${a.rsiOverbuy} 支，動能偏熱，追高需注意回測風險。` +
+        `📐 趨勢品質：STRONG ${a.strongCount} 支・HEALTHY ${a.healthyCount} 支，` +
+        `買入股平均站穩 MA5 ${a.avgStreak} 天。` +
+        (champStr ? ` ${champStr}` : '');
+
+    document.getElementById('joe-verdict').textContent = joeVerdict;
+    document.getElementById('joe-chips').innerHTML = [
+        `<span class="chip chip-green">⬆ STRONG ${a.strongCount}</span>`,
+        `<span class="chip chip-cyan">➡ HEALTHY ${a.healthyCount}</span>`,
+        `<span class="chip chip-muted">⬇ WEAK ${a.weakCount}</span>`,
+        `<span class="chip chip-muted">👀 WATCH ${a.watchCount}</span>`,
+        `<span class="chip chip-gold">站穩MA5 avg ${a.avgStreak}天</span>`,
+        `<span class="chip chip-red">RSI超買 ${a.rsiOverbuy}支</span>`,
+    ].join('');
+
+    // ── Eric 籌碼面 ──
+    const dualBuyNames = a.dualBuy.slice(0, 5).map(s => s.stock_name).join('、');
+    const dualBuyMore = a.dualBuy.length > 5 ? `等共 ${a.dualBuy.length} 支` : '';
+    const topForeignStr = a.topForeign.map(s =>
+        `${s.stock_name}(+${(s.foreign_buy || 0).toLocaleString()})`
+    ).join('、');
+    const ericVerdict =
+        `今日籌碼面：S 級 ${a.sGrade} 支、A 級 ${a.aGradeCnt} 支、B 級 ${a.bGradeCnt} 支，` +
+        `籌碼品質優秀。` +
+        `外資買超前三名：${topForeignStr}。` +
+        `雙買個股（外資 + 投信同步進場）：${dualBuyNames}${dualBuyMore}，為最強籌碼訊號。`;
+
+    document.getElementById('eric-verdict').textContent = ericVerdict;
+    document.getElementById('eric-chips').innerHTML = [
+        `<span class="chip chip-gold">S級 ${a.sGrade}支</span>`,
+        `<span class="chip chip-cyan">A級 ${a.aGradeCnt}支</span>`,
+        `<span class="chip chip-green">B級 ${a.bGradeCnt}支</span>`,
+        `<span class="chip chip-purple">雙買 ${a.dualBuy.length}支</span>`,
+    ].join('');
+
+    // ── Grace 題材面 ──
+    const themeStr = a.topThemes.slice(0, 3).map(([t, c]) => `${t}×${c}`).join(' / ');
+    const graceVerdict =
+        `今日主力題材：${a.mainTheme}領軍，前三大題材分布為 ${themeStr}。` +
+        `建議重點觀察題材輪動方向，搭配籌碼訊號順勢而為。`;
+
+    document.getElementById('grace-verdict').textContent = graceVerdict;
+    document.getElementById('grace-chips').innerHTML = a.topThemes.slice(0, 5).map(([t, c]) =>
+        `<span class="chip chip-purple">${t} ×${c}</span>`
+    ).join('');
+
+    // ── Tim 魚池面 ──
+    const poolList = Object.entries(a.poolStats);
+    const maxPool = poolList.sort((x, y) => {
+        const px = x[1].total > 0 ? x[1].buy / x[1].total : 0;
+        const py = y[1].total > 0 ? y[1].buy / y[1].total : 0;
+        return py - px;
+    })[0];
+    const tigerFull = a.poolStats['🐅 三日成猛虎水池']
+        ? a.poolStats['🐅 三日成猛虎水池'].buy === a.poolStats['🐅 三日成猛虎水池'].total
+        : false;
+    const timVerdict =
+        `最活躍魚池：${maxPool ? maxPool[0] : '--'}。` +
+        (tigerFull ? '🐅 猛虎池今日全員買入，強勢動能持續！ ' : '猛虎池尚有個股觀察中。 ') +
+        `各魚池整體健康度良好，建議以買入率最高的魚池為優先觀察清單。`;
+
+    document.getElementById('tim-verdict').textContent = timVerdict;
+    document.getElementById('tim-chips').innerHTML = Object.entries(a.poolStats).map(([pname, stat]) => {
+        const pct = stat.total > 0 ? Math.round(stat.buy / stat.total * 100) : 0;
+        const cls = pct >= 80 ? 'chip-green' : pct >= 50 ? 'chip-gold' : 'chip-muted';
+        const shortName = pname.replace(/[🔥🍁🌟🔭🐅]/u, '').trim().slice(0, 5);
+        return `<span class="chip ${cls}">${shortName} ${pct}%</span>`;
+    }).join('');
+
+    // ── Top 10 表格 ──
+    const tbody = document.getElementById('wr-top10-body');
+    const chipColor = sig =>
+        sig === '雙買' ? '#FFD700' :
+        sig === '投信單買' ? '#00E676' :
+        sig === '外資單買' ? '#64FFDA' : '#8892B0';
+    const scoreGrad = v =>
+        v >= 70 ? 'linear-gradient(90deg,#00E676,#64FFDA)' :
+        v >= 50 ? 'linear-gradient(90deg,#f39c12,#FFD700)' :
+        'linear-gradient(90deg,#555,#8892B0)';
+
+    tbody.innerHTML = a.top10.map((s, i) => `
+        <tr>
+            <td class="rank-num ${i < 3 ? 'top3' : ''}">${i < 3 ? ['🥇','🥈','🥉'][i] : i+1}</td>
+            <td class="stock-id-cell">${s.stock_id}</td>
+            <td style="color:var(--text-main);font-weight:500;">${s.stock_name}</td>
+            <td>
+                <div class="score-mini-bar">
+                    <div class="score-mini-track">
+                        <div class="score-mini-fill" style="width:${s.strength_score}%;background:${scoreGrad(s.strength_score)};"></div>
+                    </div>
+                    <span class="score-val" style="color:${s.strength_score>=70?'#00E676':s.strength_score>=50?'#FFD700':'#8892B0'}">${s.strength_score}</span>
+                </div>
+            </td>
+            <td><span class="grade-badge grade-${s.inst_grade}">${s.inst_grade}</span></td>
+            <td style="color:${chipColor(s.chip_signal)};font-size:12px;font-weight:bold;">${s.chip_signal}</td>
+            <td style="font-size:11px;color:var(--text-muted);">${s.theme_tag||'--'}</td>
+        </tr>
+    `).join('');
+
+    // ── 魚池健康度 ──
+    const poolHealth = document.getElementById('wr-pool-health');
+    const poolOrder = ['🌟 彼神黃金魚池','🐅 三日成猛虎水池','🔥 姊夫爆發小魚池','🍁 楓大永動魚池','🔭 測試員觀察水域'];
+    poolHealth.innerHTML = poolOrder.map(pname => {
+        const d = a.poolStats[pname];
+        if (!d) return '';
+        const pct = d.total > 0 ? Math.round(d.buy / d.total * 100) : 0;
+        const color = pct >= 80 ? '#00E676' : pct >= 50 ? '#FFD700' : '#8892B0';
+        const shortName = pname.replace(/[🔥🍁🌟🔭🐅]/u, '').trim();
+        return `
+            <div class="pool-health-row">
+                <div class="pool-name-cell" title="${pname}">${pname.match(/./u)[0]} ${shortName}</div>
+                <div class="pool-track">
+                    <div class="pool-fill" style="width:${pct}%;background:${color};"></div>
+                </div>
+                <div class="pool-pct-cell" style="color:${color};">
+                    ${pct}%<br><span style="font-size:10px;color:var(--text-muted)">${d.buy}/${d.total}</span>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    // ── 雙買個股 ──
+    const dualTags = document.getElementById('wr-dualbuy-tags');
+    if (a.dualBuy.length > 0) {
+        dualTags.innerHTML = a.dualBuy.map(s =>
+            `<span class="dualbuy-tag">⭐ ${s.stock_id} ${s.stock_name} <span style="font-size:10px;opacity:.7;">${s.inst_grade}</span></span>`
+        ).join('');
+    } else {
+        dualTags.innerHTML = '<span style="color:var(--text-muted)">今日無雙買個股</span>';
+    }
+}
+
+// 啟動
+loadWarroom();
+</script>
+
+</body>
+</html>
