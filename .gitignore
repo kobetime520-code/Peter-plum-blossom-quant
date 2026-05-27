@@ -1,6 +1,7 @@
 # === 快取檔案（私人資料，不推上 GitHub）===
 finmind_cache.json
 finmind_info_cache.json
+yf_info_cache.json
 
 # === 本地執行日誌與報告 ===
 # log_report.json 需推送 GitHub，供 Zoey 儀表板讀取，故不排除

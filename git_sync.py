@@ -92,7 +92,9 @@ def sync_to_github():
     print(f"  ✅ git commit：{commit_msg}")
 
     # ── Step 3：stash 殘留變動，確保工作區乾淨再 pull --rebase ─────────────
-    ok_stash, stash_out = run_git(["stash", "--include-untracked"])
+    # 注意：不用 --include-untracked，避免 yf_info_cache.json 等快取檔被吃進 stash
+    # 導致 pop 時因檔案已被 radar.py 更新而衝突，誤觸 returncode ≠ 0
+    ok_stash, stash_out = run_git(["stash"])
     _, stash_list_out = run_git(["stash", "list"])
     stashed = ok_stash and bool(stash_list_out.strip())
     if stashed:
@@ -108,8 +110,13 @@ def sync_to_github():
             conflicted = [f for f in SYNC_FILES if os.path.exists(os.path.join(BASE_DIR, f))]
             run_git(["checkout", "--theirs"] + conflicted)
             run_git(["add"] + conflicted)
-            ok_cont, cont_out = run_git(["rebase", "--continue"],)
-            if not ok_cont and "nothing to commit" not in cont_out.lower():
+            ok_cont, cont_out = run_git(["rebase", "--continue"])
+            # git 2.x 在衝突全由 checkout 解決後，可能回傳非零但附帶成功訊息
+            rebase_ok = ok_cont or any(
+                kw in cont_out.lower()
+                for kw in ["nothing to commit", "successfully rebased", "no changes"]
+            )
+            if not rebase_ok:
                 print(f"  ❌ rebase --continue 失敗：{cont_out}")
                 run_git(["rebase", "--abort"])
                 if stashed:
