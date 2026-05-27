@@ -12,7 +12,12 @@
            1. 核心主題設定
            ========================================= */
         :root {
-            --ocean-bg: radial-gradient(circle at 30% 20%, #0D2137 0%, #061428 50%, #010810 100%);
+            --ocean-bg:
+                radial-gradient(ellipse at 18% 12%, rgba(76, 120, 255, 0.16) 0%, transparent 45%),
+                radial-gradient(ellipse at 85% 25%, rgba(188, 140, 255, 0.14) 0%, transparent 50%),
+                radial-gradient(ellipse at 70% 80%, rgba(0, 230, 200, 0.10) 0%, transparent 55%),
+                radial-gradient(ellipse at 25% 95%, rgba(255, 200, 100, 0.06) 0%, transparent 50%),
+                radial-gradient(circle at 30% 20%, #0D2137 0%, #061428 55%, #010810 100%);
             --create-glow: rgba(100, 255, 218, 0.15);
             --panel-bg: rgba(16, 32, 64, 0.75);
             --panel-border: rgba(100, 255, 218, 0.2);
@@ -61,8 +66,33 @@
 
         body {
             background: var(--ocean-bg); background-attachment: fixed; color: var(--text-main);
-            font-family: "Noto Sans TC", "Inter", "PingFang TC", "Microsoft JhengHei", sans-serif; margin: 0; padding: 20px; min-height: 100vh;
-            transition: background 0.6s ease, color 0.6s ease; 
+            font-family: "Noto Sans TC", "Inter", "PingFang TC", "Microsoft JhengHei", -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: 15px; line-height: 1.7; letter-spacing: 0.015em;
+            margin: 0; padding: 20px; min-height: 100vh;
+            -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+            transition: background 0.6s ease, color 0.6s ease;
+        }
+
+        /* 星空層 — V8.9 宇宙海洋強化（與既有 canvas/SVG 疊加） */
+        body::before {
+            content: '';
+            position: fixed; inset: 0; pointer-events: none; z-index: 0;
+            background-image:
+                radial-gradient(1px 1px at 25px 35px, rgba(255,255,255,0.7), transparent),
+                radial-gradient(1px 1px at 80px 130px, rgba(180,220,255,0.55), transparent),
+                radial-gradient(1.5px 1.5px at 150px 80px, rgba(220,200,255,0.7), transparent),
+                radial-gradient(1px 1px at 210px 220px, rgba(255,255,255,0.5), transparent),
+                radial-gradient(1px 1px at 270px 50px, rgba(180,220,255,0.55), transparent),
+                radial-gradient(2px 2px at 310px 270px, rgba(255,240,200,0.6), transparent);
+            background-repeat: repeat; background-size: 340px 340px;
+            opacity: 0.55;
+            animation: idx-twinkle 10s ease-in-out infinite alternate;
+        }
+        [data-theme="light-ocean"] body::before { opacity: 0; }
+        @keyframes idx-twinkle {
+            0%, 100% { opacity: 0.35; }
+            50% { opacity: 0.7; }
         }
 
         .theme-toggle-btn { position: fixed; top: 20px; right: 20px; z-index: 1000; background: var(--panel-bg); color: var(--neon-cyan); border: 1px solid var(--neon-cyan); padding: 8px 16px; border-radius: 20px; cursor: pointer; font-weight: bold; transition: 0.3s ease; backdrop-filter: blur(5px); box-shadow: 0 4px 15px var(--card-shadow); font-size: 14px; }
