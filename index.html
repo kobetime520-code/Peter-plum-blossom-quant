@@ -467,6 +467,7 @@
     <!-- ===== V8.1 魚池快速導航列 ===== -->
     <nav class="pool-quick-nav" id="pool-quick-nav">
         <span class="pool-nav-label">跳至魚池</span>
+        <button class="pool-nav-btn" data-target="pool-6">🃏 卡娃 <span class="pool-nav-count" id="nav-count-6">-</span></button>
         <button class="pool-nav-btn" data-target="pool-0">🌟 黃金 <span class="pool-nav-count" id="nav-count-0">-</span></button>
         <button class="pool-nav-btn" data-target="pool-1">🐅 猛虎 <span class="pool-nav-count" id="nav-count-1">-</span></button>
         <button class="pool-nav-btn" data-target="pool-2">🔥 爆發 <span class="pool-nav-count" id="nav-count-2">-</span></button>
@@ -977,6 +978,40 @@
             const grid = document.createElement('div');
             grid.className = 'grid-container';
 
+            // 🃏 被動卡娃魚池：依 Tier 分層展示（純展示，不參與篩選）
+            if (poolName === '🃏 被動卡娃魚池') {
+                const tierLabel = {
+                    'Tier 1': '🥇 Tier 1 核心',
+                    'Tier 2': '🥈 Tier 2 主力',
+                    'Tier 3': '🥉 Tier 3 衛星'
+                };
+                const tierOrder = ['Tier 1', 'Tier 2', 'Tier 3'];
+                const tierGroups = {};
+                stocks.forEach(s => {
+                    const t = s.tier || '其他';
+                    if (!tierGroups[t]) tierGroups[t] = [];
+                    tierGroups[t].push(s);
+                });
+                const keys = [
+                    ...tierOrder.filter(t => tierGroups[t]),
+                    ...Object.keys(tierGroups).filter(t => !tierOrder.includes(t))
+                ];
+                const wrapper = document.createElement('div');
+                keys.forEach(t => {
+                    const tierDetails = document.createElement('details');
+                    tierDetails.className = 'industry-details';
+                    tierDetails.setAttribute('open', '');
+                    tierDetails.innerHTML = `<summary><div class="industry-section-title">${tierLabel[t] || t} (${tierGroups[t].length} 檔) <span class="ind-arrow">▼</span></div></summary>`;
+                    const tierGrid = document.createElement('div');
+                    tierGrid.className = 'grid-container';
+                    tierGrid.style.paddingTop = '5px';
+                    tierGroups[t].forEach(s => tierGrid.innerHTML += createCard(s, false, 'main-', poolName));
+                    tierDetails.appendChild(tierGrid);
+                    wrapper.appendChild(tierDetails);
+                });
+                return wrapper;
+            }
+
             if (isWangYang) {
                 const industryGroups = {};
                 stocks.forEach(s => {
@@ -1041,9 +1076,10 @@
                 const container = document.getElementById('main-container');
                 if (!container) return;
 
-                const displayOrder = ["🌟 彼神黃金魚池", "🔭 測試員觀察水域", "🐅 三日成猛虎水池", "🔥 姊夫爆發小魚池", "🍁 楓大永動魚池", "🌊 汪洋大魚"];
+                const displayOrder = ["🃏 被動卡娃魚池", "🌟 彼神黃金魚池", "🔭 測試員觀察水域", "🐅 三日成猛虎水池", "🔥 姊夫爆發小魚池", "🍁 楓大永動魚池", "🌊 汪洋大魚"];
 
                 const poolDescriptions = {
+                    "🃏 被動卡娃魚池": "被動元件（MLCC／電容）觀察名單，依強度分三層 Tier ｜ 純展示池，不參與篩選評分",
                     "🌟 彼神黃金魚池": "敬愛的股市大哥的選股題材",
                     "🔭 測試員觀察水域": "此社群測試員的個人愛股",
                     "🔥 姊夫爆發小魚池": "Jeff 個人觀察與持股",
@@ -1052,7 +1088,7 @@
                     "🌊 汪洋大魚": "全市場每日掃描，量能＋趨勢＋MA5＋三大法人四關篩選後符合條件的強勢股"
                 };
 
-                const autoOpenPools = ["🌟 彼神黃金魚池", "🔥 姊夫爆發小魚池", "🍁 楓大永動魚池", "🔭 測試員觀察水域"];
+                const autoOpenPools = ["🃏 被動卡娃魚池", "🌟 彼神黃金魚池", "🔥 姊夫爆發小魚池", "🍁 楓大永動魚池", "🔭 測試員觀察水域"];
                 displayOrder.forEach(poolName => {
                     if (json_data.pools[poolName] && json_data.pools[poolName].length > 0) {
                         const stocks = json_data.pools[poolName];
@@ -1179,7 +1215,8 @@
             "🔥 姊夫爆發小魚池",
             "🍁 楓大永動魚池",
             "🔭 測試員觀察水域",
-            "🌊 汪洋大魚"
+            "🌊 汪洋大魚",
+            "🃏 被動卡娃魚池"
         ];
 
         function initPoolNav(poolsData) {

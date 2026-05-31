@@ -58,6 +58,15 @@ POOL_SETTINGS = {
     "🐅 三日成猛虎水池": []
 }
 
+# --- 2-B. 被動卡娃魚池（display-only 純展示，不參與篩選，不影響汪洋大魚/猛虎池/儀表板統計）---
+# 被動元件觀察名單，依強度分三層（Tier 1 核心 / Tier 2 主力 / Tier 3 衛星）
+PASSIVE_KAWA_POOL_NAME = "🃏 被動卡娃魚池"
+PASSIVE_KAWA_TIERS = {
+    "Tier 1": ["6173", "3026", "2492"],                                  # 信昌電 / 禾伸堂 / 華新科
+    "Tier 2": ["6175", "2472", "2327", "5317", "6449", "8042", "8163"],  # 立敦 / 立隆電 / 國巨 / 凱美 / 鈺邦 / 金山電 / 達方
+    "Tier 3": ["3090", "3537", "6432"],                                  # 日電貿 / 堡達 / 今展科
+}
+
 # =====================================================================
 # 🎯 V7.4 全域快取與 API 計數器
 # =====================================================================
@@ -804,6 +813,10 @@ def main():
     for tickers in POOL_SETTINGS.values():
         core_sids.extend(tickers)
 
+    # 🃏 被動卡娃魚池股票也需下載股價（純展示，不進市場掃描）
+    passive_sids = [sid for tier_sids in PASSIVE_KAWA_TIERS.values() for sid in tier_sids]
+    core_sids.extend(passive_sids)
+
     all_sids = list(set(market_sids + core_sids))
 
     exact_tickers = []
@@ -1001,6 +1014,34 @@ def main():
             time.sleep(0.5)
         final_data_structure[pool_name] = results
 
+    # =====================================================================
+    # 🃏 被動卡娃魚池（display-only：純展示被動元件觀察名單，分三層 Tier）
+    #    不參與汪洋大魚篩選、不影響猛虎池晉升、不計入儀表板多空統計
+    # =====================================================================
+    passive_results = []
+    print(f"🃏 監控中: {PASSIVE_KAWA_POOL_NAME}（被動元件觀察，純展示不篩選）...")
+    for tier_name, tier_sids in PASSIVE_KAWA_TIERS.items():
+        for sid in tier_sids:
+            df_price_to_use = valid_dfs.get(sid)
+            if df_price_to_use is None or df_price_to_use.empty:
+                df_price_to_use = download_yf_data_single(sid, market_map)
+                if df_price_to_use is None or df_price_to_use.empty:
+                    df_price_to_use = fetch_finmind("TaiwanStockPrice", start_60d, today_str, sid)
+
+            df_i = fetch_finmind("TaiwanStockInstitutionalInvestorsBuySell", start_30d, today_str, sid)
+
+            ind = industry_map.get(sid, "被動元件")
+            s_data = calculate_stock_data(
+                sid, name_map.get(sid, sid), ind, df_price_to_use, df_i,
+                force_show=True,
+                yf_info={"industry": yf_industry_map.get(sid, ""),
+                          "sector":   yf_sector_map.get(sid, "")})
+            if s_data:
+                s_data["tier"] = tier_name
+                passive_results.append(s_data)
+            time.sleep(0.5)
+    final_data_structure[PASSIVE_KAWA_POOL_NAME] = passive_results
+
     final_data_structure["🌊 汪洋大魚"] = market_pool
 
     # =====================================================================
@@ -1013,16 +1054,18 @@ def main():
     industry_dist = [{'industry': k, 'count': v}
                      for k, v in sorted(industry_counter.items(), key=lambda x: -x[1])[:12]]
 
+    # 🃏 被動卡娃魚池為純展示池，與汪洋大魚一併排除於多空/健康度統計外
+    _stats_exclude = {"🌊 汪洋大魚", PASSIVE_KAWA_POOL_NAME}
     named_stocks = []
     for pname, pstocks in final_data_structure.items():
-        if pname != "🌊 汪洋大魚":
+        if pname not in _stats_exclude:
             named_stocks.extend(pstocks)
     buy_n = sum(1 for s in named_stocks if s.get('action') == '買入加碼')
     watch_n = len(named_stocks) - buy_n
 
     pool_buy_stats = {}
     for pname, pstocks in final_data_structure.items():
-        if pstocks and pname != "🌊 汪洋大魚":
+        if pstocks and pname not in _stats_exclude:
             buy_p = sum(1 for s in pstocks if s.get('action') == '買入加碼')
             pool_buy_stats[pname] = {'total': len(pstocks), 'buy': buy_p}
 
