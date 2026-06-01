@@ -385,12 +385,12 @@
 
     <div class="top-nav">
         <header class="header">
-            <h1>🌌 彼夫有擇模擬選股戰情室 <span class="version-badge">V8.8</span></h1>
+            <h1>🌌 彼夫有擇模擬選股戰情室 <span class="version-badge">V8.9</span></h1>
             <div id="update-time" class="update-time">衛星同步中...</div>
             <div id="data-stale-alert" style="display:none; font-size:12px; font-weight:bold; margin-top:3px; text-align:center;"></div>
-            <div class="system-alert">⚡ 核心引擎 V8.8 上線｜本地無菌主算 + 雲端靜態展示｜創造 × 創新 × 創意 × 全能</div>
+            <div class="system-alert">⚡ 核心引擎 V8.9 上線｜本地無菌主算 + 雲端靜態展示｜創造 × 創新 × 創意 × 全能</div>
             <!-- 分頁導覽：孟恭道路指引入口 -->
-            <div style="display:flex; justify-content:center; margin:16px 0 8px;">
+            <div style="display:flex; justify-content:center; flex-wrap:wrap; gap:14px; margin:16px 0 8px;">
                 <a href="mengong.html" style="display:inline-flex; align-items:center; gap:0; text-decoration:none; border-radius:14px; overflow:hidden; box-shadow:0 4px 24px rgba(0,0,0,0.5); border:1px solid rgba(100,255,218,0.25); transition:0.25s; transform:scale(1);" onmouseover="this.style.boxShadow='0 6px 32px rgba(100,255,218,0.35)';this.style.transform='scale(1.03)'" onmouseout="this.style.boxShadow='0 4px 24px rgba(0,0,0,0.5)';this.style.transform='scale(1)'">
                     <!-- 左側圖示區 -->
                     <div style="background:linear-gradient(135deg,#0d3349,#0a4a3a); padding:14px 18px; display:flex; align-items:center; justify-content:center;">
@@ -407,6 +407,23 @@
                     <div style="background:linear-gradient(135deg,#0f1f2e,#0a192f); padding:14px 22px; text-align:left;">
                         <div style="color:#E6F1FF; font-size:17px; font-weight:bold; letter-spacing:3px; line-height:1.2;">孟 恭 的 道 路 指 引</div>
                         <div style="color:#64FFDA; font-size:11px; letter-spacing:2px; margin-top:4px; opacity:0.85;">GOOAYE STRATEGY NAVIGATOR</div>
+                    </div>
+                </a>
+                <!-- 分頁導覽：深海戰術藍圖入口 -->
+                <a href="stellar_blueprint.html" style="display:inline-flex; align-items:center; gap:0; text-decoration:none; border-radius:14px; overflow:hidden; box-shadow:0 4px 24px rgba(0,0,0,0.5); border:1px solid rgba(79,195,247,0.3); transition:0.25s; transform:scale(1);" onmouseover="this.style.boxShadow='0 6px 32px rgba(79,195,247,0.4)';this.style.transform='scale(1.03)'" onmouseout="this.style.boxShadow='0 4px 24px rgba(0,0,0,0.5)';this.style.transform='scale(1)'">
+                    <!-- 左側圖示區：雙峰／雙谷波形 -->
+                    <div style="background:linear-gradient(135deg,#0d3349,#0a3a4a); padding:14px 18px; display:flex; align-items:center; justify-content:center;">
+                        <svg width="38" height="38" viewBox="0 0 38 38" fill="none">
+                            <!-- 雙峰 M 形 -->
+                            <polyline points="4,30 11,10 19,22 27,10 34,30" stroke="#4fc3f7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                            <!-- 頸線 -->
+                            <line x1="4" y1="22" x2="34" y2="22" stroke="rgba(79,195,247,0.4)" stroke-width="1.5" stroke-dasharray="3,2"/>
+                        </svg>
+                    </div>
+                    <!-- 右側文字區 -->
+                    <div style="background:linear-gradient(135deg,#0f1f2e,#0a192f); padding:14px 22px; text-align:left;">
+                        <div style="color:#E6F1FF; font-size:17px; font-weight:bold; letter-spacing:2px; line-height:1.2;">深海戰術藍圖</div>
+                        <div style="color:#4fc3f7; font-size:11px; letter-spacing:1px; margin-top:4px; opacity:0.85;">雙峰巨礁與雙子海溝</div>
                     </div>
                 </a>
             </div>
@@ -540,7 +557,7 @@
             <span class="fo">=</span>
             <span style="color:var(--neon-cyan)">🏆 彼夫有責 勝率最大化</span>
         </div>
-        <p style="color:var(--text-muted);font-size:.8rem;margin-top:7px;letter-spacing:.05em">先選對題材，再看籌碼與型態，量比價先，量增價漲做多 ✦ 彼夫有責戰情室 V8.8</p>
+        <p style="color:var(--text-muted);font-size:.8rem;margin-top:7px;letter-spacing:.05em">先選對題材，再看籌碼與型態，量比價先，量增價漲做多 ✦ 彼夫有責戰情室 V8.9</p>
     </div>
     <main id="main-container"></main>
 
@@ -559,6 +576,7 @@
                 </ul>
                 <b>🐅 三日成猛虎：</b>連續 3 個交易日符合汪洋大魚標準，自動晉升，代表籌碼與趨勢具高延續性。
                 <hr style="border: 0; border-top: 1px dashed var(--panel-border); margin: 15px 0;">
+                <b>🌊 V8.9（2026-06-01）：</b>新增「深海戰術藍圖（雙峰巨礁與雙子海溝）」獨立分頁（stellar_blueprint.html）— 雙頂(M頭)/雙底(W底)型態戰術解析系統，含交戰藍圖 SVG 沙盤、航海防衛三階段指引、參數模擬器；聲納掃描儀改走 FinMind 公開 API（匿名直連、CORS 開放、無金鑰外洩）即時撈取台股日線，純前端自動偵測型態並推算頸線、等幅打擊目標與停損，結果回灌沙盤；保留 Yahoo 台股／美股導覽連結；修復 Lucide 圖示就地替換破壞 React 虛擬 DOM（removeChild 崩潰）之隱藏 Bug；主頁導覽列加入分頁入口卡片。<br>
                 <b>🚀 V8.8（2026-05-21）：</b>五大強化 — PLAN G：3/5/8 趨勢品質法則（STRONG/HEALTHY/WATCH/WEAK），卡片新增趨勢品質徽章 + 站上MA5天數徽章；PLAN I：突破天數強勢加分（最高 +8 分，與 PLAN G 最多疊加 +20）；PLAN F：量比第四關縮圈（量比 >= 1.2），預估 API 消耗降至 130–240 次；PLAN J：猛虎池精銳上限 8 支（依強勢評分保留）；PLAN H：低分股快取預篩（TTL 24h，strength_score < 15 自動跳過）；姊夫爆發小魚池 1605 華新 → 1711 永光。<br>
                 <b>🎙️ V8.8（2026-05-23）：</b>新增孟恭的道路指引獨立分頁（mengong.html）— 股癌（Gooaye）PODCAST 集數彙整分析系統，含每集 TL;DR 摘要、戰術行動修正、關鍵字搜尋、資料同步與 AI 顧問（Gemini）；主頁導覽列同步加入品牌入口按鈕。<br>
                 <b>🚀 V8.7（2026-05-17）：</b>三大功能升級 + Bug 修復 — PLAN C：MA5 突破日數追蹤（ma5_breakout_day / breakout_label / ma5_above_ma10_days），橘色徽章顯示突破天數、綠色徽章顯示 MA5↑ 持續天數；PLAN A：甜蜜點三段式升級（HIGH/MID/LOW 信心等級 sweet_confidence），⭐高信心追漲型 / 🔵中信心標準型 / ⚪觀察型回測型；PLAN B：題材標籤 15 大擴充（含 CoWoS、HBM、LEO、OLED、MLCC 等英文關鍵字，yfinance info 7 日快取），AI 金色 / 半導體藍色 / 生技綠色分色顯示；Bug-01 修復：price_date 欄位補齊（前端 Date-Lock 日期防呆修復）。<br>

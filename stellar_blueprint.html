@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>深海戰術藍圖：雙峰巨礁與雙子海溝</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    animation: {
+                        'spin-slow': 'spin 12s linear infinite',
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- React & ReactDOM CDN -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <!-- Babel standalone for JSX compiling in browser -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gradient-to-br from-sky-50 via-blue-50 to-cyan-100 text-slate-800 min-h-screen">
+
+    <div id="root"></div>
+
+    <!-- React App Script -->
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // Lucide 圖示包裝：自建 SVG 字串，由 React 透過 dangerouslySetInnerHTML 注入。
+        // 不使用 lucide.createIcons() 的就地節點替換，避免破壞 React 虛擬 DOM（removeChild 崩潰）。
+        const Icon = ({ name, className }) => {
+            const html = React.useMemo(() => {
+                const L = window.lucide;
+                if (!L || !L.icons) return '';
+                const pascal = String(name).split('-')
+                    .map(s => s.charAt(0).toUpperCase() + s.slice(1)).join('');
+                const node = L.icons[pascal];
+                if (!node) return '';
+                const svgAttrs = {
+                    xmlns: 'http://www.w3.org/2000/svg', width: 24, height: 24,
+                    viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor',
+                    'stroke-width': 2, 'stroke-linecap': 'round', 'stroke-linejoin': 'round',
+                    class: className || '',
+                };
+                const attrStr = (o) => Object.entries(o)
+                    .map(([k, v]) => `${k}="${v}"`).join(' ');
+                const children = node
+                    .map(([tag, a]) => `<${tag} ${attrStr(a)} />`).join('');
+                return `<svg ${attrStr(svgAttrs)}>${children}</svg>`;
+            }, [name, className]);
+            return <span className="inline-flex items-center justify-center" dangerouslySetInnerHTML={{ __html: html }}></span>;
+        };
+
+        function App() {
+            const [activeTab, setActiveTab] = useState('doubleTop');
+            const [viewMode, setViewMode] = useState('blueprint');
+
+            // Scanner states
+            const [stockSymbol, setStockSymbol] = useState('2330');
+            const [aiLoading, setAiLoading] = useState(false);
+            const [aiAnalysis, setAiAnalysis] = useState(null);
+            const [aiSources, setAiSources] = useState([]);
+
+            // Sandbox calculations state
+            const [sandboxData, setSandboxData] = useState({
+                peak1: '600',
+                neckline: '550',
+                peak2: '595',
+                current: '540'
+            });
+            const [sandboxResult, setSandboxResult] = useState('');
+
+            const runSandboxCalculation = () => {
+                const p1 = parseFloat(sandboxData.peak1);
+                const n = parseFloat(sandboxData.neckline);
+                const p2 = parseFloat(sandboxData.peak2);
+                const curr = parseFloat(sandboxData.current);
+
+                if (isNaN(p1) || isNaN(n) || isNaN(curr)) {
+                    setSandboxResult("異常數據：請確保礁岩高低點、頸線與當前水位皆為有效數值。");
+                    return;
+                }
+
+                let result = "";
+                if (activeTab === 'doubleTop') {
+                    const height = Math.abs(p1 - n);
+                    const target = n - height;
+                    if (curr > n) {
+                        result = `【近海警戒】當前水位 $${curr} 仍在海溝防線 $${n} 之上。艦隊維持巡航，等待跌破確認信號。`;
+                    } else if (curr <= n && curr > target) {
+                        result = `【搶灘登陸】當前水位 $${curr} 已成功跌破防線 $${n}！第一、第二突擊潛艦已下潛，目標朝向 $${target.toFixed(2)} 的等幅魚雷打擊區推進。`;
+                    } else {
+                        result = `【打擊完成】水位已擊穿或到達等幅魚雷目標 $${target.toFixed(2)}（當前 $${curr}）。執行利潤回收協議，潛艦部隊上浮撤離。`;
+                    }
+                } else {
+                    const height = Math.abs(n - p1);
+                    const target = n + height;
+                    if (curr < n) {
+                        result = `【深海警戒】當前水位 $${curr} 仍在突擊水面 $${n} 之下。積蓄動能，密切監控是否出現大洋流衝鋒突破。`;
+                    } else if (curr >= n && curr < target) {
+                        result = `【破浪突擊】當前水位 $${curr} 已強勢衝破水面 $${n}！第一艦隊即刻進場，若有拉回踩穩水面（第二梯隊）可持續加裝裝甲，目標等幅巡航區 $${target.toFixed(2)}。`;
+                    } else {
+                        result = `【奪島成功】水位已達成或突破等幅延伸目標 $${target.toFixed(2)}（當前 $${curr}）。戰略目的已達成，鎖定勝果，調升停損至安全水域。`;
+                    }
+                }
+                setSandboxResult(result);
+            };
+
+            // 深海聲納：直接撈 FinMind 台股日線（公開 API，匿名可用、CORS 開放，無需金鑰），
+            // 純 JS 自動偵測雙頂(M頭)/雙底(W底)型態，計算頸線、等幅打擊目標與停損，並回灌沙盤。
+            const queryAiIntelligence = async () => {
+                const sym = stockSymbol.trim();
+                if (!sym) return;
+                setAiLoading(true);
+                setAiAnalysis(null);
+                setAiSources([]);
+
+                try {
+                    const start = new Date(Date.now() - 220 * 24 * 3600 * 1000)
+                        .toISOString().slice(0, 10);
+                    const baseUrl = `https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockPrice&data_id=${encodeURIComponent(sym)}&start_date=${start}`;
+                    // 選用：如有 FinMind token 可掛在 window.FINMIND_TOKEN（避免硬編碼金鑰）
+                    const token = (typeof window !== 'undefined' && window.FINMIND_TOKEN) ? String(window.FINMIND_TOKEN).trim() : '';
+                    const url = token ? `${baseUrl}&token=${token}` : baseUrl;
+
+                    const response = await fetch(url);
+                    const result = await response.json();
+                    const rows = Array.isArray(result.data) ? result.data : [];
+
+                    if (rows.length < 30) {
+                        setAiAnalysis(`【聲納無回響】查無台股「${sym}」足夠的歷史水文資料（需 ≥ 30 個交易日）。\n本聲納型態解析目前僅支援台股（例如 2330、2454）；若為美股代碼（如 AAPL、NVDA），請改用下方 Yahoo 導覽連結直達走勢圖。\n或稍後再試（FinMind 匿名探測額度可能已滿，可掛載 window.FINMIND_TOKEN 提升額度）。`);
+                        return;
+                    }
+
+                    const closes = rows.map(r => r.close);
+                    const dates = rows.map(r => r.date);
+                    const seg = closes.slice(-90);
+                    const segDates = dates.slice(-90);
+
+                    const res = analyzeWaters(seg, segDates, sym);
+
+                    // 回灌戰術沙盤，讓藍圖 SVG 與模擬器同步反映實測水文
+                    setActiveTab(res.pattern);
+                    setSandboxData({
+                        peak1: String(res.p1),
+                        neckline: String(res.neck),
+                        peak2: String(res.p2),
+                        current: String(res.current),
+                    });
+                    setAiAnalysis(res.text);
+                    setAiSources([{
+                        uri: `https://tw.finance.yahoo.com/quote/${sym}`,
+                        title: `Yahoo 奇摩股市 ${sym} 個股走勢（資料來源：FinMind TaiwanStockPrice）`,
+                    }]);
+                } catch (err) {
+                    setAiAnalysis("【通訊屏障】遭遇強大暗流干擾（可能為網路或跨域限制）：" + (err && err.message ? err.message : err));
+                } finally {
+                    setAiLoading(false);
+                }
+            };
+
+            return (
+                <div className="min-h-screen bg-gradient-to-br from-sky-50 via-blue-50 to-cyan-100 text-slate-800 font-sans p-4 md:p-8 relative overflow-hidden">
+                    {/* Decorative Ocean Elements */}
+                    <div className="absolute top-[-10%] left-[-10%] w-[40vw] h-[40vw] bg-cyan-300/20 rounded-full blur-3xl pointer-events-none"></div>
+                    <div className="absolute bottom-[-10%] right-[-10%] w-[50vw] h-[50vw] bg-blue-300/20 rounded-full blur-3xl pointer-events-none"></div>
+
+                    <div className="relative z-10 max-w-7xl mx-auto">
+                        {/* Header */}
+                        <header className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-blue-200/50 pb-6">
+                            <div>
+                                <div className="text-sky-600 text-xs tracking-widest mb-2 flex items-center gap-2 font-bold">
+                                    <span className="inline-block w-2.5 h-2.5 rounded-full bg-sky-500 animate-ping"></span>
+                                    SECURE LINK: PACIFIC FLEET COMMAND
+                                </div>
+                                <h1 className="text-3xl md:text-4xl font-extrabold text-blue-900 tracking-tight drop-shadow-sm flex items-center gap-3">
+                                    <Icon name="waves" className="w-8 h-8 text-sky-500" />
+                                    深海戰術藍圖：雙峰巨礁與雙子海溝
+                                </h1>
+                                <p className="text-sm text-blue-600 mt-2 font-medium">整合 Yahoo 奇摩股市實時聲納與戰術沙盤解析儀</p>
+                            </div>
+
+                            <div className="flex bg-white/50 backdrop-blur-md border border-white p-1 rounded-xl shadow-sm gap-1 w-full md:w-auto">
+                                <button
+                                    onClick={() => setViewMode('blueprint')}
+                                    className={`flex-1 md:flex-initial px-5 py-2.5 text-sm font-bold tracking-wider transition-all duration-300 flex items-center justify-center gap-2 rounded-lg ${
+                                        viewMode === 'blueprint' ? 'bg-blue-600 text-white shadow-md' : 'text-blue-700 hover:bg-white/60'
+                                    }`}
+                                >
+                                    <Icon name="map" className="w-4 h-4" />
+                                    交戰藍圖
+                                </button>
+                                <button
+                                    onClick={() => setViewMode('scanner')}
+                                    className={`flex-1 md:flex-initial px-5 py-2.5 text-sm font-bold tracking-wider transition-all duration-300 flex items-center justify-center gap-2 rounded-lg ${
+                                        viewMode === 'scanner' ? 'bg-blue-600 text-white shadow-md' : 'text-blue-700 hover:bg-white/60'
+                                    }`}
+                                >
+                                    <Icon name="radar" className="w-4 h-4 animate-spin-slow" />
+                                    聲納掃描儀
+                                </button>
+                            </div>
+                        </header>
+
+                        {/* Tabs */}
+                        <div className="flex flex-col sm:flex-row gap-4 mb-8">
+                            <button
+                                onClick={() => { setActiveTab('doubleTop'); runSandboxCalculation(); }}
+                                className={`flex-1 px-6 py-3.5 rounded-2xl text-sm font-bold tracking-widest transition-all duration-300 flex items-center justify-center gap-3 border ${
+                                    activeTab === 'doubleTop'
+                                        ? 'bg-gradient-to-r from-sky-500 to-blue-500 text-white border-transparent shadow-lg shadow-blue-500/30 transform scale-[1.02]'
+                                        : 'bg-white/60 text-blue-800 border-white hover:bg-white/80 shadow-sm'
+                                }`}
+                            >
+                                <Icon name="target" className="w-5 h-5" />
+                                雙峰巨礁 (M頭 - 潛艦狙擊)
+                            </button>
+                            <button
+                                onClick={() => { setActiveTab('doubleBottom'); runSandboxCalculation(); }}
+                                className={`flex-1 px-6 py-3.5 rounded-2xl text-sm font-bold tracking-widest transition-all duration-300 flex items-center justify-center gap-3 border ${
+                                    activeTab === 'doubleBottom'
+                                        ? 'bg-gradient-to-r from-sky-500 to-blue-500 text-white border-transparent shadow-lg shadow-blue-500/30 transform scale-[1.02]'
+                                        : 'bg-white/60 text-blue-800 border-white hover:bg-white/80 shadow-sm'
+                                }`}
+                            >
+                                <Icon name="anchor" className="w-5 h-5" />
+                                雙子海溝 (W底 - 破浪推進)
+                            </button>
+                        </div>
+
+                        {viewMode === 'blueprint' ? (
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                {/* SVG SandBox */}
+                                <div className="bg-white/70 backdrop-blur-lg border border-white shadow-xl shadow-sky-900/10 rounded-3xl p-8 flex flex-col justify-between">
+                                    <div>
+                                        <h2 className="text-xl font-bold text-blue-900 border-b border-blue-200/60 pb-3 mb-6 flex items-center gap-2 tracking-wide">
+                                            <Icon name="crosshair" className="w-5 h-5 text-sky-500" />
+                                            聲納探測戰術沙盤 [SONAR GRID]
+                                        </h2>
+                                        <div className="w-full aspect-square max-h-[400px] mx-auto relative flex items-center justify-center p-2">
+                                            {activeTab === 'doubleTop' ? (
+                                                <DoubleTopSVG currentVal={sandboxData.current} peak1Val={sandboxData.peak1} necklineVal={sandboxData.neckline} />
+                                            ) : (
+                                                <DoubleBottomSVG currentVal={sandboxData.current} peak1Val={sandboxData.peak1} necklineVal={sandboxData.neckline} />
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="mt-8 pt-4 border-t border-blue-200/60 flex flex-wrap gap-4 text-xs font-bold text-blue-700 justify-center bg-blue-50/50 p-3 rounded-xl">
+                                        <span className="flex items-center"><span className="w-3 h-3 rounded-full bg-rose-500 mr-2 shadow-sm"></span> 戰術進場 (T1/T2)</span>
+                                        <span className="flex items-center"><span className="w-3 h-3 rounded-full border-2 border-rose-500 mr-2"></span> 戰略退兵防線</span>
+                                        <span className="flex items-center"><span className="w-3 h-3 rounded-full bg-sky-500 mr-2 shadow-sm"></span> 魚雷打擊目標</span>
+                                        <span className="flex items-center"><span className="w-4 h-1 bg-amber-400 inline-block mr-2 rounded-full"></span> 模擬水位線</span>
+                                    </div>
+                                </div>
+
+                                {/* Controls & Settings */}
+                                <div className="space-y-6">
+                                    <div className="bg-white/70 backdrop-blur-lg border border-white shadow-xl shadow-sky-900/10 rounded-3xl p-8">
+                                        <h2 className="text-xl font-bold text-blue-900 border-b border-blue-200/60 pb-3 mb-6 tracking-wide flex items-center gap-2">
+                                            <Icon name="book-open" className="w-5 h-5 text-sky-500" />
+                                            航海防衛指引
+                                        </h2>
+                                        <div className="space-y-5">
+                                            {activeTab === 'doubleTop' ? (
+                                                <>
+                                                    <ProtocolStep phase="I" title="聲納鎖定" desc="敵方艦隊兩次衝鋒相同的海平面阻力受挫，形成雙峰。此為動能衰竭徵兆。" />
+                                                    <ProtocolStep phase="II" title="海溝防線" desc="鎖定雙峰之間的最低點作為海溝防線。一旦此防線被向下擊穿，警報響起！" alert />
+                                                    <ProtocolStep phase="III" title="潛航狙擊" desc="在跌破防線時第一潛艦部隊下潛（T1）；若有反彈測試防線無法站上，則部署第二梯隊（T2）加碼。" />
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <ProtocolStep phase="I" title="深淵駐守" desc="我軍在相同海溝獲得兩次洋流支撐，形成雙底。守衛穩固，探測反擊機會。" />
+                                                    <ProtocolStep phase="II" title="突破水面" desc="確認兩淵之間的反彈頂點為突擊水面。一旦強烈洋流（大成交量）向上突破，攻勢啟動！" alert />
+                                                    <ProtocolStep phase="III" title="破浪推進" desc="強勢突破水面時水面艦隊進場（T1）；若有拉回踩穩水面不破，艦隊集結（T2）全面推進。" />
+                                                </>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-white/70 backdrop-blur-lg border border-white shadow-xl shadow-sky-900/10 rounded-3xl p-8">
+                                        <h2 className="text-xl font-bold text-blue-900 border-b border-blue-200/60 pb-3 mb-6 tracking-wide flex items-center gap-2">
+                                            <Icon name="activity" className="w-5 h-5 text-sky-500" />
+                                            戰術沙盤參數模擬器
+                                        </h2>
+                                        <div className="grid grid-cols-2 gap-4 mb-6">
+                                            <div>
+                                                <label className="block text-xs font-bold text-blue-700 uppercase tracking-wider mb-2">峰/淵 1 水位</label>
+                                                <input type="number" value={sandboxData.peak1} onChange={e => setSandboxData({ ...sandboxData, peak1: e.target.value })} className="w-full bg-blue-50 border border-blue-200 rounded-xl p-3 text-blue-900 text-sm focus:outline-none" />
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs font-bold text-blue-700 uppercase tracking-wider mb-2">頸線防禦水位</label>
+                                                <input type="number" value={sandboxData.neckline} onChange={e => setSandboxData({ ...sandboxData, neckline: e.target.value })} className="w-full bg-blue-50 border border-blue-200 rounded-xl p-3 text-blue-900 text-sm focus:outline-none" />
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs font-bold text-blue-700 uppercase tracking-wider mb-2">峰/淵 2 水位</label>
+                                                <input type="number" value={sandboxData.peak2} onChange={e => setSandboxData({ ...sandboxData, peak2: e.target.value })} className="w-full bg-blue-50 border border-blue-200 rounded-xl p-3 text-blue-900 text-sm focus:outline-none" />
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs font-bold text-amber-600 uppercase tracking-wider mb-2">當前水位</label>
+                                                <input type="number" value={sandboxData.current} onChange={e => setSandboxData({ ...sandboxData, current: e.target.value })} className="w-full bg-amber-50 border border-amber-300 rounded-xl p-3 text-amber-900 text-sm focus:outline-none font-bold" />
+                                            </div>
+                                        </div>
+                                        <button onClick={runSandboxCalculation} className="w-full py-3.5 bg-blue-900 hover:bg-blue-800 text-white rounded-xl text-sm font-bold tracking-widest shadow-md transition-all">
+                                            計算沙盤交戰水位
+                                        </button>
+                                        {sandboxResult && (
+                                            <div className="mt-5 p-4 bg-amber-50 border-l-4 border-amber-400 rounded-r-xl text-sm font-medium text-amber-900 leading-relaxed shadow-sm">
+                                                {sandboxResult}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="space-y-6 max-w-4xl mx-auto">
+                                <div className="bg-white/70 backdrop-blur-lg border border-white shadow-xl shadow-sky-900/10 rounded-3xl p-8 relative">
+                                    <h2 className="text-2xl font-extrabold text-blue-900 mb-4 flex items-center gap-3">
+                                        <Icon name="compass" className="text-sky-500 animate-pulse w-7 h-7" />
+                                        深海探測聲納終端
+                                    </h2>
+                                    <p className="text-sm text-blue-600 mb-6 leading-relaxed">
+                                        輸入台灣股市代號（如 2330、2454）。系統將釋放深水聲納，即時撈取 FinMind 日線水文，自動偵測雙頂/雙底型態並推算頸線、等幅打擊目標與停損，結果同步回灌左側戰術沙盤！美股代碼（如 AAPL、NVDA）可透過下方 Yahoo 導覽連結直達走勢圖。
+                                    </p>
+                                    <div className="flex flex-col md:flex-row gap-4 items-stretch">
+                                        <div className="relative flex-1">
+                                            <Icon name="search" className="absolute left-4 top-4 w-5 h-5 text-blue-400" />
+                                            <input type="text" value={stockSymbol} onChange={e => setStockSymbol(e.target.value)} className="w-full bg-white/80 border-2 border-blue-100 rounded-2xl py-4 pl-12 pr-4 text-blue-900 text-lg focus:outline-none" />
+                                        </div>
+                                        <button onClick={queryAiIntelligence} disabled={aiLoading} className="bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-700 hover:to-sky-600 text-white font-bold px-8 py-4 rounded-2xl shadow-lg flex items-center justify-center gap-3 transition-all disabled:opacity-60">
+                                            {aiLoading ? "發射聲納中..." : "啟動聲納型態解析"}
+                                        </button>
+                                    </div>
+                                    {stockSymbol && (
+                                        <div className="mt-6 pt-5 border-t border-blue-100 flex flex-wrap gap-3 items-center justify-between">
+                                            <span className="text-sm font-bold text-blue-700">Yahoo 奇摩股市導航：</span>
+                                            <div className="flex flex-wrap gap-2">
+                                                <a href={`https://tw.finance.yahoo.com/quote/${stockSymbol}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg border border-blue-100 text-sm text-sky-700 hover:bg-sky-50 shadow-sm">
+                                                    個股首頁 <Icon name="external-link" className="w-3.5 h-3.5" />
+                                                </a>
+                                                <a href={`https://tw.finance.yahoo.com/quote/${stockSymbol}/chart`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg border border-blue-100 text-sm text-sky-700 hover:bg-sky-50 shadow-sm">
+                                                    即時 K 線圖 <Icon name="external-link" className="w-3.5 h-3.5" />
+                                                </a>
+                                                <a href={`https://finance.yahoo.com/quote/${stockSymbol}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg border border-amber-200 text-sm text-amber-700 hover:bg-amber-50 shadow-sm">
+                                                    美股 Yahoo Finance <Icon name="external-link" className="w-3.5 h-3.5" />
+                                                </a>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="bg-white/70 backdrop-blur-lg border border-white shadow-xl shadow-sky-900/10 rounded-3xl p-8 min-h-[300px]">
+                                    {aiLoading ? (
+                                        <div className="flex flex-col items-center justify-center py-20 space-y-5">
+                                            <div className="w-16 h-16 border-4 border-blue-100 border-t-sky-500 animate-spin rounded-full"></div>
+                                            <p className="text-blue-800 font-bold">深海探測聲納已發射至 FinMind 海域...</p>
+                                        </div>
+                                    ) : aiAnalysis ? (
+                                        <div className="space-y-6">
+                                            <div className="bg-blue-50/80 p-6 border border-blue-100 rounded-2xl shadow-inner whitespace-pre-wrap text-slate-700 font-medium leading-relaxed">
+                                                {aiAnalysis}
+                                            </div>
+                                            {aiSources.length > 0 && (
+                                                <div className="p-5 bg-white border border-blue-100 rounded-2xl shadow-sm">
+                                                    <h4 className="text-sm font-bold text-sky-700 mb-3 flex items-center gap-2">
+                                                        <Icon name="external-link" className="w-4 h-4" /> 聲納回傳定位來源
+                                                    </h4>
+                                                    <ul className="space-y-1 text-sm">
+                                                        {aiSources.map((src, i) => (
+                                                            <li key={i}><a href={src.uri} target="_blank" className="text-blue-600 hover:underline">[{i+1}] {src.title}</a></li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <div className="flex flex-col items-center justify-center py-24 text-blue-300">
+                                            <Icon name="radar" className="w-16 h-16 mb-4 opacity-50" />
+                                            <p className="text-sm font-bold uppercase">聲納待機中。請於上方輸入代號啟動探測。</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        // 簡易擺動偵測：以左右各 w 根 K 棒比較，找出局部高點(peaks)與低點(troughs)
+        function findSwings(arr, w = 3) {
+            const peaks = [], troughs = [];
+            for (let i = w; i < arr.length - w; i++) {
+                let isPeak = true, isTrough = true;
+                for (let j = i - w; j <= i + w; j++) {
+                    if (j === i) continue;
+                    if (arr[j] >= arr[i]) isPeak = false;
+                    if (arr[j] <= arr[i]) isTrough = false;
+                }
+                if (isPeak) peaks.push(i);
+                if (isTrough) troughs.push(i);
+            }
+            return { peaks, troughs };
+        }
+
+        // 深海水文解析：自動偵測雙頂/雙底，輸出戰術建議文字與沙盤參數
+        function analyzeWaters(closes, dates, sym) {
+            const n = closes.length;
+            const r2 = (x) => Math.round(x * 100) / 100;
+            const current = r2(closes[n - 1]);
+            const periodHigh = r2(Math.max(...closes));
+            const periodLow = r2(Math.min(...closes));
+            const lastDate = dates[n - 1];
+            const { peaks, troughs } = findSwings(closes);
+
+            // --- 雙頂候選：取最高的兩個擺動高點，其間最低點為頸線 ---
+            let dt = null;
+            if (peaks.length >= 2) {
+                const sorted = [...peaks].sort((a, b) => closes[b] - closes[a]);
+                let [i1, i2] = [sorted[0], sorted[1]];
+                if (i1 > i2) [i1, i2] = [i2, i1];
+                let neckIdx = i1;
+                for (let k = i1; k <= i2; k++) if (closes[k] < closes[neckIdx]) neckIdx = k;
+                const sim = 1 - Math.abs(closes[i1] - closes[i2]) / Math.max(closes[i1], closes[i2]);
+                dt = { p1: r2(closes[i1]), p2: r2(closes[i2]), neck: r2(closes[neckIdx]), sim };
+            }
+
+            // --- 雙底候選：取最低的兩個擺動低點，其間最高點為頸線 ---
+            let db = null;
+            if (troughs.length >= 2) {
+                const sorted = [...troughs].sort((a, b) => closes[a] - closes[b]);
+                let [i1, i2] = [sorted[0], sorted[1]];
+                if (i1 > i2) [i1, i2] = [i2, i1];
+                let neckIdx = i1;
+                for (let k = i1; k <= i2; k++) if (closes[k] > closes[neckIdx]) neckIdx = k;
+                const sim = 1 - Math.abs(closes[i1] - closes[i2]) / Math.max(closes[i1], closes[i2]);
+                db = { p1: r2(closes[i1]), p2: r2(closes[i2]), neck: r2(closes[neckIdx]), sim };
+            }
+
+            // 以相似度(雙峰/雙谷越接近越清晰)＋當前價位置決定主型態
+            const nearHigh = (current - periodLow) / Math.max(periodHigh - periodLow, 0.01) >= 0.5;
+            let pattern;
+            if (dt && db) {
+                const dtAdj = dt.sim + (nearHigh ? 0.05 : 0);
+                const dbAdj = db.sim + (nearHigh ? 0 : 0.05);
+                pattern = dtAdj >= dbAdj ? 'doubleTop' : 'doubleBottom';
+            } else {
+                pattern = dt ? 'doubleTop' : (db ? 'doubleBottom' : (nearHigh ? 'doubleTop' : 'doubleBottom'));
+            }
+
+            const header = `🛰️ 深海聲納回報｜台股 ${sym}\n` +
+                `最新水位（收盤）：$${current}（${lastDate}）\n` +
+                `近 90 日水文：高點 $${periodHigh} ／ 低點 $${periodLow}\n` +
+                `資料來源：FinMind TaiwanStockPrice（即時撈取）\n` +
+                `——————————————————\n`;
+
+            let body;
+            if (pattern === 'doubleTop' && dt) {
+                const neck = dt.neck;
+                const height = r2(Math.max(dt.p1, dt.p2) - neck);
+                const target = r2(neck - height);
+                const stop = r2(Math.max(dt.p1, dt.p2));
+                let status;
+                if (current > neck) {
+                    status = `【近海警戒】當前水位 $${current} 仍在海溝防線（頸線）$${neck} 之上，雙峰型態尚未確認破壞。艦隊維持巡航，緊盯是否放量跌破。`;
+                } else if (current > target) {
+                    status = `【搶灘登陸】已跌破海溝防線 $${neck}！潛艦部隊下潛中，等幅魚雷目標 $${target} 推進。`;
+                } else {
+                    status = `【打擊完成】水位已達或擊穿等幅目標 $${target}（當前 $${current}），執行利潤回收、潛艦上浮撤離。`;
+                }
+                body = `🎯 偵測型態：雙峰巨礁（M頭 / 偏空）｜雙峰相似度 ${(dt.sim * 100).toFixed(1)}%\n` +
+                    `• 第一峰 $${dt.p1}｜第二峰 $${dt.p2}\n` +
+                    `• 海溝防線（頸線）：$${neck}\n` +
+                    `• 等幅魚雷打擊目標：$${target}（頸線 − 峰頸落差 $${height}）\n` +
+                    `• 戰略退兵防線（停損）：$${stop}（峰頂上緣）\n\n` +
+                    status;
+            } else if (db) {
+                const neck = db.neck;
+                const height = r2(neck - Math.min(db.p1, db.p2));
+                const target = r2(neck + height);
+                const stop = r2(Math.min(db.p1, db.p2));
+                let status;
+                if (current < neck) {
+                    status = `【深海警戒】當前水位 $${current} 仍在突擊水面（頸線）$${neck} 之下，雙底尚未突破。積蓄動能，監控是否放量上攻。`;
+                } else if (current < target) {
+                    status = `【破浪突擊】已突破突擊水面 $${neck}！水面艦隊進場，等幅巡航目標 $${target}；若拉回踩穩頸線不破可加碼集結。`;
+                } else {
+                    status = `【奪島成功】水位已達或突破等幅目標 $${target}（當前 $${current}），鎖定勝果並調升停損至安全水域。`;
+                }
+                body = `⚓ 偵測型態：雙子海溝（W底 / 偏多）｜雙谷相似度 ${(db.sim * 100).toFixed(1)}%\n` +
+                    `• 第一谷 $${db.p1}｜第二谷 $${db.p2}\n` +
+                    `• 突擊水面（頸線）：$${neck}\n` +
+                    `• 等幅巡航目標：$${target}（頸線 + 谷頸落差 $${height}）\n` +
+                    `• 戰略退兵防線（停損）：$${stop}（谷底下緣）\n\n` +
+                    status;
+            } else {
+                body = `📡 目前水文擺動不明顯，未偵測到清晰的雙頂/雙底型態。建議切換上方「交戰藍圖」以手動輸入水位進行沙盤推演。`;
+            }
+
+            const footer = `\n——————————————————\n` +
+                `⚠️ 本解析為程式化型態偵測（啟發式演算），僅供戰術沙盤參考，非投資建議。實戰請搭配籌碼與量能二次驗證。`;
+
+            // 沙盤參數（無清晰型態時以高低點代入，避免空值）
+            const fb = pattern === 'doubleTop'
+                ? (dt || { p1: periodHigh, p2: periodHigh, neck: periodLow })
+                : (db || { p1: periodLow, p2: periodLow, neck: periodHigh });
+
+            return {
+                pattern,
+                p1: fb.p1, p2: fb.p2, neck: fb.neck, current,
+                text: header + body + footer,
+            };
+        }
+
+        function ProtocolStep({ phase, title, desc, alert }) {
+            return (
+                <div className="flex items-start border-l-2 border-sky-200 pl-5 relative ml-2">
+                    <div className={`absolute -left-[11px] top-1 w-5 h-5 rounded-full border-4 border-white shadow-sm ${alert ? 'bg-rose-500 animate-pulse' : 'bg-sky-500'}`}></div>
+                    <div>
+                        <div className="flex items-center gap-2 mb-1.5">
+                            <span className="text-blue-800 text-sm font-extrabold tracking-wider">{phase}</span>
+                            <Icon name="chevron-right" className="w-4 h-4 text-sky-400" />
+                            <span className={`${alert ? 'text-rose-600 bg-rose-50 border-rose-200' : 'text-sky-700 bg-sky-50 border-sky-100'} px-2.5 py-0.5 text-xs font-bold border rounded-md`}>{title}</span>
+                        </div>
+                        <p className="text-slate-600 text-sm leading-relaxed" dangerouslySetInnerHTML={{ __html: desc }}></p>
+                    </div>
+                </div>
+            );
+        }
+
+        function DoubleTopSVG({ currentVal, peak1Val, necklineVal }) {
+            const curr = parseFloat(currentVal) || 0;
+            const p1 = parseFloat(peak1Val) || 100;
+            const neck = parseFloat(necklineVal) || 50;
+            let currentY = 60;
+            if (p1 !== neck) currentY = 20 + 40 * (p1 - curr) / (p1 - neck);
+            currentY = Math.max(5, Math.min(95, currentY));
+
+            return (
+                <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible drop-shadow-md">
+                    <line x1="0" y1="20" x2="100" y2="20" stroke="#bae6fd" strokeWidth="0.5" strokeDasharray="2,2" />
+                    <line x1="0" y1="60" x2="100" y2="60" stroke="#bae6fd" strokeWidth="0.5" strokeDasharray="2,2" />
+                    <line x1="0" y1="60" x2="100" y2="60" stroke="#0284c7" strokeWidth="1" strokeDasharray="4,2" />
+                    <text x="2" y="57" fill="#0284c7" fontSize="3" fontWeight="bold">NECKLINE (海溝防線)</text>
+                    <line x1="0" y1="100" x2="100" y2="100" stroke="#0ea5e9" strokeWidth="0.5" strokeDasharray="2,2" />
+                    <text x="2" y="97" fill="#0ea5e9" fontSize="3" fontWeight="bold">TARGET (等幅魚雷打擊區)</text>
+                    <line x1="0" y1={currentY} x2="100" y2={currentY} stroke="#f59e0b" strokeWidth="1" strokeDasharray="2,1" />
+                    <rect x="75" y={currentY - 3.5} width="22" height="7" rx="2" fill="#fffbeb" stroke="#f59e0b" strokeWidth="0.5" />
+                    <text x="77" y={currentY + 1} fill="#d97706" fontSize="2.5" fontWeight="bold">模擬: {curr}</text>
+                    <path d="M 5 90 L 25 20 L 50 60 L 75 20 L 85 70 L 92 60 L 98 100" fill="none" stroke="#1e3a8a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    <circle cx="25" cy="20" r="1.5" fill="#0ea5e9" />
+                    <text x="20" y="15" fill="#0369a1" fontSize="3" fontWeight="bold">PEAK 1</text>
+                    <circle cx="75" cy="20" r="1.5" fill="#0ea5e9" />
+                    <text x="70" y="15" fill="#0369a1" fontSize="3" fontWeight="bold">PEAK 2</text>
+                    <circle cx="82.5" cy="60" r="2" fill="#f43f5e" />
+                    <text x="85" y="57" fill="#e11d48" fontSize="2.5" fontWeight="bold">T1 搶灘</text>
+                    <circle cx="92" cy="60" r="2" fill="#f43f5e" />
+                    <text x="94" y="63" fill="#e11d48" fontSize="2.5" fontWeight="bold">T2 搶灘</text>
+                    <circle cx="98" cy="100" r="2" fill="#0ea5e9" />
+                </svg>
+            );
+        }
+
+        function DoubleBottomSVG({ currentVal, peak1Val, necklineVal }) {
+            const curr = parseFloat(currentVal) || 0;
+            const p1 = parseFloat(peak1Val) || 50;
+            const neck = parseFloat(necklineVal) || 100;
+            let currentY = 40;
+            if (neck !== p1) currentY = 80 - 40 * (curr - p1) / (neck - p1);
+            currentY = Math.max(5, Math.min(95, currentY));
+
+            return (
+                <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible drop-shadow-md">
+                    <line x1="0" y1="80" x2="100" y2="80" stroke="#bae6fd" strokeWidth="0.5" strokeDasharray="2,2" />
+                    <line x1="0" y1="40" x2="100" y2="40" stroke="#bae6fd" strokeWidth="0.5" strokeDasharray="2,2" />
+                    <line x1="0" y1="40" x2="100" y2="40" stroke="#0284c7" strokeWidth="1" strokeDasharray="4,2" />
+                    <text x="2" y="37" fill="#0284c7" fontSize="3" fontWeight="bold">NECKLINE (突擊水面)</text>
+                    <line x1="0" y1="0" x2="100" y2="0" stroke="#0ea5e9" strokeWidth="0.5" strokeDasharray="2,2" />
+                    <text x="2" y="4" fill="#0ea5e9" fontSize="3" fontWeight="bold">TARGET (等幅巡航區)</text>
+                    <line x1="0" y1={currentY} x2="100" y2={currentY} stroke="#f59e0b" strokeWidth="1" strokeDasharray="2,1" />
+                    <rect x="75" y={currentY - 3.5} width="22" height="7" rx="2" fill="#fffbeb" stroke="#f59e0b" strokeWidth="0.5" />
+                    <text x="77" y={currentY + 1} fill="#d97706" fontSize="2.5" fontWeight="bold">模擬: {curr}</text>
+                    <path d="M 5 10 L 25 80 L 50 40 L 75 80 L 85 30 L 92 40 L 98 0" fill="none" stroke="#1e3a8a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    <circle cx="25" cy="80" r="1.5" fill="#0ea5e9" />
+                    <text x="20" y="86" fill="#0369a1" fontSize="3" fontWeight="bold">TRENCH 1</text>
+                    <circle cx="75" cy="80" r="1.5" fill="#0ea5e9" />
+                    <text x="70" y="86" fill="#0369a1" fontSize="3" fontWeight="bold">TRENCH 2</text>
+                    <circle cx="82.5" cy="40" r="2" fill="#f43f5e" />
+                    <text x="85" y="37" fill="#e11d48" fontSize="2.5" fontWeight="bold">T1 破浪</text>
+                    <circle cx="92" cy="40" r="2" fill="#f43f5e" />
+                    <text x="94" y="44" fill="#e11d48" fontSize="2.5" fontWeight="bold">T2 集結</text>
+                    <circle cx="98" cy="0" r="2" fill="#0ea5e9" />
+                </svg>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
