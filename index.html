@@ -576,7 +576,7 @@
                 </ul>
                 <b>🐅 三日成猛虎：</b>連續 3 個交易日符合汪洋大魚標準，自動晉升，代表籌碼與趨勢具高延續性。
                 <hr style="border: 0; border-top: 1px dashed var(--panel-border); margin: 15px 0;">
-                <b>🌊 V8.9（2026-06-01）：</b>新增「深海戰術藍圖（雙峰巨礁與雙子海溝）」獨立分頁（stellar_blueprint.html）— 雙頂(M頭)/雙底(W底)型態戰術解析系統，含交戰藍圖 SVG 沙盤、航海防衛三階段指引、參數模擬器；聲納掃描儀改走 FinMind 公開 API（匿名直連、CORS 開放、無金鑰外洩）即時撈取台股日線，純前端自動偵測型態並推算頸線、等幅打擊目標與停損，結果回灌沙盤；保留 Yahoo 台股／美股導覽連結；修復 Lucide 圖示就地替換破壞 React 虛擬 DOM（removeChild 崩潰）之隱藏 Bug；主頁導覽列加入分頁入口卡片。<br>
+                <b>🌊 V8.9（2026-06-01）：</b>新增「深海戰術藍圖（雙峰巨礁與雙子海溝）」獨立分頁（stellar_blueprint.html）— 雙頂(M頭)/雙底(W底)型態戰術解析系統，含交戰藍圖 SVG 沙盤、航海防衛三階段指引、參數模擬器；聲納掃描儀以 Yahoo 奇摩股市 / Yahoo Finance 為資料源（經 CORS 代理），單一輸入框同時支援台股（自動嘗試上市 .TW／上櫃 .TWO）與美股（AAPL、NVDA 等），即時撈取日線後純前端自動偵測型態並推算頸線、等幅打擊目標與停損（幣別自動辨識 NT$／US$），結果回灌沙盤；修復 Lucide 圖示就地替換破壞 React 虛擬 DOM（removeChild 崩潰）之隱藏 Bug；主頁導覽列加入分頁入口卡片。<br>
                 <b>🚀 V8.8（2026-05-21）：</b>五大強化 — PLAN G：3/5/8 趨勢品質法則（STRONG/HEALTHY/WATCH/WEAK），卡片新增趨勢品質徽章 + 站上MA5天數徽章；PLAN I：突破天數強勢加分（最高 +8 分，與 PLAN G 最多疊加 +20）；PLAN F：量比第四關縮圈（量比 >= 1.2），預估 API 消耗降至 130–240 次；PLAN J：猛虎池精銳上限 8 支（依強勢評分保留）；PLAN H：低分股快取預篩（TTL 24h，strength_score < 15 自動跳過）；姊夫爆發小魚池 1605 華新 → 1711 永光。<br>
                 <b>🎙️ V8.8（2026-05-23）：</b>新增孟恭的道路指引獨立分頁（mengong.html）— 股癌（Gooaye）PODCAST 集數彙整分析系統，含每集 TL;DR 摘要、戰術行動修正、關鍵字搜尋、資料同步與 AI 顧問（Gemini）；主頁導覽列同步加入品牌入口按鈕。<br>
                 <b>🚀 V8.7（2026-05-17）：</b>三大功能升級 + Bug 修復 — PLAN C：MA5 突破日數追蹤（ma5_breakout_day / breakout_label / ma5_above_ma10_days），橘色徽章顯示突破天數、綠色徽章顯示 MA5↑ 持續天數；PLAN A：甜蜜點三段式升級（HIGH/MID/LOW 信心等級 sweet_confidence），⭐高信心追漲型 / 🔵中信心標準型 / ⚪觀察型回測型；PLAN B：題材標籤 15 大擴充（含 CoWoS、HBM、LEO、OLED、MLCC 等英文關鍵字，yfinance info 7 日快取），AI 金色 / 半導體藍色 / 生技綠色分色顯示；Bug-01 修復：price_date 欄位補齊（前端 Date-Lock 日期防呆修復）。<br>

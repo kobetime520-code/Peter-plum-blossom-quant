@@ -113,7 +113,7 @@
                 setSandboxResult(result);
             };
 
-            // 深海聲納：直接撈 FinMind 台股日線（公開 API，匿名可用、CORS 開放，無需金鑰），
+            // 深海聲納：撈 Yahoo 奇摩股市 / Yahoo Finance 日線（經 CORS 代理，台美股通用），
             // 純 JS 自動偵測雙頂(M頭)/雙底(W底)型態，計算頸線、等幅打擊目標與停損，並回灌沙盤。
             const queryAiIntelligence = async () => {
                 const sym = stockSymbol.trim();
@@ -123,28 +123,26 @@
                 setAiSources([]);
 
                 try {
-                    const start = new Date(Date.now() - 220 * 24 * 3600 * 1000)
-                        .toISOString().slice(0, 10);
-                    const baseUrl = `https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockPrice&data_id=${encodeURIComponent(sym)}&start_date=${start}`;
-                    // 選用：如有 FinMind token 可掛在 window.FINMIND_TOKEN（避免硬編碼金鑰）
-                    const token = (typeof window !== 'undefined' && window.FINMIND_TOKEN) ? String(window.FINMIND_TOKEN).trim() : '';
-                    const url = token ? `${baseUrl}&token=${token}` : baseUrl;
-
-                    const response = await fetch(url);
-                    const result = await response.json();
-                    const rows = Array.isArray(result.data) ? result.data : [];
-
-                    if (rows.length < 30) {
-                        setAiAnalysis(`【聲納無回響】查無台股「${sym}」足夠的歷史水文資料（需 ≥ 30 個交易日）。\n本聲納型態解析目前僅支援台股（例如 2330、2454）；若為美股代碼（如 AAPL、NVDA），請改用下方 Yahoo 導覽連結直達走勢圖。\n或稍後再試（FinMind 匿名探測額度可能已滿，可掛載 window.FINMIND_TOKEN 提升額度）。`);
+                    const found = await resolveAndFetchYahoo(sym);
+                    if (!found) {
+                        setAiAnalysis(`【聲納無回響】查無「${sym}」的水文資料。\n• 台股請輸入代號（如 2330、2454、00878），上櫃亦自動嘗試。\n• 美股請輸入代碼（如 AAPL、NVDA、TSLA）。\n• 也可直接帶交易所後綴（如 2330.TW、2330.TWO）。\n若代號正確仍無回響，可能為 CORS 代理暫時壅塞，請稍後重試。`);
                         return;
                     }
 
-                    const closes = rows.map(r => r.close);
-                    const dates = rows.map(r => r.date);
-                    const seg = closes.slice(-90);
-                    const segDates = dates.slice(-90);
+                    const { result, resolved } = found;
+                    const ts = result.timestamp || [];
+                    const rawCloses = (result.indicators && result.indicators.quote && result.indicators.quote[0].close) || [];
+                    // 過濾 Yahoo 偶發的 null 收盤，配對時間戳
+                    const pairs = ts.map((t, i) => [t, rawCloses[i]]).filter(([t, c]) => c != null);
+                    if (pairs.length < 30) {
+                        setAiAnalysis(`【聲納微弱】「${resolved}」可取得的有效水文不足（需 ≥ 30 個交易日，目前 ${pairs.length}）。請稍後重試或改用下方 Yahoo 導覽連結。`);
+                        return;
+                    }
+                    const closes = pairs.map(p => p[1]).slice(-90);
+                    const dates = pairs.map(p => new Date(p[0] * 1000).toISOString().slice(0, 10)).slice(-90);
+                    const currency = (result.meta && result.meta.currency) || '';
 
-                    const res = analyzeWaters(seg, segDates, sym);
+                    const res = analyzeWaters(closes, dates, resolved, currency);
 
                     // 回灌戰術沙盤，讓藍圖 SVG 與模擬器同步反映實測水文
                     setActiveTab(res.pattern);
@@ -155,12 +153,15 @@
                         current: String(res.current),
                     });
                     setAiAnalysis(res.text);
+                    const isTW = /\.TWO?$/.test(resolved);
                     setAiSources([{
-                        uri: `https://tw.finance.yahoo.com/quote/${sym}`,
-                        title: `Yahoo 奇摩股市 ${sym} 個股走勢（資料來源：FinMind TaiwanStockPrice）`,
+                        uri: isTW
+                            ? `https://tw.finance.yahoo.com/quote/${resolved}`
+                            : `https://finance.yahoo.com/quote/${resolved}`,
+                        title: `Yahoo ${isTW ? '奇摩股市' : 'Finance'} ${resolved} 個股走勢（資料來源：Yahoo Finance Chart API）`,
                     }]);
                 } catch (err) {
-                    setAiAnalysis("【通訊屏障】遭遇強大暗流干擾（可能為網路或跨域限制）：" + (err && err.message ? err.message : err));
+                    setAiAnalysis("【通訊屏障】遭遇強大暗流干擾（可能為網路或跨域代理問題）：" + (err && err.message ? err.message : err));
                 } finally {
                     setAiLoading(false);
                 }
@@ -326,7 +327,7 @@
                                         深海探測聲納終端
                                     </h2>
                                     <p className="text-sm text-blue-600 mb-6 leading-relaxed">
-                                        輸入台灣股市代號（如 2330、2454）。系統將釋放深水聲納，即時撈取 FinMind 日線水文，自動偵測雙頂/雙底型態並推算頸線、等幅打擊目標與停損，結果同步回灌左側戰術沙盤！美股代碼（如 AAPL、NVDA）可透過下方 Yahoo 導覽連結直達走勢圖。
+                                        輸入<b>台股代號</b>（如 2330、2454、00878，自動嘗試上市/上櫃）或<b>美股代碼</b>（如 AAPL、NVDA、TSLA）。系統將釋放深水聲納，即時撈取 Yahoo 奇摩股市 / Yahoo Finance 日線水文，自動偵測雙頂/雙底型態並推算頸線、等幅打擊目標與停損，結果同步回灌左側戰術沙盤！
                                     </p>
                                     <div className="flex flex-col md:flex-row gap-4 items-stretch">
                                         <div className="relative flex-1">
@@ -359,7 +360,7 @@
                                     {aiLoading ? (
                                         <div className="flex flex-col items-center justify-center py-20 space-y-5">
                                             <div className="w-16 h-16 border-4 border-blue-100 border-t-sky-500 animate-spin rounded-full"></div>
-                                            <p className="text-blue-800 font-bold">深海探測聲納已發射至 FinMind 海域...</p>
+                                            <p className="text-blue-800 font-bold">深海探測聲納已發射至 Yahoo 海域...</p>
                                         </div>
                                     ) : aiAnalysis ? (
                                         <div className="space-y-6">
@@ -409,8 +410,48 @@
             return { peaks, troughs };
         }
 
+        // 透過 CORS 代理撈 Yahoo Finance 日線（瀏覽器直連 Yahoo 會被 CORS 擋下）。
+        // 依序嘗試多個公開代理，回傳 chart.result[0]，失敗回 null。
+        async function fetchYahooChart(symbol) {
+            const target = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1d&range=6mo`;
+            const proxies = [
+                (u) => `https://corsproxy.io/?url=${encodeURIComponent(u)}`,
+                (u) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
+            ];
+            for (const wrap of proxies) {
+                try {
+                    const r = await fetch(wrap(target));
+                    if (!r.ok) continue;
+                    const j = await r.json();
+                    const res = j && j.chart && j.chart.result && j.chart.result[0];
+                    if (res && res.indicators && res.indicators.quote && res.indicators.quote[0].close) {
+                        return res;
+                    }
+                } catch (e) { /* 換下一個代理 */ }
+            }
+            return null;
+        }
+
+        // 智慧代號解析：純數字 → 台股（先試上市 .TW，再試上櫃 .TWO）；含後綴或英文 → 直接使用（美股）。
+        async function resolveAndFetchYahoo(raw) {
+            const s = raw.trim().toUpperCase();
+            let candidates;
+            if (s.includes('.')) {
+                candidates = [s];
+            } else if (/^\d{3,6}[A-Z]?$/.test(s)) {
+                candidates = [s + '.TW', s + '.TWO'];
+            } else {
+                candidates = [s];
+            }
+            for (const c of candidates) {
+                const result = await fetchYahooChart(c);
+                if (result) return { result, resolved: c };
+            }
+            return null;
+        }
+
         // 深海水文解析：自動偵測雙頂/雙底，輸出戰術建議文字與沙盤參數
-        function analyzeWaters(closes, dates, sym) {
+        function analyzeWaters(closes, dates, sym, currency) {
             const n = closes.length;
             const r2 = (x) => Math.round(x * 100) / 100;
             const current = r2(closes[n - 1]);
@@ -418,6 +459,9 @@
             const periodLow = r2(Math.min(...closes));
             const lastDate = dates[n - 1];
             const { peaks, troughs } = findSwings(closes);
+            // 幣別與市場標示
+            const cs = currency === 'USD' ? 'US$' : currency === 'TWD' ? 'NT$' : '$';
+            const market = /\.TWO?$/.test(sym) ? '台股' : (currency === 'TWD' ? '台股' : (currency === 'USD' ? '美股' : '個股'));
 
             // --- 雙頂候選：取最高的兩個擺動高點，其間最低點為頸線 ---
             let dt = null;
@@ -454,10 +498,10 @@
                 pattern = dt ? 'doubleTop' : (db ? 'doubleBottom' : (nearHigh ? 'doubleTop' : 'doubleBottom'));
             }
 
-            const header = `🛰️ 深海聲納回報｜台股 ${sym}\n` +
-                `最新水位（收盤）：$${current}（${lastDate}）\n` +
-                `近 90 日水文：高點 $${periodHigh} ／ 低點 $${periodLow}\n` +
-                `資料來源：FinMind TaiwanStockPrice（即時撈取）\n` +
+            const header = `🛰️ 深海聲納回報｜${market} ${sym}\n` +
+                `最新水位（收盤）：${cs}${current}（${lastDate}）\n` +
+                `近 90 日水文：高點 ${cs}${periodHigh} ／ 低點 ${cs}${periodLow}\n` +
+                `資料來源：Yahoo Finance Chart API（即時撈取）\n` +
                 `——————————————————\n`;
 
             let body;
@@ -468,17 +512,17 @@
                 const stop = r2(Math.max(dt.p1, dt.p2));
                 let status;
                 if (current > neck) {
-                    status = `【近海警戒】當前水位 $${current} 仍在海溝防線（頸線）$${neck} 之上，雙峰型態尚未確認破壞。艦隊維持巡航，緊盯是否放量跌破。`;
+                    status = `【近海警戒】當前水位 ${cs}${current} 仍在海溝防線（頸線）${cs}${neck} 之上，雙峰型態尚未確認破壞。艦隊維持巡航，緊盯是否放量跌破。`;
                 } else if (current > target) {
-                    status = `【搶灘登陸】已跌破海溝防線 $${neck}！潛艦部隊下潛中，等幅魚雷目標 $${target} 推進。`;
+                    status = `【搶灘登陸】已跌破海溝防線 ${cs}${neck}！潛艦部隊下潛中，等幅魚雷目標 ${cs}${target} 推進。`;
                 } else {
-                    status = `【打擊完成】水位已達或擊穿等幅目標 $${target}（當前 $${current}），執行利潤回收、潛艦上浮撤離。`;
+                    status = `【打擊完成】水位已達或擊穿等幅目標 ${cs}${target}（當前 ${cs}${current}），執行利潤回收、潛艦上浮撤離。`;
                 }
                 body = `🎯 偵測型態：雙峰巨礁（M頭 / 偏空）｜雙峰相似度 ${(dt.sim * 100).toFixed(1)}%\n` +
-                    `• 第一峰 $${dt.p1}｜第二峰 $${dt.p2}\n` +
-                    `• 海溝防線（頸線）：$${neck}\n` +
-                    `• 等幅魚雷打擊目標：$${target}（頸線 − 峰頸落差 $${height}）\n` +
-                    `• 戰略退兵防線（停損）：$${stop}（峰頂上緣）\n\n` +
+                    `• 第一峰 ${cs}${dt.p1}｜第二峰 ${cs}${dt.p2}\n` +
+                    `• 海溝防線（頸線）：${cs}${neck}\n` +
+                    `• 等幅魚雷打擊目標：${cs}${target}（頸線 − 峰頸落差 ${cs}${height}）\n` +
+                    `• 戰略退兵防線（停損）：${cs}${stop}（峰頂上緣）\n\n` +
                     status;
             } else if (db) {
                 const neck = db.neck;
@@ -487,17 +531,17 @@
                 const stop = r2(Math.min(db.p1, db.p2));
                 let status;
                 if (current < neck) {
-                    status = `【深海警戒】當前水位 $${current} 仍在突擊水面（頸線）$${neck} 之下，雙底尚未突破。積蓄動能，監控是否放量上攻。`;
+                    status = `【深海警戒】當前水位 ${cs}${current} 仍在突擊水面（頸線）${cs}${neck} 之下，雙底尚未突破。積蓄動能，監控是否放量上攻。`;
                 } else if (current < target) {
-                    status = `【破浪突擊】已突破突擊水面 $${neck}！水面艦隊進場，等幅巡航目標 $${target}；若拉回踩穩頸線不破可加碼集結。`;
+                    status = `【破浪突擊】已突破突擊水面 ${cs}${neck}！水面艦隊進場，等幅巡航目標 ${cs}${target}；若拉回踩穩頸線不破可加碼集結。`;
                 } else {
-                    status = `【奪島成功】水位已達或突破等幅目標 $${target}（當前 $${current}），鎖定勝果並調升停損至安全水域。`;
+                    status = `【奪島成功】水位已達或突破等幅目標 ${cs}${target}（當前 ${cs}${current}），鎖定勝果並調升停損至安全水域。`;
                 }
                 body = `⚓ 偵測型態：雙子海溝（W底 / 偏多）｜雙谷相似度 ${(db.sim * 100).toFixed(1)}%\n` +
-                    `• 第一谷 $${db.p1}｜第二谷 $${db.p2}\n` +
-                    `• 突擊水面（頸線）：$${neck}\n` +
-                    `• 等幅巡航目標：$${target}（頸線 + 谷頸落差 $${height}）\n` +
-                    `• 戰略退兵防線（停損）：$${stop}（谷底下緣）\n\n` +
+                    `• 第一谷 ${cs}${db.p1}｜第二谷 ${cs}${db.p2}\n` +
+                    `• 突擊水面（頸線）：${cs}${neck}\n` +
+                    `• 等幅巡航目標：${cs}${target}（頸線 + 谷頸落差 ${cs}${height}）\n` +
+                    `• 戰略退兵防線（停損）：${cs}${stop}（谷底下緣）\n\n` +
                     status;
             } else {
                 body = `📡 目前水文擺動不明顯，未偵測到清晰的雙頂/雙底型態。建議切換上方「交戰藍圖」以手動輸入水位進行沙盤推演。`;
