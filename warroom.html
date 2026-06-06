@@ -604,20 +604,26 @@
 <div id="wr-top10">
     <div class="section-panel">
         <div class="section-title">🏆 今日 Top 10 強勢買入股（依強勢評分）</div>
+        <div style="font-size:11px;color:var(--text-muted);margin:-8px 0 12px;">
+            收盤與 5／10／30 日均線：<span style="color:#00E676;font-weight:bold;">綠＝站上</span>、<span style="color:#FF5252;font-weight:bold;">紅＝跌破</span>；
+            <span style="color:#FFD700;font-weight:bold;">多頭</span>＝MA5＞MA10＞MA30 多頭排列
+        </div>
         <table class="rank-table">
             <thead>
                 <tr>
                     <th>#</th>
-                    <th>代號</th>
-                    <th>名稱</th>
+                    <th>代號 / 名稱</th>
+                    <th>收盤</th>
+                    <th>MA5</th>
+                    <th>MA10</th>
+                    <th>MA30</th>
                     <th>強勢分</th>
                     <th>評級</th>
                     <th>籌碼</th>
-                    <th>題材</th>
                 </tr>
             </thead>
             <tbody id="wr-top10-body">
-                <tr><td colspan="7" style="color:var(--text-muted);text-align:center;padding:20px;">載入中...</td></tr>
+                <tr><td colspan="9" style="color:var(--text-muted);text-align:center;padding:20px;">載入中...</td></tr>
             </tbody>
         </table>
     </div>
@@ -649,9 +655,10 @@
      晨報摘要 — 由排程自動插入，每日覆蓋
      ============================================================ -->
 <div id="morning-brief-bar" style="background:linear-gradient(90deg,#002870,#0058a8);color:#fff;padding:14px 24px;margin-top:0;font-size:.82rem;line-height:1.9">
-  <strong>📰 Grace 今日題材掃描（2026-05-29）</strong><br>
-  【🔬 半導體記憶體超級循環】華邦電(2344)4月營收年增182%刷新單月歷史高，三星罷工預警推升記憶體漲價預期；外資今日大買鴻海(2317)+71萬張、富邦金(2881)+39萬張、力積電(6770)+36萬張為本日最大三筆，半導體雙買訊號股達17支（含2344、6770、5425、3042）— 相關：2344 華邦電、6770 力積電、5425 台半、3042 晶技、2317 鴻海 |
-  【🆕 新突破觀察】宏旭-KY(2243)今日首次突破MA5（breakout_day=1），外資投信雙買訊號啟動，2月營收年增739%，可列入短線觀察名單 — 相關：2243 宏旭-KY<br>
+  <strong>📰 Grace 今日題材掃描（2026-06-05）</strong><br>
+  【⚡ AI雙引擎最強股】飛宏(2457)強勢評分100分，搭載ZEROVA品牌跨足AI電力與充電樁市場，COMPUTEX展後外資持續掃貨，低軌衛星佔比23%目標下半年提升至40%，ma5站穩11日 — 相關：2457 飛宏 ｜
+  【🚢 航運法人狂掃】陽明(2609)外資30日買超高達14.6萬張居全場第一，萬海(2615)雙買訊號同步點燈；法人看貨櫃航商燃油超額轉嫁，Q2-Q3獲利逐季走高 — 相關：2609 陽明、2615 萬海 ｜
+  【🌊 市場多頭延續】今日買入率65.8%、市場溫度70分（強勢偏多），11支雙買個股，猛虎池全員買入加碼（8/8），半導體29支強勢在列<br>
   <span style="opacity:.7;font-size:.72rem">新聞由 Claude 自動搜尋整理，請自行查證原始來源 · 僅供 Magic Lab 內部參考</span>
 </div>
 
@@ -871,11 +878,30 @@ function renderWarroom(data) {
         v >= 50 ? 'linear-gradient(90deg,#f39c12,#FFD700)' :
         'linear-gradient(90deg,#555,#8892B0)';
 
-    tbody.innerHTML = a.top10.map((s, i) => `
+    // 均線儲存格：收盤站上→綠、跌破→紅
+    const maCell = (close, ma) => {
+        if (ma == null || ma === 0) return '<td style="color:var(--text-muted);font-size:12px;">--</td>';
+        const up = close >= ma;
+        return `<td style="font-size:12px;font-weight:600;color:${up ? '#00E676' : '#FF5252'};">${ma}</td>`;
+    };
+
+    tbody.innerHTML = a.top10.map((s, i) => {
+        const closeUp = s.close >= (s.ma5 || 0);
+        const bull = s.bull_align
+            ? '<span style="color:#FFD700;font-size:10px;margin-left:6px;border:1px solid rgba(255,215,0,0.4);border-radius:8px;padding:0 5px;">多頭</span>'
+            : '';
+        return `
         <tr>
             <td class="rank-num ${i < 3 ? 'top3' : ''}">${i < 3 ? ['🥇','🥈','🥉'][i] : i+1}</td>
-            <td class="stock-id-cell">${s.stock_id}</td>
-            <td style="color:var(--text-main);font-weight:500;">${s.stock_name}</td>
+            <td>
+                <span class="stock-id-cell">${s.stock_id}</span>
+                <span style="color:var(--text-main);font-weight:500;margin-left:6px;">${s.stock_name}</span>${bull}
+                <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">${s.theme_tag || '--'}</div>
+            </td>
+            <td style="font-weight:700;color:${closeUp ? '#00E676' : '#FF5252'};">${s.close != null ? s.close : '--'}</td>
+            ${maCell(s.close, s.ma5)}
+            ${maCell(s.close, s.ma10)}
+            ${maCell(s.close, s.ma30)}
             <td>
                 <div class="score-mini-bar">
                     <div class="score-mini-track">
@@ -886,9 +912,9 @@ function renderWarroom(data) {
             </td>
             <td><span class="grade-badge grade-${s.inst_grade}">${s.inst_grade}</span></td>
             <td style="color:${chipColor(s.chip_signal)};font-size:12px;font-weight:bold;">${s.chip_signal}</td>
-            <td style="font-size:11px;color:var(--text-muted);">${s.theme_tag||'--'}</td>
         </tr>
-    `).join('');
+    `;
+    }).join('');
 
     // ── 魚池健康度 ──
     const poolHealth = document.getElementById('wr-pool-health');
@@ -921,11 +947,72 @@ function renderWarroom(data) {
     } else {
         dualTags.innerHTML = '<span style="color:var(--text-muted)">今日無雙買個股</span>';
     }
+
+    // ── Grace 題材摘要（依當日資料動態生成，每日自動更新）──
+    renderGraceBrief(data, a);
+}
+
+// ── Grace 今日題材掃描：依 plum_blossom_data.json 動態生成 ──
+// 純靜態頁無法抓外部新聞，改用當日選股資料自動產出摘要，資料每日更新摘要即每日更新。
+function renderGraceBrief(data, a) {
+    const dt = (data.last_updated || '').split(' ')[0] || new Date().toLocaleDateString('zh-TW');
+
+    // 最強領軍股（買入加碼第一名）
+    const top = a.top10[0];
+    const topStr = top
+        ? `${top.theme_tag || '📌'} <b>${top.stock_name}(${top.stock_id})</b> 強勢評分 ${top.strength_score} 分居首，收盤 ${top.close}、` +
+          `站穩 MA5 ${top.above_ma5_streak || 0} 日${top.bull_align ? '、均線多頭排列' : ''}，籌碼${top.chip_signal}`
+        : '今日無買入加碼個股';
+
+    // 外資買超王
+    const fLeader = a.topForeign[0];
+    const fStr = (fLeader && (fLeader.foreign_buy || 0) > 0)
+        ? `外資買超王 <b>${fLeader.stock_name}(${fLeader.stock_id})</b> 30 日買超 +${(fLeader.foreign_buy || 0).toLocaleString()} 張`
+        : '今日外資買超不顯著';
+
+    // 雙買清單
+    const dualNames = a.dualBuy.slice(0, 4).map(s => `${s.stock_name}(${s.stock_id})`).join('、');
+    const dualStr = a.dualBuy.length > 0
+        ? `雙買訊號 ${a.dualBuy.length} 支：${dualNames}${a.dualBuy.length > 4 ? '…' : ''}`
+        : '今日無雙買個股';
+
+    // 主流題材分布
+    const themeStr = a.topThemes.slice(0, 4).map(([t, c]) => `${t}×${c}`).join('、') || '--';
+
+    // 半導體強勢數
+    const semi = a.buyList.filter(s => (s.theme_tag || '').includes('半導體')).length;
+
+    const lvl = a.tempScore >= 85 ? '🔥 極度樂觀'
+        : a.tempScore >= 70 ? '📈 強勢偏多'
+        : a.tempScore >= 55 ? '✅ 健康做多'
+        : a.tempScore >= 40 ? '📡 中性觀望'
+        : '❄️ 偏空謹慎';
+
+    const html =
+        `<strong>📰 Grace 今日題材掃描（${dt}）</strong><br>` +
+        `<b style="color:#FFD700">【🚀 強勢領軍】</b>${topStr} ｜ ` +
+        `<b style="color:#64FFDA">【💰 法人動向】</b>${fStr}；${dualStr} ｜ ` +
+        `<b style="color:#00E676">【🌊 市場總結】</b>今日買入率 ${Math.round(a.buyRate * 100)}%、市場溫度 ${a.tempScore} 分（${lvl}），` +
+        `主流題材：${themeStr}${semi ? `，半導體強勢 ${semi} 支` : ''}<br>` +
+        `<span style="opacity:.7;font-size:.72rem">⚙️ 本摘要由戰情室依當日選股資料自動生成，每日隨戰報同步更新 · 僅供 Magic Lab 內部參考</span>`;
+
+    ['morning-brief-bar', 'morning-brief-bar-bottom'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = html;
+    });
 }
 
 // 啟動
 loadWarroom();
 </script>
+
+<div id="morning-brief-bar-bottom" style="background:linear-gradient(90deg,#002870,#0058a8);color:#fff;padding:14px 24px;margin-top:0;font-size:.82rem;line-height:1.9;position:relative;z-index:1;">
+  <strong>📰 Grace 今日題材掃描（2026-06-05）</strong><br>
+  【⚡ AI雙引擎最強股】飛宏(2457)強勢評分100分，搭載ZEROVA品牌跨足AI電力與充電樁市場，COMPUTEX展後外資持續掃貨，低軌衛星佔比23%目標下半年提升至40%，ma5站穩11日 — 相關：2457 飛宏 ｜
+  【🚢 航運法人狂掃】陽明(2609)外資30日買超高達14.6萬張居全場第一，萬海(2615)雙買訊號同步點燈；法人看貨櫃航商燃油超額轉嫁，Q2-Q3獲利逐季走高 — 相關：2609 陽明、2615 萬海 ｜
+  【🌊 市場多頭延續】今日買入率65.8%、市場溫度70分（強勢偏多），11支雙買個股，猛虎池全員買入加碼（8/8），半導體29支強勢在列<br>
+  <span style="opacity:.7;font-size:.72rem">新聞由 Claude 自動搜尋整理，請自行查證原始來源 · 僅供 Magic Lab 內部參考</span>
+</div>
 
 </body>
 </html>
