@@ -1107,7 +1107,7 @@
                     "🌊 汪洋大魚": "全市場每日掃描，量能＋趨勢＋MA5＋三大法人四關篩選後符合條件的強勢股"
                 };
 
-                const autoOpenPools = ["🃏 被動卡娃魚池", "🌟 彼神黃金魚池", "🔥 姊夫爆發小魚池", "🍁 楓大永動魚池", "🔭 測試員觀察水域"];
+                const autoOpenPools = [];  // V8.9：所有股池預設折起，點擊標題或用「全展開」展開
                 displayOrder.forEach(poolName => {
                     if (json_data.pools[poolName] && json_data.pools[poolName].length > 0) {
                         const stocks = json_data.pools[poolName];
