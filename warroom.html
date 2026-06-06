@@ -996,23 +996,13 @@ function renderGraceBrief(data, a) {
         `主流題材：${themeStr}${semi ? `，半導體強勢 ${semi} 支` : ''}<br>` +
         `<span style="opacity:.7;font-size:.72rem">⚙️ 本摘要由戰情室依當日選股資料自動生成，每日隨戰報同步更新 · 僅供 Magic Lab 內部參考</span>`;
 
-    ['morning-brief-bar', 'morning-brief-bar-bottom'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.innerHTML = html;
-    });
+    const el = document.getElementById('morning-brief-bar');
+    if (el) el.innerHTML = html;
 }
 
 // 啟動
 loadWarroom();
 </script>
-
-<div id="morning-brief-bar-bottom" style="background:linear-gradient(90deg,#002870,#0058a8);color:#fff;padding:14px 24px;margin-top:0;font-size:.82rem;line-height:1.9;position:relative;z-index:1;">
-  <strong>📰 Grace 今日題材掃描（2026-06-05）</strong><br>
-  【⚡ AI雙引擎最強股】飛宏(2457)強勢評分100分，搭載ZEROVA品牌跨足AI電力與充電樁市場，COMPUTEX展後外資持續掃貨，低軌衛星佔比23%目標下半年提升至40%，ma5站穩11日 — 相關：2457 飛宏 ｜
-  【🚢 航運法人狂掃】陽明(2609)外資30日買超高達14.6萬張居全場第一，萬海(2615)雙買訊號同步點燈；法人看貨櫃航商燃油超額轉嫁，Q2-Q3獲利逐季走高 — 相關：2609 陽明、2615 萬海 ｜
-  【🌊 市場多頭延續】今日買入率65.8%、市場溫度70分（強勢偏多），11支雙買個股，猛虎池全員買入加碼（8/8），半導體29支強勢在列<br>
-  <span style="opacity:.7;font-size:.72rem">新聞由 Claude 自動搜尋整理，請自行查證原始來源 · 僅供 Magic Lab 內部參考</span>
-</div>
 
 </body>
 </html>
