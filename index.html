@@ -716,6 +716,13 @@
             const sweetLow   = s.sweet_buy_low  || 0;
             const sweetHigh  = s.sweet_buy_high || 0;
             const firstTarget = s.first_target  || 0;
+            // V8.9 任務2：動態停損（ATR×2）顯示
+            const slClose = (typeof s.close === 'number') ? s.close : 0;
+            const slPct = (slClose && s.stop_loss) ? ((s.stop_loss / slClose - 1) * 100).toFixed(1) : null;
+            const slModeTag = s.stop_loss_mode === 'ATR' ? `ATR×2 ｜ 波動${s.atr_pct ?? 0}%`
+                            : s.stop_loss_mode === 'VOL_FALLBACK' ? `波動法 ｜ ${s.atr_pct ?? 0}%`
+                            : '固定';
+            const slLabel = (slPct !== null) ? `${slPct}% ｜ ${slModeTag}` : '-10%';
             const themeTypeMap = {
                 '🤖 AI/雲端':    'ai',
                 '🔬 半導體':     'semi',
@@ -816,7 +823,7 @@
                             <div class="sweet-price-item">
                                 <span class="sweet-price-label">🛡️ 停損價</span>
                                 <span class="sweet-price-val" style="color:var(--neon-red);">NTD ${s.stop_loss}</span>
-                                <span style="font-size:10px;color:var(--neon-red);opacity:.8;">-10%</span>
+                                <span style="font-size:10px;color:var(--neon-red);opacity:.8;">${slLabel}</span>
                             </div>
                         </div>
                     </div>` : ''}
@@ -1449,7 +1456,7 @@
             '量比價先：量增價漲，買入加碼！',
             '彼夫有責：自動掃描 × AI 精選 × 每日出擊',
             '三大法人雙買 × S級強勢評分 → 甜蜜點出現！',
-            '🍬 甜蜜點進場 × 🎯 第一停利+15% × 🛡️ 嚴守停損-10%'
+            '🍬 甜蜜點進場 × 🎯 第一停利+15% × 🛡️ 動態停損 ATR×2'
         ];
         var pi=0,ci=0,del=false;
         function tick(){

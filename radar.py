@@ -248,6 +248,44 @@ def _calc_rsi14(prices: pd.Series) -> float:
     return round(100 - (100 / (1 + avg_gain / avg_loss)), 1)
 
 
+def _calc_atr14(df: pd.DataFrame):
+    """V8.9 任務2：計算 ATR14（波動度停損用），零 API 消耗。
+    回傳 (atr14: float, mode: str)
+      - mode="ATR"          ：有 High/Low，標準 True Range
+      - mode="VOL_FALLBACK" ：缺 High/Low（FinMind 後備），改用 |收盤變動| 近似
+      - mode="N/A"          ：資料不足（< 15 筆）
+    平滑法採 rolling(14).mean()，與 _calc_rsi14 風格一致。
+    """
+    try:
+        if df is None or len(df) < 15:
+            return 0.0, "N/A"
+
+        has_hl = ("High" in df.columns) and ("Low" in df.columns)
+        close = df["Close"].astype(float)
+        prev_close = close.shift(1)
+
+        if has_hl:
+            high = df["High"].astype(float)
+            low = df["Low"].astype(float)
+            tr = pd.concat([
+                (high - low).abs(),
+                (high - prev_close).abs(),
+                (low - prev_close).abs(),
+            ], axis=1).max(axis=1)
+            mode = "ATR"
+        else:
+            # 後備：缺 High/Low 時以收盤對收盤變動近似真實波幅
+            tr = (close - prev_close).abs()
+            mode = "VOL_FALLBACK"
+
+        atr = tr.rolling(window=14).mean().iloc[-1]
+        if pd.isna(atr) or atr <= 0:
+            return 0.0, "N/A"
+        return round(float(atr), 2), mode
+    except Exception:
+        return 0.0, "N/A"
+
+
 def _calc_technical_score(close, ma5, ma10, ma30, rsi14) -> int:
     score = 0
     if ma5 > ma10 and ma10 > ma30:
@@ -375,6 +413,17 @@ def _calc_trend_quality(df: pd.DataFrame) -> dict:
     輸出: trend_quality dict
     零 API 消耗（純 yfinance 本地計算）
     """
+    # V8.9 任務2：缺 Low 欄位（FinMind 後備路徑）時容錯回傳 N/A，
+    # 避免拋例外導致整張卡走「計算異常」分支（讓 ATR VOL_FALLBACK 得以生效）
+    if 'Low' not in df.columns or 'Close' not in df.columns:
+        return {
+            "trend_quality": "N/A",
+            "above_ma5_streak": 0,
+            "low_guard_today": False,
+            "bottom_rising": False,
+            "node_3": False, "node_5": False, "node_8": False,
+        }
+
     closes = df['Close'].values
     lows   = df['Low'].values
     n = len(closes)
@@ -492,6 +541,7 @@ def calculate_stock_data(sid, name, industry, df_prices, df_inst, force_show=Fal
                     "close": "無資料", "volume": 0, "inst_buy": 0,
                     "foreign_buy": 0, "trust_buy": 0, "ma5": 0, "ma30": 0,
                     "action": "靜候觀察", "target_price": 0, "stop_loss": 0,
+                    "stop_loss_fixed": 0, "atr14": 0, "atr_pct": 0.0, "stop_loss_mode": "N/A",
                     "ma10": 0, "rsi14": 50.0, "vol_ratio": 1.0, "bull_align": False,
                     "chip_signal": "無買", "inst_grade": "X", "strength_score": 0,
                     "first_target": 0, "sweet_buy_low": 0, "sweet_buy_high": 0,
@@ -600,6 +650,21 @@ def calculate_stock_data(sid, name, industry, df_prices, df_inst, force_show=Fal
             else:
                 sweet_confidence = "MID"
         first_target = round(close_price * 1.15, 2)
+
+        # 🆕 V8.9 任務2：波動度調整停損（ATR×2，取代固定 ×0.9；護欄 -6%~-15%）
+        stop_loss_fixed = round(close_price * 0.9, 2)
+        atr14, atr_mode = _calc_atr14(df_prices)
+        if atr14 and atr14 > 0 and close_price > 0:
+            raw_stop = close_price - 2.0 * atr14
+            lower_bound = close_price * 0.85   # 最深 -15%
+            upper_bound = close_price * 0.94   # 最淺 -6%
+            stop_loss_val = round(min(upper_bound, max(lower_bound, raw_stop)), 2)
+            stop_loss_mode = atr_mode
+        else:
+            stop_loss_val = stop_loss_fixed
+            stop_loss_mode = "N/A"
+        atr_pct = round(atr14 / close_price * 100, 2) if (atr14 and close_price > 0) else 0.0
+
         yf_ind = (yf_info or {}).get("industry", "")
         yf_sec = (yf_info or {}).get("sector", "")
         theme_tag = _get_theme_tag(industry, yf_ind, yf_sec)
@@ -610,7 +675,11 @@ def calculate_stock_data(sid, name, industry, df_prices, df_inst, force_show=Fal
             "inst_buy": inst_buy_30d, "foreign_buy": foreign_buy_30d, "trust_buy": trust_buy_30d,
             "ma5": ma5, "ma30": ma30, "action": action,
             "target_price": round(close_price * 1.5, 2),
-            "stop_loss": round(close_price * 0.9, 2),
+            "stop_loss": stop_loss_val,
+            "stop_loss_fixed": stop_loss_fixed,
+            "atr14": atr14,
+            "atr_pct": atr_pct,
+            "stop_loss_mode": stop_loss_mode,
             "first_target": first_target,
             "sweet_buy_low": sweet_buy_low,
             "sweet_buy_high": sweet_buy_high,
@@ -639,6 +708,7 @@ def calculate_stock_data(sid, name, industry, df_prices, df_inst, force_show=Fal
                 "close": "計算異常", "volume": 0, "inst_buy": 0,
                 "foreign_buy": 0, "trust_buy": 0, "ma5": 0, "ma30": 0,
                 "action": "靜候觀察", "target_price": 0, "stop_loss": 0,
+                "stop_loss_fixed": 0, "atr14": 0, "atr_pct": 0.0, "stop_loss_mode": "N/A",
                 "ma10": 0, "rsi14": 50.0, "vol_ratio": 1.0, "bull_align": False,
                 "chip_signal": "無買", "inst_grade": "X", "strength_score": 0,
                 "first_target": 0, "sweet_buy_low": 0, "sweet_buy_high": 0,
