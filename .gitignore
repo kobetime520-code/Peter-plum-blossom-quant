@@ -2,11 +2,13 @@
 finmind_cache.json
 finmind_info_cache.json
 yf_info_cache.json
+stock_result_cache.json
 
 # === 本地執行日誌與報告 ===
 # log_report.json 需推送 GitHub，供 Zoey 儀表板讀取，故不排除
 morning_report.log
 moly.log
+mengong_auto.log
 晨報/
 
 # === 回測績效報告（任務1 復活：每週六由 backtest_run.py 產生並推送，供 index.html 讀取）===

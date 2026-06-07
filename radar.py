@@ -1,5 +1,13 @@
 # ==========================================
-# 靜水流深戰情室：核心監控與全域雷達 V8.7
+# 靜水流深戰情室：核心監控與全域雷達 V8.9
+# ==========================================
+# V8.9 三大升級：
+#   ⑧ 任務2：ATR×2 波動度動態停損（取代固定×0.9，護欄 -6%~-15%）
+#      新欄位 stop_loss_fixed / atr14 / atr_pct / stop_loss_mode
+#   ⑨ 任務3：大盤環境過濾（^TWII vs MA60 三段式）
+#      多頭2000/1.2/×1.0、中性2500/1.35/×0.92、空頭3000/1.5/×0.85
+#      作用：a 標記(market_regime) + b 縮倉(粗篩門檻) + c 降權(_SCORE_FACTOR)
+#   （任務1 回測、任務4 Grace 題材分頁為獨立腳本，不在 radar.py）
 # ==========================================
 # V7.5 API 降載三劍客：
 #   ① Yahoo MA5 前置預篩  → 市場掃描省 ~40% 呼叫
@@ -785,7 +793,7 @@ def main():
             _write_log_report(_check_time, status="Skipped-Holiday")
             return
 
-    print("🌊 啟動彼夫有責戰情室 (V8.7 選股法則版：theme_tag + 甜蜜點 + 第一停利 + 籌碼分級 + 汪洋排序)...")
+    print("🌊 啟動彼夫有責戰情室 (V8.9：ATR 動態停損 + 大盤環境閘門 + 甜蜜點 + 籌碼分級 + 汪洋排序)...")
 
     # ── 載入本地快取（含 TTL 清理） ─────────────────────────────────────
     # 🆕 V7.8：啟動時自動清除超過 CACHE_TTL_HOURS 的過期資料
@@ -1230,7 +1238,7 @@ def main():
     _write_log_report(taiwan_time, stocks_processed=_stocks_processed_count, status="Success")
 
     print(f"\n🎉 掃描完成！本次共消耗 FinMind API {_api_calls_count} 次（快取命中 {_cache_hits_count} 次）")
-    print(f"   V8.7 儀表板數據：產業 {len(industry_dist)} 類、魚池多空 {buy_n}/{watch_n}、處理 {_stocks_processed_count} 檔")
+    print(f"   V8.9 儀表板數據：產業 {len(industry_dist)} 類、魚池多空 {buy_n}/{watch_n}、處理 {_stocks_processed_count} 檔")
 
     # 🆕 V7.9：本地執行時自動呼叫 git_sync.py 推送戰報
     if not os.environ.get("GITHUB_ACTIONS"):
