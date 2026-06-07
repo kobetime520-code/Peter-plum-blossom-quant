@@ -28,11 +28,13 @@ TW_TZ = timezone(timedelta(hours=8))
 # 專案根目錄（與 radar.py 同層）
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# 精準推送清單（只上傳這三個戰報檔案）
+# 精準推送清單（只上傳戰報檔案）
+# 註：backtest_report.json 每週六由 backtest_run.py 產生；平日無變動時 git 自動略過（nothing to commit）
 SYNC_FILES = [
     "plum_blossom_data.json",
     "ocean_history.json",
     "log_report.json",
+    "backtest_report.json",
 ]
 
 

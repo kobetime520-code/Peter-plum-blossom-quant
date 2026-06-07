@@ -559,6 +559,19 @@
         </div>
         <p style="color:var(--text-muted);font-size:.8rem;margin-top:7px;letter-spacing:.05em">先選對題材，再看籌碼與型態，量比價先，量增價漲做多 ✦ 彼夫有責戰情室 V8.9</p>
     </div>
+
+    <!-- 🏆 回測績效報告（任務1：backtest_report.json，持股回顧版，每週更新） -->
+    <section id="backtest-section" class="pool-section" style="display:none;">
+        <details>
+            <summary><div class="pool-title">
+                <span>🏆 魚池回測績效報告</span>
+                <span id="backtest-meta" style="font-size:11px;color:var(--text-muted);margin-left:auto;font-weight:normal;"></span>
+            </div></summary>
+            <div class="pool-desc">💬 對各魚池<b>目前成員</b>計算 5／30／126 交易日持有回顧績效（勝率｜平均報酬｜超額報酬 vs 加權指數）。註：採當前成員，含存活者偏誤，屬持股回顧。</div>
+            <div id="backtest-body" style="padding:8px 4px;"></div>
+        </details>
+    </section>
+
     <main id="main-container"></main>
 
     <!-- ===== 頁尾版本歷程 (V8.1) ===== -->
@@ -1164,6 +1177,74 @@
                 console.error("JSON 讀取失敗:", err);
                 document.getElementById('update-time').innerText = "❌ 數據載入失敗，請檢查 JSON 檔案";
             });
+
+        // 5-B. 回測績效報告讀取（任務1：backtest_report.json）
+        fetch('backtest_report.json?t=' + new Date().getTime())
+            .then(res => { if (!res.ok) throw new Error('no file'); return res.json(); })
+            .then(bt => { try { renderBacktest(bt); } catch(e) { console.warn('Backtest render error:', e); } })
+            .catch(() => { /* 無回測檔時靜默隱藏 */ });
+
+        function fmtPct(v) {
+            if (v === null || v === undefined) return '<span style="color:var(--text-muted)">—</span>';
+            const cls = v > 0 ? 'color:#2ecc71' : (v < 0 ? 'color:var(--neon-red)' : 'color:var(--text-muted)');
+            const sign = v > 0 ? '+' : '';
+            return `<span style="${cls};font-weight:bold">${sign}${v}%</span>`;
+        }
+
+        function renderBacktest(bt) {
+            const sec = document.getElementById('backtest-section');
+            const body = document.getElementById('backtest-body');
+            const meta = document.getElementById('backtest-meta');
+            if (!sec || !body || !bt || !bt.pools) return;
+
+            const windows = bt.windows || ["5", "30", "126"];
+            const labels = bt.window_labels || {"5":"5日","30":"30日","126":"126日"};
+            const br = bt.benchmark_returns || {};
+            const benchSeg = windows.map(w => `${labels[w]} ${fmtPct(br[w])}`).join('　');
+            meta.innerHTML = `更新：${bt.generated_at || '--'}　｜　${bt.benchmark || '^TWII'} ${benchSeg}`;
+
+            let html = '';
+            for (const [pname, pdata] of Object.entries(bt.pools)) {
+                // 標題列：各窗格摘要
+                let rows = '';
+                rows += `<tr><th style="text-align:left;padding:4px 8px;color:var(--text-muted)">窗格</th>`
+                      + `<th style="padding:4px 8px;color:var(--neon-cyan)">勝率</th>`
+                      + `<th style="padding:4px 8px;color:var(--neon-cyan)">平均報酬</th>`
+                      + `<th style="padding:4px 8px;color:var(--neon-cyan)">超額報酬</th>`
+                      + `<th style="padding:4px 8px;color:var(--text-muted)">樣本</th></tr>`;
+                windows.forEach(w => {
+                    const c = pdata[w] || {};
+                    const wr = (c.win_rate === null || c.win_rate === undefined) ? '—' : c.win_rate + '%';
+                    rows += `<tr>`
+                          + `<td style="padding:4px 8px;font-weight:bold">${labels[w]}</td>`
+                          + `<td style="padding:4px 8px;text-align:center">${wr}</td>`
+                          + `<td style="padding:4px 8px;text-align:center">${fmtPct(c.avg_return)}</td>`
+                          + `<td style="padding:4px 8px;text-align:center">${fmtPct(c.excess_return)}</td>`
+                          + `<td style="padding:4px 8px;text-align:center;color:var(--text-muted)">${c.n ?? 0}</td>`
+                          + `</tr>`;
+                });
+
+                // 個股明細（以最長窗格 126 為主，無則取第一個）
+                const detailWin = pdata["126"] && pdata["126"].details && pdata["126"].details.length
+                    ? "126" : windows.find(w => (pdata[w]||{}).details && pdata[w].details.length);
+                let detailHtml = '';
+                if (detailWin) {
+                    const ds = pdata[detailWin].details;
+                    detailHtml = `<details style="margin-top:6px"><summary style="cursor:pointer;color:var(--text-muted);font-size:12px">個股明細（${labels[detailWin]}持有報酬）</summary>`
+                        + `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">`
+                        + ds.map(d => `<span style="border:1px solid var(--panel-border);border-radius:6px;padding:3px 8px;font-size:12px;background:var(--badge-bg)">${d.stock_id} ${d.stock_name} ${fmtPct(d.return)}</span>`).join('')
+                        + `</div></details>`;
+                }
+
+                html += `<div style="margin-bottom:14px;border:1px solid var(--panel-border);border-radius:10px;padding:10px 8px;background:var(--panel-bg)">`
+                      + `<div style="font-weight:bold;margin-bottom:6px">${pname}</div>`
+                      + `<table style="width:100%;border-collapse:collapse;font-size:13px">${rows}</table>`
+                      + detailHtml
+                      + `</div>`;
+            }
+            body.innerHTML = html;
+            sec.style.display = 'block';
+        }
 
         // 6. 維運日誌讀取（V7.9）
         fetch('log_report.json?t=' + new Date().getTime())
