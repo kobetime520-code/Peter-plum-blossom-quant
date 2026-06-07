@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎯 彼神題材分析 ─ Grace 被動元件</title>
+<style>
+    :root{
+        --bg:#0a192f; --panel:#0f2942; --panel2:#102b47; --border:rgba(100,255,218,.18);
+        --cyan:#64ffda; --gold:#ffd700; --red:#e74c3c; --green:#2ecc71; --muted:#8aa2b8; --text:#e6f1ff;
+    }
+    *{box-sizing:border-box;}
+    body{margin:0;font-family:'Noto Sans TC','Microsoft JhengHei',sans-serif;
+        background:radial-gradient(ellipse at top,#0d2138,#06101f 70%);color:var(--text);min-height:100vh;line-height:1.6;}
+    .wrap{max-width:1100px;margin:0 auto;padding:24px 16px 60px;}
+    .back{display:inline-block;color:var(--muted);text-decoration:none;font-size:14px;margin-bottom:14px;
+        border:1px solid var(--border);padding:6px 14px;border-radius:20px;transition:.25s;}
+    .back:hover{color:var(--cyan);border-color:var(--cyan);}
+    .head{text-align:center;margin-bottom:8px;}
+    .head h1{font-size:26px;margin:6px 0;letter-spacing:1px;}
+    .head .by{color:var(--gold);font-size:13px;}
+    .head .ts{color:var(--muted);font-size:12px;margin-top:4px;}
+    .overview{background:linear-gradient(135deg,#0c2a45,#0a3a52);border:1px solid var(--border);
+        border-radius:14px;padding:16px 20px;margin:18px 0;font-size:14px;}
+    .overview .ttl{color:var(--cyan);font-weight:bold;margin-bottom:6px;letter-spacing:1px;}
+    .stat{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:10px 0 4px;}
+    .stat .chip{font-size:12px;font-weight:bold;padding:5px 14px;border-radius:20px;border:1px solid var(--border);}
+    .tier{margin-top:26px;}
+    .tier h2{font-size:18px;color:var(--gold);border-left:4px solid var(--gold);padding-left:10px;margin-bottom:14px;}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;}
+    .card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:15px 16px;transition:.25s;}
+    .card:hover{border-color:var(--cyan);box-shadow:0 6px 22px rgba(100,255,218,.12);}
+    .card .name{font-size:16px;font-weight:bold;margin-bottom:4px;}
+    .card .name .sid{color:var(--cyan);}
+    .ttype{display:inline-block;font-size:11px;color:var(--gold);background:rgba(255,215,0,.1);
+        border:1px solid rgba(255,215,0,.3);border-radius:6px;padding:2px 8px;margin-bottom:8px;}
+    .row{font-size:13px;margin:6px 0;}
+    .row .lab{color:var(--muted);}
+    .lvl{display:inline-block;font-size:12px;font-weight:bold;padding:1px 10px;border-radius:12px;}
+    .lvl.高{background:rgba(46,204,113,.16);color:var(--green);border:1px solid var(--green);}
+    .lvl.中{background:rgba(255,215,0,.14);color:var(--gold);border:1px solid var(--gold);}
+    .lvl.低{background:rgba(138,162,184,.14);color:var(--muted);border:1px solid var(--muted);}
+    .risk{color:#ffb4ac;font-size:12.5px;background:rgba(231,76,60,.08);border-radius:8px;padding:6px 9px;margin-top:8px;}
+    .snap{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px;}
+    .snap span{font-size:11px;color:var(--muted);background:var(--panel2);border:1px solid var(--border);
+        border-radius:6px;padding:2px 7px;}
+    .err{text-align:center;color:var(--muted);margin-top:40px;}
+    .footer{text-align:center;color:var(--muted);font-size:11px;margin-top:40px;letter-spacing:.05em;}
+</style>
+</head>
+<body>
+<div class="wrap">
+    <a href="index.html" class="back">← 返回戰情室</a>
+    <div class="head">
+        <h1>🎯 彼神題材分析 ─ 被動元件</h1>
+        <div class="by" id="g-analyst">Grace（題材面研究員）</div>
+        <div class="ts" id="g-ts">資料同步中...</div>
+    </div>
+
+    <div class="overview">
+        <div class="ttl">📡 本週題材總覽</div>
+        <div id="g-overview">—</div>
+        <div class="stat" id="g-stat"></div>
+    </div>
+
+    <div id="g-body"></div>
+    <div class="footer">彼夫有責戰情室 ✦ Grace 題材分析 ✦ 規則式本機產生 × 每週日更新</div>
+</div>
+
+<script>
+fetch('grace_theme_data.json?t=' + Date.now())
+    .then(r => { if(!r.ok) throw new Error('no file'); return r.json(); })
+    .then(render)
+    .catch(() => {
+        document.getElementById('g-body').innerHTML =
+            '<div class="err">⚠️ 尚無題材分析資料（grace_theme_data.json）。請執行 grace_theme_gen.py 產生。</div>';
+        document.getElementById('g-ts').textContent = '—';
+    });
+
+function render(d){
+    document.getElementById('g-analyst').textContent = d.analyst || 'Grace（題材面研究員）';
+    document.getElementById('g-ts').textContent =
+        '⏱️ 更新：' + (d.last_updated || '—') + '　｜　資料基準日：' + (d.source_price_date || '—');
+    document.getElementById('g-overview').textContent = d.theme_overview || '—';
+
+    const s = d.stat || {};
+    document.getElementById('g-stat').innerHTML =
+        `<span class="chip" style="color:var(--green);border-color:var(--green)">持續性高 ${s.high||0}</span>`
+      + `<span class="chip" style="color:var(--gold);border-color:var(--gold)">中 ${s.mid||0}</span>`
+      + `<span class="chip" style="color:var(--muted)">低 ${s.low||0}</span>`
+      + `<span class="chip" style="color:var(--cyan);border-color:var(--cyan)">合計 ${s.total||0} 檔</span>`;
+
+    const order = ['Tier 1','Tier 2','Tier 3'];
+    const tierDesc = {'Tier 1':'核心','Tier 2':'主力','Tier 3':'衛星'};
+    const tiers = d.tiers || {};
+    let html = '';
+    order.forEach(tn => {
+        const cards = tiers[tn] || [];
+        if(!cards.length) return;
+        html += `<div class="tier"><h2>${tn}　${tierDesc[tn]||''}（${cards.length} 檔）</h2><div class="grid">`;
+        cards.forEach(c => {
+            const lvl = c.sustainability_level || '中';
+            html += `<div class="card">
+                <div class="name"><span class="sid">${c.stock_id}</span> ${c.stock_name}</div>
+                <div class="ttype">${c.theme_type || '被動元件'}</div>
+                <div class="row"><span class="lab">🔥 催化劑：</span>${c.catalyst || '—'}</div>
+                <div class="row"><span class="lab">⏳ 題材持續性：</span><span class="lvl ${lvl}">${lvl}</span>　<span style="color:var(--muted);font-size:12px">${c.sustainability_note||''}</span></div>
+                <div class="risk">⚠️ 風險提示：${c.risk || '—'}</div>
+                <div class="snap">
+                    <span>現價 ${c.close}</span>
+                    <span>強勢 ${c.strength_score}</span>
+                    <span>籌碼 ${c.chip_signal}</span>
+                    <span>法人 ${c.inst_grade} 級</span>
+                    <span>RSI ${c.rsi14}</span>
+                    <span>量比 ${c.vol_ratio}</span>
+                    <span>${c.action}</span>
+                </div>
+            </div>`;
+        });
+        html += `</div></div>`;
+    });
+    document.getElementById('g-body').innerHTML = html || '<div class="err">目前無題材資料</div>';
+}
+</script>
+</body>
+</html>

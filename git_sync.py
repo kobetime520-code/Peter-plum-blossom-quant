@@ -35,6 +35,7 @@ SYNC_FILES = [
     "ocean_history.json",
     "log_report.json",
     "backtest_report.json",
+    "grace_theme_data.json",
 ]
 
 
