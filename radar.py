@@ -74,6 +74,7 @@ _finmind_cache: dict = {}
 _api_calls_count: int = 0      # FinMind API 實際呼叫次數（快取未命中）
 _cache_hits_count: int = 0     # 🆕 V7.9：快取命中次數
 _stocks_processed_count: int = 0  # 🆕 V7.9：成功處理的股票檔數
+_SCORE_FACTOR: float = 1.0     # 🆕 V8.9 任務3：大盤環境降權因子（空頭縮手）
 
 
 def _save_cache_to_disk():
@@ -284,6 +285,47 @@ def _calc_atr14(df: pd.DataFrame):
         return round(float(atr), 2), mode
     except Exception:
         return 0.0, "N/A"
+
+
+def _calc_market_regime():
+    """V8.9 任務3：大盤環境判定（^TWII vs MA60，三段式）。零 FinMind API（1 次 yfinance）。
+    回傳 dict：regime / 燈號 / 門檻 / 折扣。抓取失敗 → 預設多頭正常門檻（不誤殺）。
+    """
+    default = {
+        "regime": "多頭", "emoji": "🟢",
+        "twii_close": 0, "twii_ma60": 0, "gap_pct": 0.0, "slope_up": True,
+        "vol_threshold": 2000, "volratio_threshold": 1.2, "score_factor": 1.0,
+        "note": "^TWII 資料抓取失敗，套用多頭正常門檻",
+    }
+    try:
+        df = yf.Ticker("^TWII").history(period="6mo")
+        if df is None or df.empty or len(df) < 65:
+            return default
+        close = df["Close"].astype(float)
+        ma60_series = close.rolling(window=60).mean()
+        twii_close = round(float(close.iloc[-1]), 2)
+        ma60 = round(float(ma60_series.iloc[-1]), 2)
+        ma60_5d = float(ma60_series.iloc[-6])
+        slope_up = bool(ma60 > ma60_5d)
+        gap_pct = round((twii_close / ma60 - 1) * 100, 2) if ma60 > 0 else 0.0
+
+        if twii_close >= ma60:
+            if slope_up:
+                regime, emoji, vt, vr, sf = "多頭", "🟢", 2000, 1.2, 1.00
+            else:
+                regime, emoji, vt, vr, sf = "中性", "🟡", 2500, 1.35, 0.92
+        else:
+            regime, emoji, vt, vr, sf = "空頭", "🔴", 3000, 1.5, 0.85
+
+        return {
+            "regime": regime, "emoji": emoji,
+            "twii_close": twii_close, "twii_ma60": ma60, "gap_pct": gap_pct,
+            "slope_up": slope_up,
+            "vol_threshold": vt, "volratio_threshold": vr, "score_factor": sf,
+            "note": f"{emoji} {regime}：加權 {twii_close} vs MA60 {ma60}（乖離 {gap_pct}%，MA60{'上彎' if slope_up else '下彎'}）",
+        }
+    except Exception:
+        return default
 
 
 def _calc_technical_score(close, ma5, ma10, ma30, rsi14) -> int:
@@ -630,6 +672,9 @@ def calculate_stock_data(sid, name, industry, df_prices, df_inst, force_show=Fal
         )
         strength_score = min(100, strength_score + breakout_bonus)
 
+        # 🆕 V8.9 任務3：大盤環境降權（空頭/中性時 score×factor，抑制排序與猛虎晉升）
+        strength_score = int(min(100, round(strength_score * _SCORE_FACTOR)))
+
         action = "買入加碼" if close_price >= ma5 and inst_buy_30d > 0 else "靜候觀察"
 
         # 🆕 V8.7 Joe：三段式甜蜜點（依 RSI + 量比動態調整）
@@ -723,7 +768,7 @@ def calculate_stock_data(sid, name, industry, df_prices, df_inst, force_show=Fal
 
 
 def main():
-    global _finmind_cache, _api_calls_count, _cache_hits_count, _stocks_processed_count
+    global _finmind_cache, _api_calls_count, _cache_hits_count, _stocks_processed_count, _SCORE_FACTOR
 
     # 讀取手動強制執行標籤
     force_run_flag = os.environ.get("FORCE_RUN") == "true"
@@ -785,6 +830,14 @@ def main():
     today_str = taiwan_time.strftime("%Y-%m-%d")
     start_30d = (taiwan_time - timedelta(days=45)).strftime("%Y-%m-%d")
     start_60d = (taiwan_time - timedelta(days=90)).strftime("%Y-%m-%d")
+
+    # 🆕 V8.9 任務3：大盤環境判定（^TWII vs MA60）→ 設定縮倉門檻與降權因子
+    market_regime = _calc_market_regime()
+    _SCORE_FACTOR = market_regime["score_factor"]
+    VOL_THRESHOLD = market_regime["vol_threshold"]
+    VOLRATIO_THRESHOLD = market_regime["volratio_threshold"]
+    print(f"  - 🌡️ 大盤環境：{market_regime['note']}")
+    print(f"       縮倉門檻 → 量能≥{VOL_THRESHOLD}張、量比≥{VOLRATIO_THRESHOLD}、強勢評分×{_SCORE_FACTOR}")
 
     # =====================================================================
     # 🆕 V7.5 優化③：TaiwanStockInfo 7 日快取
@@ -969,8 +1022,8 @@ def main():
             close_yf = float(latest_yf['Close'])
             vol_lots_yf = float(latest_yf['Volume']) / 1000
 
-            # 第一關：量能門檻（V8.5 縮圈戰術，2000張）
-            if vol_lots_yf < 2000:
+            # 第一關：量能門檻（V8.9 任務3：依大盤環境動態調整，多頭2000/中性2500/空頭3000）
+            if vol_lots_yf < VOL_THRESHOLD:
                 continue
 
             # 第二關：收盤 > MA30（趨勢確認）
@@ -984,10 +1037,10 @@ def main():
                 yf_skipped_ma5 += 1
                 continue
 
-            # 🆕 V8.8 PLAN F：第四關：量比 >= 1.2（縮圈戰術）
+            # 🆕 V8.8 PLAN F + V8.9 任務3：第四關量比門檻（依大盤環境，多頭1.2/中性1.35/空頭1.5）
             vol_ma5_yf = float(df_yf['Volume'].rolling(window=5).mean().iloc[-1])
             vol_ratio_yf = float(df_yf['Volume'].iloc[-1]) / vol_ma5_yf if vol_ma5_yf > 0 else 1.0
-            if vol_ratio_yf < 1.2:
+            if vol_ratio_yf < VOLRATIO_THRESHOLD:
                 yf_skipped_volratio += 1
                 continue
 
@@ -1149,6 +1202,7 @@ def main():
     output = {
         "last_updated": taiwan_time.strftime("%Y/%m/%d %H:%M"),
         "api_cost_estimate": f"本次執行約消耗 {_api_calls_count} 次 FinMind API（快取節省不計入）",
+        "market_regime": market_regime,
         "dashboard_stats": dashboard_stats,
         "pools": final_data_structure,
     }
