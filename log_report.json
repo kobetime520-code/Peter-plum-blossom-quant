@@ -1,8 +1,7 @@
 {
-  "last_update": "2026-06-07 17:02:51",
-  "api_usage_count": 158,
-  "stocks_processed": 127,
-  "cache_hits": 14,
-  "status": "Success",
-  "push_status": "OK"
+  "last_update": "2026-06-08 20:30:06",
+  "api_usage_count": 97,
+  "stocks_processed": 95,
+  "cache_hits": 16,
+  "status": "Success"
 }
