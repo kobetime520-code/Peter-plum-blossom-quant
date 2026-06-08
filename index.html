@@ -385,12 +385,12 @@
 
     <div class="top-nav">
         <header class="header">
-            <h1>🌌 彼夫有擇模擬選股戰情室 <span class="version-badge">V8.9</span></h1>
+            <h1>🌌 彼夫有擇模擬選股戰情室 <span class="version-badge">V9.0</span></h1>
             <div id="update-time" class="update-time">衛星同步中...</div>
             <div id="data-stale-alert" style="display:none; font-size:12px; font-weight:bold; margin-top:3px; text-align:center;"></div>
             <!-- 🆕 V8.9 任務3：大盤環境燈號橫幅（^TWII vs MA60） -->
             <div id="market-regime-banner" style="display:none; margin:10px auto 4px; max-width:820px; padding:9px 18px; border-radius:12px; font-size:13px; font-weight:bold; text-align:center; letter-spacing:.04em; border:1px solid; backdrop-filter:blur(4px);"></div>
-            <div class="system-alert">⚡ 核心引擎 V8.9 上線｜本地無菌主算 + 雲端靜態展示｜創造 × 創新 × 創意 × 全能</div>
+            <div class="system-alert">⚡ 核心引擎 V9.0 上線｜本地無菌主算 + 雲端靜態展示｜創造 × 創新 × 創意 × 全能</div>
             <!-- 分頁導覽：孟恭道路指引入口 -->
             <div style="display:flex; justify-content:center; flex-wrap:wrap; gap:14px; margin:16px 0 8px;">
                 <a href="mengong.html" style="display:inline-flex; align-items:center; gap:0; text-decoration:none; border-radius:14px; overflow:hidden; box-shadow:0 4px 24px rgba(0,0,0,0.5); border:1px solid rgba(100,255,218,0.25); transition:0.25s; transform:scale(1);" onmouseover="this.style.boxShadow='0 6px 32px rgba(100,255,218,0.35)';this.style.transform='scale(1.03)'" onmouseout="this.style.boxShadow='0 4px 24px rgba(0,0,0,0.5)';this.style.transform='scale(1)'">
@@ -575,7 +575,7 @@
             <span class="fo">=</span>
             <span style="color:var(--neon-cyan)">🏆 彼夫有責 勝率最大化</span>
         </div>
-        <p style="color:var(--text-muted);font-size:.8rem;margin-top:7px;letter-spacing:.05em">先選對題材，再看籌碼與型態，量比價先，量增價漲做多 ✦ 彼夫有責戰情室 V8.9</p>
+        <p style="color:var(--text-muted);font-size:.8rem;margin-top:7px;letter-spacing:.05em">先選對題材，再看籌碼與型態，量比價先，量增價漲做多 ✦ 彼夫有責戰情室 V9.0</p>
     </div>
 
     <!-- 🏆 回測績效報告（任務1：backtest_report.json，持股回顧版，每週更新） -->
@@ -597,16 +597,18 @@
         <button class="footer-log-toggle" id="footer-log-toggle">📜 展開改版歷程 ▾</button>
         <div class="footer-log-content info-section" id="footer-log-content">
             <div class="log-content">
-                <b>🌊 汪洋大魚選股邏輯（五關篩選）：</b>
+                <b>🌊 汪洋大魚選股邏輯（多關篩選，門檻隨大盤環境三段式調整）：</b>
                 <ul>
-                    <li><b>1. 動能：</b>成交量 >= 2,000 張</li>
+                    <li><b>1. 動能：</b>成交量 >= 2,000 張（多頭2,000／中性2,500／空頭3,000）</li>
                     <li><b>2. 趨勢：</b>股價站穩 30MA</li>
                     <li><b>3. MA5 預判：</b>股價 >= MA5，排除短線弱勢股</li>
-                    <li><b>4. 量比縮圈：</b>量比 >= 1.2（當日量 / 5日均量），確保實質資金流入（V8.8 新增）</li>
-                    <li><b>5. 籌碼：</b>近 30 日三大法人淨買超（通過前四關才呼叫 FinMind）</li>
+                    <li><b>4. 量比縮圈：</b>量比 >= 1.2（多頭1.2／中性1.35／空頭1.5），確保實質資金流入（V8.8 新增）</li>
+                    <li><b>5. 籌碼方向：</b>近 30 日三大法人合計淨買超 > 0，且外資或投信至少一方同向買超，剔除「假合計正」（V9.0 強化）</li>
+                    <li><b>6. 追高防護：</b>RSI &lt; 上限（多頭80／中性75／空頭70），避免買在波段高點（V9.0 新增）</li>
                 </ul>
                 <b>🐅 三日成猛虎：</b>連續 3 個交易日符合汪洋大魚標準，自動晉升，代表籌碼與趨勢具高延續性。
                 <hr style="border: 0; border-top: 1px dashed var(--panel-border); margin: 15px 0;">
+                <b>🎯 V9.0（2026-06-08）：</b>汪洋大魚選股階段一升級（零新增 FinMind API，僅作用於汪洋大魚入池）— A1 籌碼方向閘門：第五關於合計淨買超 > 0 之外，加碼要求外資或投信至少一方同向買超，剔除「外資大賣＋投信亦賣但合計被拉正」之假合計正；A2 追高防護：新增 RSI 上限三段式（多頭 &lt;80／中性 &lt;75／空頭 &lt;70），避免追在波段高點；market_regime 新增 rsi_ceiling 欄位，戰報加列兩道關卡攔截統計。<br>
                 <b>🐟 V8.9 魚池更新（2026-06-06）：</b>🌟 彼神黃金魚池 移除 3028、新增 3675；🔭 測試員觀察水域 移除 3675（晉升彼神黃金）；🔥 姊夫爆發小魚池 縮編為 1711、1519 雙核心，另新增 4966、5312、4534、6153 四檔（版本維持 V8.9，僅調整名單）。<br>
                 <b>🌊 V8.9（2026-06-01）：</b>新增「深海戰術藍圖（雙峰巨礁與雙子海溝）」獨立分頁（stellar_blueprint.html）— 雙頂(M頭)/雙底(W底)型態戰術解析系統，含交戰藍圖 SVG 沙盤、航海防衛三階段指引、參數模擬器；聲納掃描儀以 Yahoo 奇摩股市 / Yahoo Finance 為資料源（經 CORS 代理），單一輸入框同時支援台股（自動嘗試上市 .TW／上櫃 .TWO）與美股（AAPL、NVDA 等），即時撈取日線後純前端自動偵測型態並推算頸線、等幅打擊目標與停損（幣別自動辨識 NT$／US$），結果回灌沙盤；修復 Lucide 圖示就地替換破壞 React 虛擬 DOM（removeChild 崩潰）之隱藏 Bug；主頁導覽列加入分頁入口卡片。<br>
                 <b>🚀 V8.8（2026-05-21）：</b>五大強化 — PLAN G：3/5/8 趨勢品質法則（STRONG/HEALTHY/WATCH/WEAK），卡片新增趨勢品質徽章 + 站上MA5天數徽章；PLAN I：突破天數強勢加分（最高 +8 分，與 PLAN G 最多疊加 +20）；PLAN F：量比第四關縮圈（量比 >= 1.2），預估 API 消耗降至 130–240 次；PLAN J：猛虎池精銳上限 8 支（依強勢評分保留）；PLAN H：低分股快取預篩（TTL 24h，strength_score < 15 自動跳過）；姊夫爆發小魚池 1605 華新 → 1711 永光。<br>

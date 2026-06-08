@@ -1,5 +1,10 @@
 # ==========================================
-# 靜水流深戰情室：核心監控與全域雷達 V8.9
+# 靜水流深戰情室：核心監控與全域雷達 V9.0
+# ==========================================
+# V9.0 汪洋大魚選股階段一（零新增 API，僅作用於汪洋大魚入池）：
+#   A1 籌碼方向閘門：合計淨買超>0 之外，須外資或投信至少一方同向買超（剔除假合計正）
+#   A2 追高防護：RSI 上限三段式（多頭<80／中性<75／空頭<70），避免買在波段高點
+#   market_regime 新增 rsi_ceiling 欄位；戰報新增兩道關卡攔截統計
 # ==========================================
 # V8.9 三大升級：
 #   ⑧ 任務2：ATR×2 波動度動態停損（取代固定×0.9，護欄 -6%~-15%）
@@ -303,6 +308,7 @@ def _calc_market_regime():
         "regime": "多頭", "emoji": "🟢",
         "twii_close": 0, "twii_ma60": 0, "gap_pct": 0.0, "slope_up": True,
         "vol_threshold": 2000, "volratio_threshold": 1.2, "score_factor": 1.0,
+        "rsi_ceiling": 80,
         "note": "^TWII 資料抓取失敗，套用多頭正常門檻",
     }
     try:
@@ -319,17 +325,18 @@ def _calc_market_regime():
 
         if twii_close >= ma60:
             if slope_up:
-                regime, emoji, vt, vr, sf = "多頭", "🟢", 2000, 1.2, 1.00
+                regime, emoji, vt, vr, sf, rc = "多頭", "🟢", 2000, 1.2, 1.00, 80
             else:
-                regime, emoji, vt, vr, sf = "中性", "🟡", 2500, 1.35, 0.92
+                regime, emoji, vt, vr, sf, rc = "中性", "🟡", 2500, 1.35, 0.92, 75
         else:
-            regime, emoji, vt, vr, sf = "空頭", "🔴", 3000, 1.5, 0.85
+            regime, emoji, vt, vr, sf, rc = "空頭", "🔴", 3000, 1.5, 0.85, 70
 
         return {
             "regime": regime, "emoji": emoji,
             "twii_close": twii_close, "twii_ma60": ma60, "gap_pct": gap_pct,
             "slope_up": slope_up,
             "vol_threshold": vt, "volratio_threshold": vr, "score_factor": sf,
+            "rsi_ceiling": rc,
             "note": f"{emoji} {regime}：加權 {twii_close} vs MA60 {ma60}（乖離 {gap_pct}%，MA60{'上彎' if slope_up else '下彎'}）",
         }
     except Exception:
@@ -844,8 +851,9 @@ def main():
     _SCORE_FACTOR = market_regime["score_factor"]
     VOL_THRESHOLD = market_regime["vol_threshold"]
     VOLRATIO_THRESHOLD = market_regime["volratio_threshold"]
+    RSI_CEILING = market_regime.get("rsi_ceiling", 80)  # 🆕 V9.0 A2：追高防護上限（多頭80/中性75/空頭70）
     print(f"  - 🌡️ 大盤環境：{market_regime['note']}")
-    print(f"       縮倉門檻 → 量能≥{VOL_THRESHOLD}張、量比≥{VOLRATIO_THRESHOLD}、強勢評分×{_SCORE_FACTOR}")
+    print(f"       縮倉門檻 → 量能≥{VOL_THRESHOLD}張、量比≥{VOLRATIO_THRESHOLD}、RSI<{RSI_CEILING}、強勢評分×{_SCORE_FACTOR}")
 
     # =====================================================================
     # 🆕 V7.5 優化③：TaiwanStockInfo 7 日快取
@@ -1013,6 +1021,8 @@ def main():
     yf_skipped_ma5 = 0
     yf_skipped_volratio = 0
     yf_passed_filter = 0
+    yf_skipped_chip = 0   # 🆕 V9.0 A1：籌碼方向閘門攔截數
+    yf_skipped_rsi = 0    # 🆕 V9.0 A2：追高防護攔截數
 
     for sid in set(market_sids):
         # 🆕 V8.8 PLAN H：前日低分股預篩（strength_score < 15 直接略過）
@@ -1062,12 +1072,21 @@ def main():
                 yf_info={"industry": yf_industry_map.get(sid, ""),
                           "sector":   yf_sector_map.get(sid, "")})
             if s_data and s_data['action'] == "買入加碼":
+                # 🆕 V9.0 A1 籌碼方向閘門：合計淨買超>0 之外，至少一主力（外資或投信）同向買超，剔除「假合計正」
+                if not (s_data['foreign_buy'] > 0 or s_data['trust_buy'] > 0):
+                    yf_skipped_chip += 1
+                    continue
+                # 🆕 V9.0 A2 追高防護：RSI 超過環境上限（多頭80/中性75/空頭70）即剔除，避免買在波段高點
+                if s_data['rsi14'] >= RSI_CEILING:
+                    yf_skipped_rsi += 1
+                    continue
                 market_pool.append(s_data)
                 added_market_sids.add(sid)
         except Exception:
             continue
 
     print(f"  - 📊 MA5 預篩：攔截 {yf_skipped_ma5} 支，量比第四關攔截 {yf_skipped_volratio} 支，{yf_passed_filter} 支進入籌碼精篩")
+    print(f"  - 🆕 V9.0 籌碼方向閘門攔截 {yf_skipped_chip} 支、追高防護(RSI≥{RSI_CEILING})攔截 {yf_skipped_rsi} 支")
 
     # V8.5：汪洋大魚依強勢評分由高到低排序
     market_pool.sort(key=lambda x: x.get('strength_score', 0), reverse=True)
