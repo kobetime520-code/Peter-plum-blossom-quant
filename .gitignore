@@ -9,6 +9,7 @@ stock_result_cache.json
 morning_report.log
 moly.log
 mengong_auto.log
+radar_run.log
 晨報/
 
 # === 回測績效報告（任務1 復活：每週六由 backtest_run.py 產生並推送，供 index.html 讀取）===
