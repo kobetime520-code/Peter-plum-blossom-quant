@@ -1,6 +1,6 @@
 """
-grace_run.py — 每週日 Grace 題材分析排程執行器（任務4）
-由 C:\\Moly\\grace_start.ps1 每週日 07:00 觸發
+grace_run.py — 每日 Grace 題材分析排程執行器（任務4）
+由 C:\\Moly\\grace_start.ps1 每日台灣時間 06:00 觸發
 流程：執行 grace_theme_gen.py 產生 grace_theme_data.json → 呼叫 git_sync.py 推送
 日誌：與 Moly 共用 moly.log（標記 [Grace]）
 """
@@ -31,7 +31,7 @@ GIT_SYNC = os.path.join(LOCAL_PATH, "git_sync.py")
 
 
 def main():
-    logging.info("=== Grace 題材分析排程啟動（每週日 07:00）===")
+    logging.info("=== Grace 題材分析排程啟動（每日 06:00）===")
 
     logging.info("🎯 執行 grace_theme_gen.py ...")
     gen = subprocess.run([sys.executable, GENERATOR], cwd=LOCAL_PATH,

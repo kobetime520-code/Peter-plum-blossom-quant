@@ -4,7 +4,7 @@
 # 仿孟恭範式：規則式本機產生，零外部 API。
 # 讀 plum_blossom_data.json 的「🃏 被動卡娃魚池」量化欄位，
 # 套 Grace SKILL 分析框架 → 產出 grace_theme_data.json。
-# 每週日由 grace_run.py 觸發更新。
+# 每日由 grace_run.py 觸發更新（台灣時間 06:00）。
 # ==========================================
 import sys, io
 if hasattr(sys.stdout, "reconfigure"):
