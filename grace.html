@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🎯 彼神題材分析 ─ Grace 被動元件</title>
+<title>🎯 彼神題材分析 ─ Grace 周報</title>
 <style>
     :root{
         --bg:#0a192f; --panel:#0f2942; --panel2:#102b47; --border:rgba(100,255,218,.18);
@@ -46,13 +46,48 @@
         border-radius:6px;padding:2px 7px;}
     .err{text-align:center;color:var(--muted);margin-top:40px;}
     .footer{text-align:center;color:var(--muted);font-size:11px;margin-top:40px;letter-spacing:.05em;}
+    /* ── 個股轉型深度專題 ── */
+    .feat-sec{margin-top:26px;}
+    .feat-sec h2{font-size:18px;color:var(--cyan);border-left:4px solid var(--cyan);padding-left:10px;margin-bottom:14px;}
+    .feat{background:linear-gradient(135deg,#0c2a45,#0e3550);border:1px solid var(--border);border-radius:16px;padding:18px 20px;margin-bottom:16px;}
+    .feat .fhead{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin-bottom:6px;}
+    .feat .fname{font-size:19px;font-weight:bold;}
+    .feat .fname .sid{color:var(--cyan);}
+    .feat .ftheme{font-size:12px;color:var(--gold);background:rgba(255,215,0,.1);border:1px solid rgba(255,215,0,.3);border-radius:6px;padding:2px 9px;}
+    .feat .fsrc{font-size:11px;}
+    .feat .fsrc a{color:var(--muted);text-decoration:none;border-bottom:1px dashed var(--muted);}
+    .feat .fsrc a:hover{color:var(--cyan);border-color:var(--cyan);}
+    .feat .thesis{font-size:13.5px;background:rgba(100,255,218,.06);border-radius:8px;padding:9px 12px;margin:10px 0;}
+    .feat .blk{margin-top:12px;}
+    .feat .blk .bt{color:var(--cyan);font-size:13px;font-weight:bold;margin-bottom:5px;letter-spacing:.5px;}
+    .feat .trans{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:12.5px;}
+    .feat .trans .box{flex:1;min-width:200px;background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:8px 10px;}
+    .feat .trans .arrow{color:var(--gold);font-size:18px;font-weight:bold;}
+    .feat .fin{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:8px;font-size:12.5px;}
+    .feat .fin .fcol{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:8px 10px;}
+    .feat .fin .fcol .yr{color:var(--gold);font-weight:bold;font-size:12px;display:block;margin-bottom:3px;}
+    .feat .eng{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:8px 11px;margin-bottom:7px;font-size:12.5px;}
+    .feat .eng .et{font-weight:bold;}
+    .feat .eng .est{float:right;font-size:10.5px;color:var(--green);border:1px solid var(--green);border-radius:10px;padding:0 8px;}
+    .feat ul.flist{margin:4px 0 0;padding-left:18px;font-size:12.5px;}
+    .feat ul.flist li{margin-bottom:5px;}
+    .feat .risk-blk .bt{color:#ffb4ac;}
+    .feat ul.flist.risk li{color:#ffcdc6;}
+    .feat .fsnap{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px;}
+    .feat .fsnap span{font-size:11px;color:var(--muted);background:var(--panel2);border:1px solid var(--border);border-radius:6px;padding:2px 7px;}
+    .feat .fsnap span.warn{color:#ffb4ac;border-color:rgba(231,76,60,.4);}
+    .feat .concl{margin-top:12px;border-top:1px solid var(--border);padding-top:10px;}
+    .feat .concl .ctag{display:inline-block;font-size:12px;font-weight:bold;color:var(--gold);background:rgba(255,215,0,.12);border:1px solid var(--gold);border-radius:12px;padding:2px 12px;margin-bottom:6px;}
+    .feat .concl .timing{font-size:13px;color:#ffb4ac;margin-bottom:6px;}
+    .feat .sig{font-size:12.5px;}
+    .feat .sig .lab{color:var(--muted);}
 </style>
 </head>
 <body>
 <div class="wrap">
     <a href="index.html" class="back">← 返回戰情室</a>
     <div class="head">
-        <h1>🎯 彼神題材分析 ─ 被動元件</h1>
+        <h1>🎯 彼神題材分析 ─ 周報</h1>
         <div class="by" id="g-analyst">Grace（題材面研究員）</div>
         <div class="ts" id="g-ts">資料同步中...</div>
     </div>
@@ -63,6 +98,7 @@
         <div class="stat" id="g-stat"></div>
     </div>
 
+    <div id="g-feature"></div>
     <div id="g-body"></div>
     <div class="footer">彼夫有責戰情室 ✦ Grace 題材分析 ✦ 規則式本機產生 × 每日更新</div>
 </div>
@@ -120,6 +156,76 @@ function render(d){
         html += `</div></div>`;
     });
     document.getElementById('g-body').innerHTML = html || '<div class="err">目前無題材資料</div>';
+}
+
+// ── 個股轉型深度專題（grace_feature_data.json，手動產生、不被每日排程覆蓋）──
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+fetch('grace_feature_data.json?t=' + Date.now())
+    .then(r => { if(!r.ok) throw new Error('no feature file'); return r.json(); })
+    .then(renderFeature)
+    .catch(() => {});
+
+function renderFeature(d){
+    const feats = (d && d.features) || [];
+    if(!feats.length) return;
+    let html = `<div class="feat-sec"><h2>${esc(d.section_title || '🔬 個股轉型深度專題')}</h2>`;
+    feats.forEach(f => {
+        const t = f.transformation || {};
+        const fin = f.financials || {};
+        const q = f.quant || {};
+        const c = f.conclusion || {};
+        const li = arr => (arr || []).map(x => `<li>${esc(x)}</li>`).join('');
+        const eng = (f.engines || []).map(e =>
+            `<div class="eng"><span class="et">${esc(e.title)}</span>`
+          + (e.status ? `<span class="est">${esc(e.status)}</span>` : '')
+          + `<div style="margin-top:4px;color:var(--muted)">${esc(e.desc)}</div></div>`).join('');
+        const warn = (v,bad) => bad ? 'warn' : '';
+        html += `<div class="feat">
+            <div class="fhead">
+                <span class="fname"><span class="sid">${esc(f.stock_id)}</span> ${esc(f.stock_name)}</span>
+                <span class="ftheme">${esc(f.theme)}</span>
+            </div>
+            <div class="fsrc">📺 來源：${f.source_url ? `<a href="${esc(f.source_url)}" target="_blank" rel="noopener">${esc(f.source)}</a>` : esc(f.source)}</div>
+            <div class="thesis">💡 ${esc(f.thesis)}</div>
+
+            <div class="blk"><div class="bt">🔁 轉型路徑</div><div class="trans">
+                <div class="box">${esc(t.from)}</div><div class="arrow">➜</div><div class="box" style="border-color:var(--cyan)">${esc(t.to)}</div>
+            </div></div>
+
+            <div class="blk"><div class="bt">📊 財報對照</div><div class="fin">
+                <div class="fcol"><span class="yr">2025（壓力測試）</span>${esc(fin.fy2025)}</div>
+                <div class="fcol" style="border-color:var(--green)"><span class="yr" style="color:var(--green)">2026 Q1（轉盈拐點）</span>${esc(fin.q1_2026)}</div>
+            </div></div>
+
+            <div class="blk"><div class="bt">🚀 三大成長引擎</div>${eng}</div>
+
+            <div class="blk"><div class="bt">🔥 催化劑</div><ul class="flist">${li(f.catalysts)}</ul></div>
+            <div class="blk"><div class="bt">✅ 管理層亮點</div><ul class="flist">${li(f.highlights)}</ul></div>
+            <div class="blk risk-blk"><div class="bt">⚠️ 風險警報</div><ul class="flist risk">${li(f.risks)}</ul></div>
+            <div class="blk"><div class="bt">🎯 四大驗證指標（未來三季）</div><ul class="flist">${li(f.checklist)}</ul></div>
+
+            <div class="blk"><div class="bt">📈 戰情室量化（基準日 ${esc(q.price_date)}）</div><div class="fsnap">
+                <span>現價 ${esc(q.close)}</span>
+                <span class="${warn(q.strength_score, (q.strength_score||0) < 40)}">強勢 ${esc(q.strength_score)}</span>
+                <span class="${warn(q.rsi14, (q.rsi14||50) < 30 || (q.rsi14||50) > 70)}">RSI ${esc(q.rsi14)}</span>
+                <span class="${warn(q.vol_ratio, (q.vol_ratio||1) < 0.7)}">量比 ${esc(q.vol_ratio)}</span>
+                <span class="${warn(q.chip_signal, q.chip_signal==='無買')}">籌碼 ${esc(q.chip_signal)}</span>
+                <span>法人 ${esc(q.inst_grade)} 級</span>
+                <span class="${warn(q.foreign_buy, (q.foreign_buy||0) < 0)}">外資30日 ${esc(q.foreign_buy)}</span>
+                <span class="${warn(q.trend_quality, q.trend_quality==='WEAK')}">趨勢 ${esc(q.trend_quality)}</span>
+                <span>MA5/10/30 ${esc(q.ma5)}/${esc(q.ma10)}/${esc(q.ma30)}</span>
+                <span>${esc(q.action)}</span>
+            </div></div>
+
+            <div class="concl">
+                <span class="ctag">${esc(c.tag)}</span>
+                <div class="timing">⏰ ${esc(c.timing)}</div>
+                <div class="sig"><span class="lab">🔔 追蹤訊號（任一觸發再評估）：</span><ul class="flist">${li(c.signals)}</ul></div>
+            </div>
+        </div>`;
+    });
+    html += `</div>`;
+    document.getElementById('g-feature').innerHTML = html;
 }
 </script>
 </body>
