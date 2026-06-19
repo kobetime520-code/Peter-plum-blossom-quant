@@ -21,7 +21,8 @@
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
     <!-- Babel standalone for JSX compiling in browser -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- 鎖定 Babel 7：Babel 8 的 preset-react 預設改用 automatic runtime，會注入 import 導致 text/babel 傳統腳本崩潰、整頁空白 -->
+    <script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
     <!-- Lucide Icons CDN -->
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
