@@ -81,6 +81,15 @@
     .feat .concl .timing{font-size:13px;color:#ffb4ac;margin-bottom:6px;}
     .feat .sig{font-size:12.5px;}
     .feat .sig .lab{color:var(--muted);}
+    /* 折疊 */
+    details.feat>summary{cursor:pointer;list-style:none;display:flex;flex-wrap:wrap;align-items:center;gap:10px;}
+    details.feat>summary::-webkit-details-marker{display:none;}
+    details.feat>summary::marker{content:'';}
+    .feat .chev{margin-left:auto;color:var(--cyan);font-size:13px;transition:transform .2s;}
+    details.feat[open] .chev{transform:rotate(180deg);}
+    .feat .fglance{font-size:11px;color:var(--muted);border:1px solid var(--border);border-radius:10px;padding:1px 9px;}
+    .feat .fbody{margin-top:10px;}
+    details.feat:not([open]):hover{border-color:var(--cyan);}
 </style>
 </head>
 <body>
@@ -185,11 +194,14 @@ function renderFeature(d){
           + (e.status ? `<span class="est">${esc(e.status)}</span>` : '')
           + `<div style="margin-top:4px;color:var(--muted)">${esc(e.desc)}</div></div>`).join('');
         const warn = (v,bad) => bad ? 'warn' : '';
-        html += `<div class="feat">
-            <div class="fhead">
+        html += `<details class="feat">
+            <summary>
                 <span class="fname"><span class="sid">${esc(f.stock_id)}</span> ${esc(f.stock_name)}</span>
                 <span class="ftheme">${esc(f.theme)}</span>
-            </div>
+                ${c.tag ? `<span class="fglance">${esc(c.tag)}</span>` : ''}
+                <span class="chev">▾</span>
+            </summary>
+            <div class="fbody">
             <div class="fsrc">📺 來源：${f.source_url ? `<a href="${esc(f.source_url)}" target="_blank" rel="noopener">${esc(f.source)}</a>` : esc(f.source)}</div>
             <div class="thesis">💡 ${esc(f.thesis)}</div>
 
@@ -224,7 +236,8 @@ function renderFeature(d){
                 <div class="timing">⏰ ${esc(c.timing)}</div>
                 <div class="sig"><span class="lab">🔔 追蹤訊號（任一觸發再評估）：</span><ul class="flist">${li(c.signals)}</ul></div>
             </div>
-        </div>`;
+            </div>
+        </details>`;
     });
     html += `</div>`;
     document.getElementById('g-feature').innerHTML = html;
