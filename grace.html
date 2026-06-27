@@ -171,7 +171,12 @@ function renderFeature(d){
     let html = `<div class="feat-sec"><h2>${esc(d.section_title || '🔬 個股轉型深度專題')}</h2>`;
     feats.forEach(f => {
         const t = f.transformation || {};
-        const fin = f.financials || {};
+        const fin = f.financials || [];
+        const finCols = fin.map(fc => {
+            const good = fc.tone === 'good';
+            return `<div class="fcol"${good ? ' style="border-color:var(--green)"' : ''}>`
+                 + `<span class="yr"${good ? ' style="color:var(--green)"' : ''}>${esc(fc.label)}</span>${esc(fc.text)}</div>`;
+        }).join('');
         const q = f.quant || {};
         const c = f.conclusion || {};
         const li = arr => (arr || []).map(x => `<li>${esc(x)}</li>`).join('');
@@ -192,10 +197,7 @@ function renderFeature(d){
                 <div class="box">${esc(t.from)}</div><div class="arrow">➜</div><div class="box" style="border-color:var(--cyan)">${esc(t.to)}</div>
             </div></div>
 
-            <div class="blk"><div class="bt">📊 財報對照</div><div class="fin">
-                <div class="fcol"><span class="yr">2025（壓力測試）</span>${esc(fin.fy2025)}</div>
-                <div class="fcol" style="border-color:var(--green)"><span class="yr" style="color:var(--green)">2026 Q1（轉盈拐點）</span>${esc(fin.q1_2026)}</div>
-            </div></div>
+            <div class="blk"><div class="bt">📊 財報對照</div><div class="fin">${finCols}</div></div>
 
             <div class="blk"><div class="bt">🚀 三大成長引擎</div>${eng}</div>
 
