@@ -219,6 +219,10 @@
         .pool-nav-btn.active { background: var(--badge-bg); color: var(--neon-cyan); border-color: var(--neon-cyan); box-shadow: 0 0 8px rgba(100,255,218,0.15); }
         .pool-nav-count { font-size: 11px; background: var(--neon-cyan); color: #fff; border-radius: 10px; padding: 1px 6px; font-weight: bold; opacity: 0.85; }
         .pool-nav-btn.active .pool-nav-count { opacity: 1; color: #000; }
+        /* V9.1 P1：分頁入口精簡按鈕列 */
+        .subpage-nav { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin: 14px 0 6px; }
+        .subpage-btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 20px; text-decoration: none; font-size: 13px; font-weight: bold; letter-spacing: 1px; color: var(--sp-color, #64FFDA); background: rgba(13, 33, 55, 0.55); border: 1px solid var(--sp-color, #64FFDA); opacity: 0.88; transition: 0.25s; }
+        .subpage-btn:hover { opacity: 1; box-shadow: 0 0 14px var(--sp-color, #64FFDA); transform: translateY(-1px); }
 
         /* 回頂端懸浮按鈕 (V8.1) */
         .back-to-top-btn {
@@ -407,65 +411,17 @@
 
     <div class="top-nav">
         <header class="header">
-            <h1>🌌 彼夫有擇模擬選股戰情室 <span class="version-badge">V9.0</span></h1>
+            <h1>🌌 彼夫有擇模擬選股戰情室 <span class="version-badge">V9.1 UI</span></h1>
             <div id="update-time" class="update-time">衛星同步中...</div>
             <div id="data-stale-alert" style="display:none; font-size:12px; font-weight:bold; margin-top:3px; text-align:center;"></div>
             <!-- 🆕 V8.9 任務3：大盤環境燈號橫幅（^TWII vs MA60） -->
             <div id="market-regime-banner" style="display:none; margin:10px auto 4px; max-width:820px; padding:9px 18px; border-radius:12px; font-size:13px; font-weight:bold; text-align:center; letter-spacing:.04em; border:1px solid; backdrop-filter:blur(4px);"></div>
             <div class="system-alert">⚡ 核心引擎 V9.0 上線｜本地無菌主算 + 雲端靜態展示｜創造 × 創新 × 創意 × 全能</div>
-            <!-- 分頁導覽：孟恭道路指引入口 -->
-            <div style="display:flex; justify-content:center; flex-wrap:wrap; gap:14px; margin:16px 0 8px;">
-                <a href="mengong.html" style="display:inline-flex; align-items:center; gap:0; text-decoration:none; border-radius:14px; overflow:hidden; box-shadow:0 4px 24px rgba(0,0,0,0.5); border:1px solid rgba(100,255,218,0.25); transition:0.25s; transform:scale(1);" onmouseover="this.style.boxShadow='0 6px 32px rgba(100,255,218,0.35)';this.style.transform='scale(1.03)'" onmouseout="this.style.boxShadow='0 4px 24px rgba(0,0,0,0.5)';this.style.transform='scale(1)'">
-                    <!-- 左側圖示區 -->
-                    <div style="background:linear-gradient(135deg,#0d3349,#0a4a3a); padding:14px 18px; display:flex; align-items:center; justify-content:center;">
-                        <svg width="38" height="38" viewBox="0 0 38 38" fill="none">
-                            <!-- 山形圖 -->
-                            <polyline points="4,30 14,14 22,22 30,8" stroke="#64FFDA" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-                            <!-- 上升箭頭 -->
-                            <polyline points="26,8 30,8 30,12" stroke="#64FFDA" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-                            <!-- 底線 -->
-                            <line x1="4" y1="32" x2="34" y2="32" stroke="rgba(100,255,218,0.35)" stroke-width="1.5"/>
-                        </svg>
-                    </div>
-                    <!-- 右側文字區 -->
-                    <div style="background:linear-gradient(135deg,#0f1f2e,#0a192f); padding:14px 22px; text-align:left;">
-                        <div style="color:#E6F1FF; font-size:17px; font-weight:bold; letter-spacing:3px; line-height:1.2;">孟 恭 的 道 路 指 引</div>
-                        <div style="color:#64FFDA; font-size:11px; letter-spacing:2px; margin-top:4px; opacity:0.85;">GOOAYE STRATEGY NAVIGATOR</div>
-                    </div>
-                </a>
-                <!-- 分頁導覽：深海戰術藍圖入口 -->
-                <a href="stellar_blueprint.html" style="display:inline-flex; align-items:center; gap:0; text-decoration:none; border-radius:14px; overflow:hidden; box-shadow:0 4px 24px rgba(0,0,0,0.5); border:1px solid rgba(79,195,247,0.3); transition:0.25s; transform:scale(1);" onmouseover="this.style.boxShadow='0 6px 32px rgba(79,195,247,0.4)';this.style.transform='scale(1.03)'" onmouseout="this.style.boxShadow='0 4px 24px rgba(0,0,0,0.5)';this.style.transform='scale(1)'">
-                    <!-- 左側圖示區：雙峰／雙谷波形 -->
-                    <div style="background:linear-gradient(135deg,#0d3349,#0a3a4a); padding:14px 18px; display:flex; align-items:center; justify-content:center;">
-                        <svg width="38" height="38" viewBox="0 0 38 38" fill="none">
-                            <!-- 雙峰 M 形 -->
-                            <polyline points="4,30 11,10 19,22 27,10 34,30" stroke="#4fc3f7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-                            <!-- 頸線 -->
-                            <line x1="4" y1="22" x2="34" y2="22" stroke="rgba(79,195,247,0.4)" stroke-width="1.5" stroke-dasharray="3,2"/>
-                        </svg>
-                    </div>
-                    <!-- 右側文字區 -->
-                    <div style="background:linear-gradient(135deg,#0f1f2e,#0a192f); padding:14px 22px; text-align:left;">
-                        <div style="color:#E6F1FF; font-size:17px; font-weight:bold; letter-spacing:2px; line-height:1.2;">深海戰術藍圖</div>
-                        <div style="color:#4fc3f7; font-size:11px; letter-spacing:1px; margin-top:4px; opacity:0.85;">雙峰巨礁與雙子海溝</div>
-                    </div>
-                </a>
-                <!-- 分頁導覽：彼神題材分析入口（Grace 週報，每日更新） -->
-                <a href="grace.html" style="display:inline-flex; align-items:center; gap:0; text-decoration:none; border-radius:14px; overflow:hidden; box-shadow:0 4px 24px rgba(0,0,0,0.5); border:1px solid rgba(255,215,0,0.3); transition:0.25s; transform:scale(1);" onmouseover="this.style.boxShadow='0 6px 32px rgba(255,215,0,0.35)';this.style.transform='scale(1.03)'" onmouseout="this.style.boxShadow='0 4px 24px rgba(0,0,0,0.5)';this.style.transform='scale(1)'">
-                    <!-- 左側圖示區：題材靶心 -->
-                    <div style="background:linear-gradient(135deg,#3a2d0d,#4a3a0a); padding:14px 18px; display:flex; align-items:center; justify-content:center;">
-                        <svg width="38" height="38" viewBox="0 0 38 38" fill="none">
-                            <circle cx="19" cy="19" r="14" stroke="#ffd700" stroke-width="2.5" fill="none"/>
-                            <circle cx="19" cy="19" r="7" stroke="#ffd700" stroke-width="2" fill="none" opacity="0.7"/>
-                            <circle cx="19" cy="19" r="2.5" fill="#ffd700"/>
-                        </svg>
-                    </div>
-                    <!-- 右側文字區 -->
-                    <div style="background:linear-gradient(135deg,#0f1f2e,#0a192f); padding:14px 22px; text-align:left;">
-                        <div style="color:#E6F1FF; font-size:17px; font-weight:bold; letter-spacing:2px; line-height:1.2;">彼神題材分析</div>
-                        <div style="color:#ffd700; font-size:11px; letter-spacing:1px; margin-top:4px; opacity:0.85;">Grace 週報 ｜ 每日更新</div>
-                    </div>
-                </a>
+            <!-- 分頁導覽（V9.1 P1：大型入口卡縮為精簡按鈕列，釋放首屏給決策資訊） -->
+            <div class="subpage-nav">
+                <a href="mengong.html" class="subpage-btn" style="--sp-color:#64FFDA;" title="GOOAYE STRATEGY NAVIGATOR">🎙️ 孟恭道路指引</a>
+                <a href="stellar_blueprint.html" class="subpage-btn" style="--sp-color:#4fc3f7;" title="雙峰巨礁與雙子海溝">🌊 深海戰術藍圖</a>
+                <a href="grace.html" class="subpage-btn" style="--sp-color:#ffd700;" title="Grace 週報｜每日更新">🎯 彼神題材分析</a>
             </div>
             <!-- V8.6 四大概念 chip 標語 -->
             <div class="concept-chips">
@@ -548,13 +504,7 @@
     <!-- ===== V8.1 魚池快速導航列 ===== -->
     <nav class="pool-quick-nav" id="pool-quick-nav">
         <span class="pool-nav-label">跳至魚池</span>
-        <button class="pool-nav-btn" data-target="pool-6">🃏 卡娃 <span class="pool-nav-count" id="nav-count-6">-</span></button>
-        <button class="pool-nav-btn" data-target="pool-0">🌟 黃金 <span class="pool-nav-count" id="nav-count-0">-</span></button>
-        <button class="pool-nav-btn" data-target="pool-1">🐅 猛虎 <span class="pool-nav-count" id="nav-count-1">-</span></button>
-        <button class="pool-nav-btn" data-target="pool-2">🔥 爆發 <span class="pool-nav-count" id="nav-count-2">-</span></button>
-        <button class="pool-nav-btn" data-target="pool-3">🍁 永動 <span class="pool-nav-count" id="nav-count-3">-</span></button>
-        <button class="pool-nav-btn" data-target="pool-4">🔭 觀察 <span class="pool-nav-count" id="nav-count-4">-</span></button>
-        <button class="pool-nav-btn" data-target="pool-5">🌊 汪洋 <span class="pool-nav-count" id="nav-count-5">-</span></button>
+        <!-- V9.1 P1：按鈕由 initPoolNav() 依 POOL_ORDER 動態生成，與魚池排列永遠同步 -->
     </nav>
     <!-- V8.6 全展開/全收合快捷列 -->
     <div class="pool-quick-actions">
@@ -562,22 +512,17 @@
         <button class="pool-action-btn" id="collapse-all-pools">⊟ 全收合</button>
     </div>
 
-    <!-- ===== V7.9 維運狀態列 ===== -->
-    <div class="moly-status-bar" id="moly-status-bar" style="display:none;">
-        <div class="moly-bar-title">📡 Moly 維運狀態</div>
-        <div class="moly-divider"></div>
-        <div class="moly-stat">🕐 最後掃描：<b id="moly-last-update">--</b></div>
-        <div class="moly-divider"></div>
-        <div class="moly-stat">狀態：<span id="moly-status-badge" class="moly-status-badge">--</span></div>
-        <div class="moly-divider"></div>
-        <div class="moly-stat">⚡ API 消耗：<b id="moly-api-count">--</b> 次</div>
-        <div class="moly-divider"></div>
-        <div class="moly-stat">💾 快取命中：<b id="moly-cache-hits">--</b> 次</div>
-        <div class="moly-divider"></div>
-        <div class="moly-stat">📊 處理檔數：<b id="moly-stocks">--</b> 支</div>
+    <div id="search-result-container" class="pool-section" style="display:none;">
+        <details open>
+            <summary><div class="pool-title">🛰️ 搜尋結果探測</div></summary>
+            <div id="search-grid" class="grid-container"></div>
+        </details>
     </div>
 
-    <!-- ===== Dashboard 2.0 ===== -->
+
+    <main id="main-container"></main>
+
+    <!-- ===== Dashboard 2.0（V9.1 P1：移至魚池主戰區之後） ===== -->
     <div class="dashboard-section" id="dashboard-section" style="display:none;">
         <div class="dash-grid-2">
             <div class="dash-card">
@@ -600,15 +545,17 @@
         </div>
     </div>
 
-
-
-    <div id="search-result-container" class="pool-section" style="display:none;">
-        <details open>
-            <summary><div class="pool-title">🛰️ 搜尋結果探測</div></summary>
-            <div id="search-grid" class="grid-container"></div>
+    <!-- 🏆 回測績效報告（任務1：backtest_report.json，持股回顧版，每週更新） -->
+    <section id="backtest-section" class="pool-section" style="display:none;">
+        <details>
+            <summary><div class="pool-title">
+                <span>🏆 魚池回測績效報告</span>
+                <span id="backtest-meta" style="font-size:11px;color:var(--text-muted);margin-left:auto;font-weight:normal;"></span>
+            </div></summary>
+            <div class="pool-desc">💬 對各魚池<b>目前成員</b>計算 5／30／126 交易日持有回顧績效（勝率｜平均報酬｜超額報酬 vs 加權指數）。註：採當前成員，含存活者偏誤，屬持股回顧。</div>
+            <div id="backtest-body" style="padding:8px 4px;"></div>
         </details>
-    </div>
-
+    </section>
 
     <!-- 2-D 戰情室公式橫幅 V8.6 -->
     <div class="v86-formula-banner">
@@ -624,19 +571,20 @@
         <p style="color:var(--text-muted);font-size:.8rem;margin-top:7px;letter-spacing:.05em">先選對題材，再看籌碼與型態，量比價先，量增價漲做多 ✦ 彼夫有責戰情室 V9.0</p>
     </div>
 
-    <!-- 🏆 回測績效報告（任務1：backtest_report.json，持股回顧版，每週更新） -->
-    <section id="backtest-section" class="pool-section" style="display:none;">
-        <details>
-            <summary><div class="pool-title">
-                <span>🏆 魚池回測績效報告</span>
-                <span id="backtest-meta" style="font-size:11px;color:var(--text-muted);margin-left:auto;font-weight:normal;"></span>
-            </div></summary>
-            <div class="pool-desc">💬 對各魚池<b>目前成員</b>計算 5／30／126 交易日持有回顧績效（勝率｜平均報酬｜超額報酬 vs 加權指數）。註：採當前成員，含存活者偏誤，屬持股回顧。</div>
-            <div id="backtest-body" style="padding:8px 4px;"></div>
-        </details>
-    </section>
-
-    <main id="main-container"></main>
+    <!-- ===== V7.9 維運狀態列（V9.1 P1：移至頁尾前） ===== -->
+    <div class="moly-status-bar" id="moly-status-bar" style="display:none;">
+        <div class="moly-bar-title">📡 Moly 維運狀態</div>
+        <div class="moly-divider"></div>
+        <div class="moly-stat">🕐 最後掃描：<b id="moly-last-update">--</b></div>
+        <div class="moly-divider"></div>
+        <div class="moly-stat">狀態：<span id="moly-status-badge" class="moly-status-badge">--</span></div>
+        <div class="moly-divider"></div>
+        <div class="moly-stat">⚡ API 消耗：<b id="moly-api-count">--</b> 次</div>
+        <div class="moly-divider"></div>
+        <div class="moly-stat">💾 快取命中：<b id="moly-cache-hits">--</b> 次</div>
+        <div class="moly-divider"></div>
+        <div class="moly-stat">📊 處理檔數：<b id="moly-stocks">--</b> 支</div>
+    </div>
 
     <!-- ===== 頁尾版本歷程 (V8.1) ===== -->
     <div class="footer-log-section">
@@ -654,6 +602,7 @@
                 </ul>
                 <b>🐅 三日成猛虎：</b>連續 3 個交易日符合汪洋大魚標準，自動晉升，代表籌碼與趨勢具高延續性。
                 <hr style="border: 0; border-top: 1px dashed var(--panel-border); margin: 15px 0;">
+                <b>🎨 V9.1 UI（2026-07-04）：</b>P1 資訊層級重排 — KPI 與魚池導航緊貼頁首、魚池主戰區前移，Dashboard／回測／公式橫幅／Moly 維運列移至魚池之後；魚池順序改決策優先（猛虎→汪洋→黃金→爆發→永動→觀察→卡娃）；導航列改由 JS 依同一順序動態生成，根除順序漂移；猛虎池預設展開；三張分頁入口卡縮為精簡按鈕列。P2 池內排序升級 — 新增「強勢評分」排序並設為預設、「買入加碼」卡片一律置頂、排序選擇 localStorage 跨日記憶。<br>
                 <b>🎯 V9.0（2026-06-08）：</b>汪洋大魚選股階段一升級（零新增 FinMind API，僅作用於汪洋大魚入池）— A1 籌碼方向閘門：第五關於合計淨買超 > 0 之外，加碼要求外資或投信至少一方同向買超，剔除「外資大賣＋投信亦賣但合計被拉正」之假合計正；A2 追高防護：新增 RSI 上限三段式（多頭 &lt;80／中性 &lt;75／空頭 &lt;70），避免追在波段高點；market_regime 新增 rsi_ceiling 欄位，戰報加列兩道關卡攔截統計。<br>
                 <b>🐟 V8.9 魚池更新（2026-06-06）：</b>🌟 彼神黃金魚池 移除 3028、新增 3675；🔭 測試員觀察水域 移除 3675（晉升彼神黃金）；🔥 姊夫爆發小魚池 縮編為 1711、1519 雙核心，另新增 4966、5312、4534、6153 四檔（版本維持 V8.9，僅調整名單）。<br>
                 <b>🌊 V8.9（2026-06-01）：</b>新增「深海戰術藍圖（雙峰巨礁與雙子海溝）」獨立分頁（stellar_blueprint.html）— 雙頂(M頭)/雙底(W底)型態戰術解析系統，含交戰藍圖 SVG 沙盤、航海防衛三階段指引、參數模擬器；聲納掃描儀以 Yahoo 奇摩股市 / Yahoo Finance 為資料源（經 CORS 代理），單一輸入框同時支援台股（自動嘗試上市 .TW／上櫃 .TWO）與美股（AAPL、NVDA 等），即時撈取日線後純前端自動偵測型態並推算頸線、等幅打擊目標與停損（幣別自動辨識 NT$／US$），結果回灌沙盤；修復 Lucide 圖示就地替換破壞 React 虛擬 DOM（removeChild 崩潰）之隱藏 Bug；主頁導覽列加入分頁入口卡片。<br>
@@ -689,6 +638,10 @@
             document.documentElement.setAttribute('data-theme', isLight ? '' : 'light-ocean');
             themeBtn.innerText = isLight ? '🌸 切換粉色海洋版' : '🌌 切換深海太空版';
         });
+
+        // V9.1 P1：魚池排列順序（決策池優先）。導航列與主戰區共用此順序，改一處即全站同步
+        const POOL_ORDER = ["🐅 三日成猛虎水池", "🌊 汪洋大魚", "🌟 彼神黃金魚池", "🔥 姊夫爆發小魚池", "🍁 楓大永動魚池", "🔭 測試員觀察水域", "🃏 被動卡娃魚池"];
+        const POOL_SHORT = { "🐅 三日成猛虎水池": "🐅 猛虎", "🌊 汪洋大魚": "🌊 汪洋", "🌟 彼神黃金魚池": "🌟 黃金", "🔥 姊夫爆發小魚池": "🔥 爆發", "🍁 楓大永動魚池": "🍁 永動", "🔭 測試員觀察水域": "🔭 觀察", "🃏 被動卡娃魚池": "🃏 卡娃" };
 
         // V8.6 全展開/全收合
         const expandAllBtn = document.getElementById('expand-all-pools');
@@ -1076,18 +1029,18 @@
         }
 
         // 排序函數
+        // V9.1 P2：新增「強勢評分」排序（預設）；「買入加碼」卡片一律置頂，組內再依所選欄位排序
         function sortStocks(stocks, sortBy) {
             const copy = [...stocks];
-            switch(sortBy) {
-                case 'inst_buy':
-                    return copy.sort((a, b) => (b.inst_buy - a.inst_buy) || (b.close - a.close));
-                case 'close':
-                    return copy.sort((a, b) => (b.close - a.close) || (b.inst_buy - a.inst_buy));
-                case 'volume':
-                    return copy.sort((a, b) => (b.volume - a.volume) || (b.close - a.close));
-                default:
-                    return copy;
-            }
+            const cmpMap = {
+                'score':    (a, b) => ((b.strength_score ?? 0) - (a.strength_score ?? 0)) || ((b.inst_buy ?? 0) - (a.inst_buy ?? 0)),
+                'inst_buy': (a, b) => ((b.inst_buy ?? 0) - (a.inst_buy ?? 0)) || ((b.close ?? 0) - (a.close ?? 0)),
+                'close':    (a, b) => ((b.close ?? 0) - (a.close ?? 0)) || ((b.inst_buy ?? 0) - (a.inst_buy ?? 0)),
+                'volume':   (a, b) => ((b.volume ?? 0) - (a.volume ?? 0)) || ((b.close ?? 0) - (a.close ?? 0)),
+            };
+            const cmp = cmpMap[sortBy] || cmpMap['score'];
+            const buyRank = s => s.action === '買入加碼' ? 0 : 1;
+            return copy.sort((a, b) => (buyRank(a) - buyRank(b)) || cmp(a, b));
         }
 
         function renderGrid(stocks, isWangYang = false, poolName = '') {
@@ -1196,7 +1149,7 @@
                 const container = document.getElementById('main-container');
                 if (!container) return;
 
-                const displayOrder = ["🃏 被動卡娃魚池", "🌟 彼神黃金魚池", "🔭 測試員觀察水域", "🐅 三日成猛虎水池", "🔥 姊夫爆發小魚池", "🍁 楓大永動魚池", "🌊 汪洋大魚"];
+                const displayOrder = POOL_ORDER;  // V9.1 P1：決策池優先（猛虎→汪洋→黃金→爆發→永動→觀察→卡娃）
 
                 const poolDescriptions = {
                     "🃏 被動卡娃魚池": "被動元件（MLCC／電容）觀察名單，依強度分三層 Tier ｜ 純展示池，不參與篩選評分",
@@ -1208,7 +1161,7 @@
                     "🌊 汪洋大魚": "全市場每日掃描，量能＋趨勢＋MA5＋三大法人四關篩選後符合條件的強勢股"
                 };
 
-                const autoOpenPools = [];  // V8.9：所有股池預設折起，點擊標題或用「全展開」展開
+                const autoOpenPools = ["🐅 三日成猛虎水池"];  // V9.1 P1：猛虎池預設展開（每日 SOP 第一優先），其餘收合
                 displayOrder.forEach(poolName => {
                     if (json_data.pools[poolName] && json_data.pools[poolName].length > 0) {
                         const stocks = json_data.pools[poolName];
@@ -1219,11 +1172,13 @@
 
                         const desc = poolDescriptions[poolName] || '';
                         const descHtml = desc ? `<div class="pool-desc">💬 ${desc}</div>` : '';
+                        // V9.1 P2：預設排序改強勢評分，選擇寫入 localStorage 跨日記憶
+                        const savedSort = localStorage.getItem('poolSort:' + poolName) || 'score';
                         const sortSelector = `<select class="pool-sort-select" style="background: var(--input-bg); border: 1px solid var(--panel-border); color: var(--text-muted); padding: 4px 8px; border-radius: 4px; font-size: 12px; cursor: pointer; margin-left: auto; flex-shrink: 0;">
-                            <option value="default">排序：預設</option>
-                            <option value="inst_buy">排序：法人買超</option>
-                            <option value="close">排序：現價高低</option>
-                            <option value="volume">排序：成交量</option>
+                            <option value="score"${savedSort === 'score' ? ' selected' : ''}>排序：強勢評分</option>
+                            <option value="inst_buy"${savedSort === 'inst_buy' ? ' selected' : ''}>排序：法人買超</option>
+                            <option value="close"${savedSort === 'close' ? ' selected' : ''}>排序：現價高低</option>
+                            <option value="volume"${savedSort === 'volume' ? ' selected' : ''}>排序：成交量</option>
                         </select>`;
 
                         section.innerHTML = `<summary><div class="pool-title"><span>${poolName}</span>${sortSelector}${descHtml}</div></summary>`;
@@ -1231,14 +1186,15 @@
                         const gridContainer = document.createElement('div');
                         gridContainer.className = 'pool-grid-container';
                         const isWangYang = poolName === "🌊 汪洋大魚";
-                        const sortedStocks = sortStocks(stocks, 'inst_buy');
+                        const sortedStocks = sortStocks(stocks, savedSort);
                         gridContainer.appendChild(renderGrid(sortedStocks, isWangYang, poolName));
                         section.appendChild(gridContainer);
 
                         // 排序事件綁定
                         const sortSelect = section.querySelector('.pool-sort-select');
                         sortSelect.addEventListener('change', (e) => {
-                            const sortBy = e.target.value === 'default' ? 'inst_buy' : e.target.value;
+                            const sortBy = e.target.value;
+                            localStorage.setItem('poolSort:' + poolName, sortBy);
                             const sortedStocks = sortStocks(stocks, sortBy);
                             const newGrid = renderGrid(sortedStocks, isWangYang, poolName);
                             gridContainer.innerHTML = '';
@@ -1450,38 +1406,25 @@
         // =========================================
         // V8.1 魚池快速導航列
         // =========================================
-        const navPoolMap = [
-            "🌟 彼神黃金魚池",
-            "🐅 三日成猛虎水池",
-            "🔥 姊夫爆發小魚池",
-            "🍁 楓大永動魚池",
-            "🔭 測試員觀察水域",
-            "🌊 汪洋大魚",
-            "🃏 被動卡娃魚池"
-        ];
-
+        // V9.1 P1：導航按鈕依 POOL_ORDER 動態生成，順序與主戰區永遠一致
         function initPoolNav(poolsData) {
-            document.querySelectorAll('.pool-section[data-pool-name]').forEach(sec => {
-                const pName = sec.getAttribute('data-pool-name');
-                const idx = navPoolMap.indexOf(pName);
-                if (idx >= 0) {
-                    sec.id = 'pool-nav-' + idx;
-                    const count = poolsData[pName] ? poolsData[pName].length : 0;
-                    const badge = document.getElementById('nav-count-' + idx);
-                    if (badge) badge.textContent = count;
-                }
-            });
-
-            document.querySelectorAll('.pool-nav-btn').forEach(btn => {
+            const nav = document.getElementById('pool-quick-nav');
+            POOL_ORDER.forEach((pName, idx) => {
+                const sec = document.querySelector(`.pool-section[data-pool-name="${pName}"]`);
+                if (!sec) return;
+                sec.id = 'pool-nav-' + idx;
+                const count = poolsData[pName] ? poolsData[pName].length : 0;
+                const btn = document.createElement('button');
+                btn.className = 'pool-nav-btn';
+                btn.setAttribute('data-target', 'pool-' + idx);
+                btn.innerHTML = `${POOL_SHORT[pName] || pName} <span class="pool-nav-count">${count}</span>`;
                 btn.addEventListener('click', () => {
-                    const idx = btn.getAttribute('data-target').replace('pool-', '');
-                    const sec = document.getElementById('pool-nav-' + idx);
-                    if (!sec) return;
                     sec.setAttribute('open', '');
                     setTimeout(() => sec.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
                     document.querySelectorAll('.pool-nav-btn').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
                 });
+                nav.appendChild(btn);
             });
         }
 
