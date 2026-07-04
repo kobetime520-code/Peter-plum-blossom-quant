@@ -2,4 +2,4 @@
 chcp 65001 >nul
 set PYTHONIOENCODING=utf-8
 cd /d "C:\AIworkplace\AI Magic\Team stock"
-python mengong_auto.py >> mengong_auto.log 2>&1
+"C:\Users\User\AppData\Local\Programs\Python\Python313\python.exe" mengong_auto.py >> mengong_auto.log 2>&1
