@@ -223,6 +223,24 @@
         .subpage-nav { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin: 14px 0 6px; }
         .subpage-btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 20px; text-decoration: none; font-size: 13px; font-weight: bold; letter-spacing: 1px; color: var(--sp-color, #64FFDA); background: rgba(13, 33, 55, 0.55); border: 1px solid var(--sp-color, #64FFDA); opacity: 0.88; transition: 0.25s; }
         .subpage-btn:hover { opacity: 1; box-shadow: 0 0 14px var(--sp-color, #64FFDA); transform: translateY(-1px); }
+        /* V9.1 P3：緊湊列表模式（一行一股，點列展開完整戰情卡） */
+        .grid-container.compact-mode { display: flex; flex-direction: column; gap: 6px; }
+        .compact-row { border: 1px solid var(--panel-border); border-radius: 8px; background: rgba(13, 33, 55, 0.4); overflow: hidden; }
+        .compact-row.is-buy { border-left: 3px solid var(--neon-green); }
+        .compact-row > .compact-summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: 56px 1fr 76px 46px 86px 84px; align-items: center; gap: 8px; padding: 8px 12px; font-size: 13px; }
+        .compact-summary::-webkit-details-marker { display: none; }
+        .compact-summary:hover { background: rgba(100, 255, 218, 0.05); }
+        .cr-id { color: var(--neon-cyan); font-weight: bold; }
+        .cr-name { color: var(--text-main); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .cr-close { text-align: right; font-weight: bold; color: var(--text-main); }
+        .cr-score { text-align: right; font-weight: bold; }
+        .cr-chip { text-align: center; font-size: 12px; }
+        .cr-action { text-align: center; font-size: 12px; font-weight: bold; border-radius: 6px; padding: 3px 0; }
+        .cr-action.buy { color: var(--neon-green); background: rgba(46, 204, 113, 0.12); }
+        .cr-action.watch { color: var(--text-muted); background: rgba(139, 148, 158, 0.1); }
+        .compact-card-wrap { padding: 10px 12px 14px; border-top: 1px dashed var(--panel-border); }
+        .compact-card-wrap .card { max-width: 560px; margin: 0 auto; }
+        @media (max-width: 600px) { .compact-row > .compact-summary { grid-template-columns: 50px 1fr 64px 40px 70px; } .cr-chip { display: none; } }
 
         /* 回頂端懸浮按鈕 (V8.1) */
         .back-to-top-btn {
@@ -510,6 +528,7 @@
     <div class="pool-quick-actions">
         <button class="pool-action-btn" id="expand-all-pools">⊞ 全展開</button>
         <button class="pool-action-btn" id="collapse-all-pools">⊟ 全收合</button>
+        <button class="pool-action-btn" id="view-mode-toggle">⚡ 緊湊列表</button>
     </div>
 
     <div id="search-result-container" class="pool-section" style="display:none;">
@@ -602,7 +621,7 @@
                 </ul>
                 <b>🐅 三日成猛虎：</b>連續 3 個交易日符合汪洋大魚標準，自動晉升，代表籌碼與趨勢具高延續性。
                 <hr style="border: 0; border-top: 1px dashed var(--panel-border); margin: 15px 0;">
-                <b>🎨 V9.1 UI（2026-07-04）：</b>P1 資訊層級重排 — KPI 與魚池導航緊貼頁首、魚池主戰區前移，Dashboard／回測／公式橫幅／Moly 維運列移至魚池之後；魚池順序改決策優先（猛虎→汪洋→黃金→爆發→永動→觀察→卡娃）；導航列改由 JS 依同一順序動態生成，根除順序漂移；猛虎池預設展開；三張分頁入口卡縮為精簡按鈕列。P2 池內排序升級 — 新增「強勢評分」排序並設為預設、「買入加碼」卡片一律置頂、排序選擇 localStorage 跨日記憶。<br>
+                <b>🎨 V9.1 UI（2026-07-04）：</b>P1 資訊層級重排 — KPI 與魚池導航緊貼頁首、魚池主戰區前移，Dashboard／回測／公式橫幅／Moly 維運列移至魚池之後；魚池順序改決策優先（猛虎→汪洋→黃金→爆發→永動→觀察→卡娃）；導航列改由 JS 依同一順序動態生成，根除順序漂移；猛虎池預設展開；三張分頁入口卡縮為精簡按鈕列。P2 池內排序升級 — 新增「強勢評分」排序並設為預設、「買入加碼」卡片一律置頂、排序選擇 localStorage 跨日記憶。P3 卡片密度 — 新增「⚡ 緊湊列表」檢視切換（一行一股：代碼｜股名｜現價｜評分｜籌碼｜動作，點列展開完整戰情卡，選擇 localStorage 記憶，行動版自動隱藏籌碼欄）；卡片徽章雙列合併單列，卡高再減約 10%。<br>
                 <b>🎯 V9.0（2026-06-08）：</b>汪洋大魚選股階段一升級（零新增 FinMind API，僅作用於汪洋大魚入池）— A1 籌碼方向閘門：第五關於合計淨買超 > 0 之外，加碼要求外資或投信至少一方同向買超，剔除「外資大賣＋投信亦賣但合計被拉正」之假合計正；A2 追高防護：新增 RSI 上限三段式（多頭 &lt;80／中性 &lt;75／空頭 &lt;70），避免追在波段高點；market_regime 新增 rsi_ceiling 欄位，戰報加列兩道關卡攔截統計。<br>
                 <b>🐟 V8.9 魚池更新（2026-06-06）：</b>🌟 彼神黃金魚池 移除 3028、新增 3675；🔭 測試員觀察水域 移除 3675（晉升彼神黃金）；🔥 姊夫爆發小魚池 縮編為 1711、1519 雙核心，另新增 4966、5312、4534、6153 四檔（版本維持 V8.9，僅調整名單）。<br>
                 <b>🌊 V8.9（2026-06-01）：</b>新增「深海戰術藍圖（雙峰巨礁與雙子海溝）」獨立分頁（stellar_blueprint.html）— 雙頂(M頭)/雙底(W底)型態戰術解析系統，含交戰藍圖 SVG 沙盤、航海防衛三階段指引、參數模擬器；聲納掃描儀以 Yahoo 奇摩股市 / Yahoo Finance 為資料源（經 CORS 代理），單一輸入框同時支援台股（自動嘗試上市 .TW／上櫃 .TWO）與美股（AAPL、NVDA 等），即時撈取日線後純前端自動偵測型態並推算頸線、等幅打擊目標與停損（幣別自動辨識 NT$／US$），結果回灌沙盤；修復 Lucide 圖示就地替換破壞 React 虛擬 DOM（removeChild 崩潰）之隱藏 Bug；主頁導覽列加入分頁入口卡片。<br>
@@ -652,6 +671,18 @@
         if (collapseAllBtn) collapseAllBtn.addEventListener('click', () => {
             document.querySelectorAll('.pool-section').forEach(s => s.removeAttribute('open'));
         });
+
+        // V9.1 P3：卡片／緊湊列表檢視切換 — 寫入 localStorage，並觸發各魚池排序選單重繪
+        const viewModeBtn = document.getElementById('view-mode-toggle');
+        function syncViewModeBtn() {
+            if (viewModeBtn) viewModeBtn.textContent = getViewMode() === 'compact' ? '🃏 戰情卡片' : '⚡ 緊湊列表';
+        }
+        if (viewModeBtn) viewModeBtn.addEventListener('click', () => {
+            localStorage.setItem('viewMode', getViewMode() === 'compact' ? 'card' : 'compact');
+            syncViewModeBtn();
+            document.querySelectorAll('.pool-sort-select').forEach(sel => sel.dispatchEvent(new Event('change')));
+        });
+        syncViewModeBtn();
 
         // V8.6 ocean_history 載入（猛虎倒計時徽章資料）
         let oceanHistoryMap = {};
@@ -814,8 +845,7 @@
                         </div>
                         <div class="data-row"><span>RSI14 / 量比</span><b>${rsi14Val} / ${volRatioVal}x</b></div>
                         <div class="data-row"><span>均線排列</span><b style="color: ${bullAlignColor};">${bullAlignText}</b></div>
-                        ${(breakoutBadge || ma5DaysBadge) ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 0;">${breakoutBadge}${ma5DaysBadge}</div>` : ''}
-                        ${(trendQualityBadge || trendStreakBadge) ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 0;">${trendQualityBadge}${trendStreakBadge}</div>` : ''}
+                        ${(breakoutBadge || ma5DaysBadge || trendQualityBadge || trendStreakBadge) ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 0;">${breakoutBadge}${ma5DaysBadge}${trendQualityBadge}${trendStreakBadge}</div>` : ''}
                     </div>
 
                     <!-- ② 籌碼評級 -->
@@ -1043,9 +1073,35 @@
             return copy.sort((a, b) => (buyRank(a) - buyRank(b)) || cmp(a, b));
         }
 
+        // V9.1 P3：檢視模式（card 戰情卡片 / compact 緊湊列表），localStorage 記憶
+        function getViewMode() { return localStorage.getItem('viewMode') || 'card'; }
+
+        // V9.1 P3：緊湊列表列 — 一行一股（代碼｜股名｜現價｜評分｜籌碼｜動作），點列展開完整戰情卡
+        function createCompactRow(s, isWangYang, poolName) {
+            const isBuy = s.action === '買入加碼';
+            const scoreVal = s.strength_score ?? 0;
+            const scoreColor = scoreVal >= 70 ? 'var(--neon-green)' : scoreVal >= 50 ? 'var(--neon-gold)' : 'var(--text-muted)';
+            const chipSignal = s.chip_signal || '無買';
+            const chipColor = chipSignal === '雙買' ? 'var(--neon-green)' : chipSignal === '投信單買' ? 'var(--neon-red)' : chipSignal === '外資單買' ? 'var(--neon-cyan)' : 'var(--text-muted)';
+            return `<details class="compact-row ${isBuy ? 'is-buy' : ''}">
+                <summary class="compact-summary">
+                    <span class="cr-id">${s.stock_id}</span>
+                    <span class="cr-name">${s.stock_name}</span>
+                    <span class="cr-close">${s.close}</span>
+                    <span class="cr-score" style="color:${scoreColor};">${scoreVal}</span>
+                    <span class="cr-chip" style="color:${chipColor};">${chipSignal}</span>
+                    <span class="cr-action ${isBuy ? 'buy' : 'watch'}">${isBuy ? '🚀 買入' : '📡 觀察'}</span>
+                </summary>
+                <div class="compact-card-wrap">${createCard(s, isWangYang, 'main-', poolName)}</div>
+            </details>`;
+        }
+
         function renderGrid(stocks, isWangYang = false, poolName = '') {
+            const compact = getViewMode() === 'compact';
+            const gridClass = compact ? 'grid-container compact-mode' : 'grid-container';
+            const renderStock = (s, isWY) => compact ? createCompactRow(s, isWY, poolName) : createCard(s, isWY, 'main-', poolName);
             const grid = document.createElement('div');
-            grid.className = 'grid-container';
+            grid.className = gridClass;
 
             // 🃏 被動卡娃魚池：依 Tier 分層展示（純展示，不參與篩選）
             if (poolName === '🃏 被動卡娃魚池') {
@@ -1072,9 +1128,9 @@
                     tierDetails.setAttribute('open', '');
                     tierDetails.innerHTML = `<summary><div class="industry-section-title">${tierLabel[t] || t} (${tierGroups[t].length} 檔) <span class="ind-arrow">▼</span></div></summary>`;
                     const tierGrid = document.createElement('div');
-                    tierGrid.className = 'grid-container';
+                    tierGrid.className = gridClass;
                     tierGrid.style.paddingTop = '5px';
-                    tierGroups[t].forEach(s => tierGrid.innerHTML += createCard(s, false, 'main-', poolName));
+                    tierGroups[t].forEach(s => tierGrid.innerHTML += renderStock(s, false));
                     tierDetails.appendChild(tierGrid);
                     wrapper.appendChild(tierDetails);
                 });
@@ -1096,16 +1152,16 @@
                     indDetails.innerHTML = `<summary><div class="industry-section-title">🏷️ 【${ind}】族群 (${indStocks.length} 檔) <span class="ind-arrow">▼</span></div></summary>`;
 
                     const indGrid = document.createElement('div');
-                    indGrid.className = 'grid-container';
+                    indGrid.className = gridClass;
                     indGrid.style.paddingTop = "5px";
-                    indStocks.forEach(s => indGrid.innerHTML += createCard(s, true, 'main-', poolName));
+                    indStocks.forEach(s => indGrid.innerHTML += renderStock(s, true));
 
                     indDetails.appendChild(indGrid);
                     wrapper.appendChild(indDetails);
                 }
                 return wrapper;
             } else {
-                stocks.forEach(s => grid.innerHTML += createCard(s, false, 'main-', poolName));
+                stocks.forEach(s => grid.innerHTML += renderStock(s, false));
                 return grid;
             }
         }
