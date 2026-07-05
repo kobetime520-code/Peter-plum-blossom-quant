@@ -1,87 +1,46 @@
 # 📚 docs 知識庫總索引
 
-> 最後更新：2026-05-12 ｜ 維護：JW & Jemini
+> 最後更新：2026-07-06 ｜ 維護：JW & Claude
 
-本索引彙整 `docs/` 下所有 MD 文件，依團隊分類導覽。
-
----
-
-## 🏢 01_AI總管理處
-
-| 檔案 | 說明 |
-|------|------|
-| `Joseph_SKILL.md` | Joseph — AI 總管理處角色設定與技能 |
-| `Ken_SKILL.md` | Ken — AI 總管理處角色設定與技能 |
-| `Sidey_SKILL.md` | Sidey — AI 總管理處角色設定與技能 |
-| `團隊人員清冊與Skill核對表.md` | 全組織人員清冊與技能核對總表（2026-05-02） |
-| `組織公告_雙引擎協作模式.md` | 組織公告：雙引擎協作模式說明（2026-05-09） |
-| `組織架構圖_文字版.md` | 組織架構圖文字版（2026-05-02） |
+`docs/` 現僅存放 **Team Stock 成員 SKILL 正本**（`05_Team_stock/`，git 版控）。
+其餘團隊的 SKILL 正本位於各 Team 資料夾（repo 外），原 `01~04` 過時鏡像副本已於 2026-07-06 移除（`git rm`，歷史保留，可隨時還原）。
 
 ---
 
-## 🤖 02_Team_AI
+## 🗂️ 各團隊 SKILL 正本位置一覽
 
-| 檔案 | 說明 |
-|------|------|
-| `AI_CLAUDE.md` | Team AI 的 Claude 協作記憶檔 |
-| `IT_memory.md` | IT 系統記憶與技術筆記 |
-| `Ted_Security_SKILL.md` | Ted — 資安角色設定與技能 |
+| 團隊 | 正本位置（本機） | 成員 |
+|------|----------------|------|
+| 🏢 AI 總管理處 | `C:\AIworkplace\AI Magic\AI總管理處\` | Sidey、Ken、Joseph ＋ 清冊/架構圖/公告日期版系列（最新 20260706） |
+| 🤖 Team AI | `C:\AIworkplace\AI Magic\Team AI\` | Ted（V2.0）＋ IT_memory.md |
+| 🏠 Team Life | `C:\AIworkplace\AI Magic\Team Life\` | ChingWen ＋ 教育/財管/家庭/旅遊四顧問 ＋ Life_memory.md |
+| 🏭 Team PID | `C:\AIworkplace\AI Magic\Team PID\` | Jeff（協理）、Oscar、Ann、Sian、Luci、Edda ＋ PID_memory.md |
+| 📈 Team Stock | `docs/05_Team_stock/`（本 repo） | 見下表 |
+| ✨ Magic Lab | `C:\AIworkplace\AI Agent\` | Terry、Miles、Wayne、Wesley（Claude Code skill 形式） |
 
----
-
-## 🏠 03_Team_Life
-
-| 檔案 | 說明 |
-|------|------|
-| `ChingWen_SKILL.md` | ChingWen — 生活管理角色設定 |
-| `Education_SKILL.md` | Education — 學習教育角色設定 |
-| `Finance_SKILL.md` | Finance — 個人財務角色設定 |
-| `Home_SKILL.md` | Home — 家庭事務角色設定 |
-| `Life_memory.md` | Team Life 協作記憶檔 |
-| `Travel_SKILL.md` | Travel — 旅遊規劃角色設定 |
+> 全員已註冊 Claude Code agent：`C:\AIworkplace\.claude\agents\`（25 位）。
+> 總清冊：`AI總管理處\團隊人員清冊與Skill核對表_20260706.md`｜Agent 速查：`AI總管理處\AI員工總清單_25Agent_20260706.md`
 
 ---
 
-## 🏭 04_Team_PID（NPI Planner）
+## 📈 05_Team_stock（Team Stock 成員 SKILL 正本）
 
-| 檔案 | 說明 |
-|------|------|
-| `PID_CLAUDE.md` | Team PID 的 Claude 協作記憶檔 |
-| `PID_memory.md` | Team PID 協作記憶與工作筆記 |
-| `Ann_SKILL.md` | Ann — NPI 角色設定與技能 |
-| `Edda_SKILL.md` | Edda — NPI 角色設定與技能 |
-| `Jeff_SKILL.md` | Jeff — NPI 角色設定與技能 |
-| `Luci_SKILL.md` | Luci — NPI 角色設定與技能 |
-| `Oscar_SKILL.md` | Oscar — NPI 角色設定與技能 |
-| `Sian_SKILL.md` | Sian — NPI 角色設定與技能 |
-
----
-
-## 📈 05_Team_stock（股票投資團隊）
-
-| 檔案 | 說明 |
-|------|------|
-| `CLAUDE.md` | Team Stock Claude 協作記憶檔（同根目錄 CLAUDE.md） |
-| `Peter_SKILL.md` | Peter — 投資執行長 & 策略長 |
-| `Moly_SKILL.md` | Moly — 投資排程營運長 |
-| `Eric_SKILL.md` | Eric — 投資研究員（基本面） |
-| `Grace_SKILL.md` | Grace — 研究員（題材面） |
-| `Joe_SKILL.md` | Joe — 研究員（技術面） |
-| `Left_SKILL.md` | Left — 投資程設助理 |
-| `Right_SKILL.md` | Right — 投資研發長 |
-| `Tim_SKILL.md` | Tim — 基本面研究員 |
-| `Maple_SKILL.md` | Maple — 投資採購及財務長 |
-| `Zoey_SKILL.md` | Zoey — 投資行銷創意長 |
+| 檔案 | 說明 | 版本 |
+|------|------|------|
+| `Peter_SKILL.md` | Peter — 投資執行長 & 策略長 | V1.1 |
+| `Maple_SKILL.md` | Maple — 投資採購及財務長 | — |
+| `Right_SKILL.md` | Right — 投資研發長（架構與 API 降載） | V2.2 |
+| `Left_SKILL.md` | Left — 投資程設助理（Git/Bug/UI） | V2.3 |
+| `Moly_SKILL.md` | Moly — 投資排程營運長（本機四排程） | V2.2 |
+| `Zoey_SKILL.md` | Zoey — 投資行銷創意長（Dashboard 2.0） | V2.3 |
+| `Tim_SKILL.md` | Tim — 基本面研究員（楓大永動/彼神黃金） | V2.1 |
+| `Grace_SKILL.md` | Grace — 題材面研究員 & 高階投資顧問 | V2.4 |
+| `Joe_SKILL.md` | Joe — 技術面研究員（+quant-research 回測） | V2.3 |
+| `Eric_SKILL.md` | Eric — 籌碼分析研究員（A1 閘門） | V1.2 |
 
 ### 📰 05_Team_stock/晨報
 
-| 檔案 | 說明 |
-|------|------|
-| `Eric_SKILL.md` | Eric 晨報版角色設定 |
-| `Grace_SKILL.md` | Grace 晨報版角色設定 |
-| `Joe_SKILL.md` | Joe 晨報版角色設定 |
-| `Peter_SKILL.md` | Peter 晨報版角色設定 |
-| `Tim_SKILL.md` | Tim 晨報版角色設定 |
+目前為空資料夾（晨報版角色設定已併入正式 SKILL）。
 
 ---
 
@@ -89,9 +48,9 @@
 
 - 本機路徑：`C:\AIworkplace\AI Magic\`
 - GitHub Repo：`kobetime520-code/Peter-plum-blossom-quant`
-- 同步方式：手動 `git push`（本機 → GitHub）
-- 更新頻率：有新增或修改 MD 時同步
+- 同步方式：Moly 每日排程 git 推送（戰報）＋ 手動 `git push`（文件）
+- 還原已刪副本：`git log -- "docs/01_AI總管理處"` 找到 commit 後 `git checkout <commit>^ -- <路徑>`
 
 ---
 
-*由 Jemini 生成 ｜ 2026-05-12*
+*由 Claude 更新 ｜ 2026-07-06（原版由 Jemini 生成，2026-05-12）*
