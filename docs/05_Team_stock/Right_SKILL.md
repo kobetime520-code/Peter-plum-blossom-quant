@@ -1,6 +1,6 @@
 ---
 name: Right
-description: Team Stock 投資研發長 — 量化系統底層架構設計與 API 降載策略（對齊 radar.py V8.7/V8.8）
+description: Team Stock 投資研發長 — 量化系統底層架構設計與 API 降載策略（對齊 radar.py V9.0）
 type: skill
 ---
 
@@ -50,8 +50,26 @@ Yahoo Finance 全市場批量下載 60 日 K（chunk=150）
 輸出至 plum_blossom_data.json
 ```
 
-> 注意：因關卡 3 已先擋掉 close < MA5，汪洋大魚走到 action 時 `close >= ma5` 恆為真，
-> 等於汪洋大魚的買訊實際只由「法人 30 日淨買 > 0」單一條件決定。
+> 注意：因關卡 3 已先擋掉 close < MA5，汪洋大魚走到 action 時 `close >= ma5` 恆為真。
+> V9.0 起，汪洋大魚入池另須通過 A1/A2 雙閘門（見下節），不再只由「法人 30 日淨買 > 0」單一條件決定。
+
+### V9.0 汪洋大魚入池雙閘門（2026-06-08，零新增 API）
+
+僅作用於汪洋大魚入池判斷，不影響固定魚池：
+
+| 閘門 | 邏輯 | 目的 |
+|---|---|---|
+| **A1 籌碼方向閘門** | 合計淨買超 > 0 之外，須**外資或投信至少一方同向買超** | 剔除「假合計正」（僅自營商撐正的合計數） |
+| **A2 追高防護** | RSI14 上限三段式：多頭 < 80／中性 < 75／空頭 < 70 | 依大盤環境動態防止追高入池 |
+
+- `market_regime` 新增 `rsi_ceiling` 欄位（A2 上限值隨大盤環境輸出）
+- 戰報新增攔截統計：`yf_skipped_chip`（A1 攔截數）、`yf_skipped_rsi`（A2 攔截數）
+
+### V8.9 大盤環境過濾（^TWII vs MA60 三段式）
+
+- 加權指數對 MA60 位置判定多頭／中性／空頭三段
+- 空頭時：標記 + 縮倉建議 + 評分降權（`_SCORE_FACTOR`）
+- A2 的 RSI 上限即依此環境判定連動
 
 ### strength_score 多因子評分（0–100，封頂）
 
@@ -96,6 +114,22 @@ Yahoo Finance 全市場批量下載 60 日 K（chunk=150）
 
 ---
 
+## 工作連結（2026-07-05 建立）
+
+> 路徑基準：`Team stock/`（2026-07-04 起檔案已集中至根目錄）
+
+| 連結對象 | 路徑 | Right 的用途 |
+|---|---|---|
+| 核心引擎 | `radar.py`（V9.0，根目錄） | 架構設計與演算法主戰場 |
+| 版本日誌 | `CLAUDE.md` → 📝 版本更新日誌 | 每次升版必讀＋必寫 |
+| 維運日誌 | `log_report.json` | 降載效益驗證（api_usage_count 前後對比） |
+| 回測產生器 | `backtest_generator.py` / `backtest_report.json` | 演算法改版效益回測（週六 06:00 排程） |
+| V8.9 驗證腳本 | `verify_v89.py` | 升版驗證參考範本 |
+| 專屬工具 Skill | `skills/llm-cost-optimizer/SKILL.md` | API 成本工程三模式 |
+| 籌備中子專案 | `auto stock order/AI四交易員系統_藍圖.md` | 下單執行層藍圖；②內部人/④質設資料源可行性驗證由 Right 主導 |
+
+---
+
 ## 工作風格
 
 - 從架構與演算法角度思考問題，不陷入細節除錯
@@ -122,4 +156,4 @@ Yahoo Finance 全市場批量下載 60 日 K（chunk=150）
 
 ---
 
-*此檔案由 Claude 與 JW 共同維護。版本：V2.1（對齊 radar.py V8.7/V8.8，2026-06-06）*
+*此檔案由 Claude 與 JW 共同維護。版本：V2.2（對齊 radar.py V9.0：A1/A2 雙閘門 + 大盤環境過濾 + 工作連結，2026-07-05）*
