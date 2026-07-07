@@ -628,6 +628,7 @@
                 </ul>
                 <b>🐅 三日成猛虎：</b>連續 3 個交易日符合汪洋大魚標準，自動晉升，代表籌碼與趨勢具高延續性。
                 <hr style="border: 0; border-top: 1px dashed var(--panel-border); margin: 15px 0;">
+                <b>🔥 V9.2（2026-07-07）：</b>姊夫爆發小魚池改造 — 固定清單改為動態篩選（短線精銳池）：法人30日買超≥1000張（inst_grade S/A）＋趨勢向上（trend_quality STRONG/HEALTHY）＋剛站上均線（1~3日內突破）＋剔除金融/傳產，依強勢評分取前8檔；停損停利改專屬固定 -7%／+8%（強制執行，取代全局ATR動態停損）；卡片新增「建議部位」（10萬本金・單筆2%曝險反推）與「董監持股人工複核」提示；新增融資10日遽增風控閘門（FinMind，增幅≥30%自動剔除）。<br>
                 <b>🎨 V9.1 UI（2026-07-04）：</b>P1 資訊層級重排 — KPI 與魚池導航緊貼頁首、魚池主戰區前移，Dashboard／回測／公式橫幅／Moly 維運列移至魚池之後；魚池順序改決策優先（猛虎→汪洋→黃金→爆發→永動→觀察→卡娃）；導航列改由 JS 依同一順序動態生成，根除順序漂移；猛虎池預設展開；三張分頁入口卡縮為精簡按鈕列。P2 池內排序升級 — 新增「強勢評分」排序並設為預設、「買入加碼」卡片一律置頂、排序選擇 localStorage 跨日記憶。P3 卡片密度 — 新增「⚡ 緊湊列表」檢視切換（一行一股：代碼｜股名｜現價｜評分｜籌碼｜動作，點列展開完整戰情卡，選擇 localStorage 記憶，行動版自動隱藏籌碼欄）；卡片徽章雙列合併單列，卡高再減約 10%。P4 行動版動線 — 修復魚池導航列 sticky 吸頂（自 V8.6 起被圖層規則覆寫失效）；768px 以下分頁入口摺疊為 icon 圓鈕；行動版未手動選擇時預設緊湊列表。<br>
                 <b>🎯 V9.0（2026-06-08）：</b>汪洋大魚選股階段一升級（零新增 FinMind API，僅作用於汪洋大魚入池）— A1 籌碼方向閘門：第五關於合計淨買超 > 0 之外，加碼要求外資或投信至少一方同向買超，剔除「外資大賣＋投信亦賣但合計被拉正」之假合計正；A2 追高防護：新增 RSI 上限三段式（多頭 &lt;80／中性 &lt;75／空頭 &lt;70），避免追在波段高點；market_regime 新增 rsi_ceiling 欄位，戰報加列兩道關卡攔截統計。<br>
                 <b>🐟 V8.9 魚池更新（2026-06-06）：</b>🌟 彼神黃金魚池 移除 3028、新增 3675；🔭 測試員觀察水域 移除 3675（晉升彼神黃金）；🔥 姊夫爆發小魚池 縮編為 1711、1519 雙核心，另新增 4966、5312、4534、6153 四檔（版本維持 V8.9，僅調整名單）。<br>
@@ -819,6 +820,14 @@
                 ? `<span class="tag" style="background:rgba(63,185,80,.08);color:#3fb950;border:1px solid rgba(63,185,80,.2);font-size:.67rem">站上MA5 ${trendStreak}日</span>`
                 : '';
 
+            // V9.2 Zoey：姊夫池動態停利% 標籤（取代固定 +15%/+50% 文字，避免與短打-7%/+8%參數不符）
+            const firstTargetPct = (slClose && firstTarget) ? ((firstTarget / slClose - 1) * 100).toFixed(1) : null;
+            const finalTargetPct = (slClose && s.target_price) ? ((s.target_price / slClose - 1) * 100).toFixed(1) : null;
+            const showFinalTarget = s.target_price !== firstTarget;
+            // V9.2 Zoey：姊夫池專屬欄位（建議部位／董監持股人工複核提示）
+            const suggestedPosition = s.suggested_position || 0;
+            const directorNote = s.director_holding_note || '';
+
             const hasSweetData = sweetLow > 0 && isBuy;
             // V8.6 評分條漸層
             const scoreBarGrad = scoreVal>=70 ? 'linear-gradient(90deg,#00E676,#64FFDA)'
@@ -879,19 +888,29 @@
                                 <div class="sweet-price-item">
                                     <span class="sweet-price-label">🎯 第一停利</span>
                                     <span class="sweet-price-val" style="color:var(--neon-green);">NTD ${firstTarget}</span>
-                                    <span style="font-size:10px;color:var(--neon-green);opacity:.8;">+15%</span>
+                                    <span style="font-size:10px;color:var(--neon-green);opacity:.8;">${firstTargetPct !== null ? '+' + firstTargetPct + '%' : ''}</span>
                                 </div>
+                                ${showFinalTarget ? `
                                 <div class="sweet-price-item">
                                     <span class="sweet-price-label">🏆 最終目標</span>
                                     <span class="sweet-price-val" style="color:var(--neon-gold);">NTD ${s.target_price}</span>
-                                    <span style="font-size:10px;color:var(--neon-gold);opacity:.8;">+50%</span>
-                                </div>
+                                    <span style="font-size:10px;color:var(--neon-gold);opacity:.8;">${finalTargetPct !== null ? '+' + finalTargetPct + '%' : ''}</span>
+                                </div>` : ''}
                                 <div class="sweet-price-item">
                                     <span class="sweet-price-label">🛡️ 停損價</span>
                                     <span class="sweet-price-val" style="color:var(--neon-red);">NTD ${s.stop_loss}</span>
                                     <span style="font-size:10px;color:var(--neon-red);opacity:.8;">${slLabel}</span>
                                 </div>
                             </div>
+                        </div>` : ''}
+                        ${suggestedPosition ? `
+                        <div class="data-row" style="background: rgba(100,255,218,0.04); padding: 6px 10px; border-radius: var(--radius-sm); border-left: 3px solid var(--neon-cyan); margin-top: 8px;">
+                            <span style="font-size: 13px; color: var(--text-muted);">💰 建議部位（10萬本金・單筆2%曝險）</span>
+                            <b style="color: var(--neon-cyan);">NTD ${suggestedPosition.toLocaleString()}</b>
+                        </div>` : ''}
+                        ${directorNote ? `
+                        <div class="data-row" style="background: rgba(255,160,0,.08); padding: 6px 10px; border-radius: var(--radius-sm); border-left: 3px solid #ffb347; margin-top: 6px;">
+                            <span style="font-size: 12px; color: #ffb347;">${directorNote}</span>
                         </div>` : ''}
                         <div style="display: flex; gap: 8px; margin-top: ${hasSweetData ? '12px' : '0'};">
                             <div class="action-box ${isBuy ? 'buy' : 'watch'}" style="flex: 2; margin-top: 0;">
@@ -1222,7 +1241,7 @@
                     "🃏 被動卡娃魚池": "被動元件（MLCC／電容）觀察名單，依強度分三層 Tier ｜ 純展示池，不參與篩選評分",
                     "🌟 彼神黃金魚池": "敬愛的股市大哥的選股題材",
                     "🔭 測試員觀察水域": "此社群測試員的個人愛股",
-                    "🔥 姊夫爆發小魚池": "Jeff 個人觀察與持股",
+                    "🔥 姊夫爆發小魚池": "V9.2 短線精銳動態篩選：法人30日買超≥1000張＋趨勢向上＋剛站上均線，剔除金融/傳產｜停損-7%／停利+8%強制執行",
                     "🍁 楓大永動魚池": "Maple 從 2023 年學習股市後，持續買進、只進不出的永動機｜Stock Never Die，一張不賣，奇蹟自來 🌱",
                     "🐅 三日成猛虎水池": "連續 3 日出現於汪洋大魚且符合買入訊號，自動晉升的強勢輪動股",
                     "🌊 汪洋大魚": "全市場每日掃描，量能＋趨勢＋MA5＋三大法人四關篩選後符合條件的強勢股"

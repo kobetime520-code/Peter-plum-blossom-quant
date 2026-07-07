@@ -1,5 +1,14 @@
 # ==========================================
-# 靜水流深戰情室：核心監控與全域雷達 V9.0
+# 靜水流深戰情室：核心監控與全域雷達 V9.2
+# ==========================================
+# V9.2 姊夫爆發小魚池改造（短線精銳池，複用 market_pool，Right/Joe/Eric 協作）：
+#   固定清單 → 動態篩選：inst_grade S/A（法人30日買超≥1000）
+#     + trend_quality STRONG/HEALTHY（5日均線持續在上＋底部墊高）
+#     + ma5_breakout_day 1~3日（剛站上均線）+ 剔除金融/傳產，取strength_score前8檔
+#   停損停利改專屬 -7%/+8%（強制執行，取代全局ATR動態停損，僅作用於此池）
+#   新增建議部位欄位（10萬本金、單筆2%曝險反推，固定約2.9萬）
+#   新增融資10日遽增風控閘門（FinMind，增幅≥30%剔除；無資料/API異常預設放行）
+#   董監持股：暫緩wespai爬蟲整合（JW決議先不做），保留人工複核提示欄位
 # ==========================================
 # V9.0 汪洋大魚選股階段一（零新增 API，僅作用於汪洋大魚入池）：
 #   A1 籌碼方向閘門：合計淨買超>0 之外，須外資或投信至少一方同向買超（剔除假合計正）
@@ -63,8 +72,10 @@ CACHE_TTL_HOURS = 30                          # 🆕 V7.8：FinMind 快取有效
 LOG_REPORT_FILE = "log_report.json"           # 🆕 V7.9：維運日誌輸出路徑（供 Zoey 儀表板讀取）
 
 # --- 2. 魚池設定區 ---
+# 🆕 V9.2 Right：姊夫爆發小魚池改為動態篩選（見 _select_jiefu_pool），
+#    不再是固定清單，初始為空陣列，執行時依籌碼+趨勢+突破條件動態填入。
 POOL_SETTINGS = {
-    "🔥 姊夫爆發小魚池": ["1711", "4966", "1519", "5312", "6191"],
+    "🔥 姊夫爆發小魚池": [],
     "🍁 楓大永動魚池": ["2308", "00923", "00910", "2327", "1785", "2344", "6155"],
     "🌟 彼神黃金魚池": ["2484", "3221", "8182", "8289", "3042", "3675"],
     "🔭 測試員觀察水域": ["5289", "5292", "4749", "6770", "8299", "3673", "5425", "6224", "3707", "3016", "5274", "6270", "6667", "3706"],
@@ -534,6 +545,114 @@ def _calc_trend_quality(df: pd.DataFrame) -> dict:
         "node_5":           node_5,
         "node_8":           node_8,
     }
+
+
+# =====================================================================
+# 🆕 V9.2 姊夫爆發小魚池：動態選股引擎（Right 架構 + Joe 停損停利 + Eric 籌碼閘門）
+# =====================================================================
+
+# 產業排除清單：金融、傳產（需求6）。比對 FinMind industry_category 字串。
+JIEFU_EXCLUDED_INDUSTRIES = [
+    "金融保險業", "證券業", "保險業",
+    "水泥工業", "食品工業", "塑膠工業", "紡織纖維", "鋼鐵工業",
+    "造紙工業", "橡膠工業", "建材營造", "航運業", "觀光事業",
+    "貿易百貨", "油電燃氣業",
+]
+
+JIEFU_STOP_PCT = 0.07     # 停損 -7%（固定於 5~10% 區間，強制執行）
+JIEFU_TARGET_PCT = 0.08   # 停利 +8%
+JIEFU_RISK_BUDGET = 2000  # 單筆最大可承受虧損（10萬本金 × 2%）
+JIEFU_MARGIN_SURGE_THRESHOLD = 0.30  # 融資餘額10日內增幅門檻，超過視為過熱剔除
+
+
+def _is_excluded_industry(industry: str) -> bool:
+    """V9.2：判斷是否為金融或傳產（需剔除）。"""
+    if not industry:
+        return False
+    return any(kw in industry for kw in JIEFU_EXCLUDED_INDUSTRIES)
+
+
+def _select_jiefu_pool(market_pool: list, top_n: int = 8) -> list:
+    """
+    V9.2 Right：姊夫爆發小魚池動態篩選（方案C 複合評分型）。
+    完全複用汪洋大魚 market_pool 已計算之欄位，零額外 API 消耗。
+    條件：
+      ① inst_grade 為 S/A（inst_buy_30d ≥ 1000張）
+      ② trend_quality 為 STRONG/HEALTHY（5日均線持續在上＋底部墊高，趨勢向上）
+      ③ ma5_breakout_day 落在 1~3 日（剛站上均線）
+      ④ 排除金融與傳產
+    依 strength_score 排序取前 top_n 檔。
+    """
+    candidates = []
+    for s in market_pool:
+        if s.get('inst_grade') not in ("S", "A"):
+            continue
+        if s.get('trend_quality') not in ("STRONG", "HEALTHY"):
+            continue
+        breakout_day = s.get('ma5_breakout_day', 0)
+        if not (1 <= breakout_day <= 3):
+            continue
+        if _is_excluded_industry(s.get('industry', '')):
+            continue
+        candidates.append(s)
+
+    candidates.sort(key=lambda x: x.get('strength_score', 0), reverse=True)
+    return candidates[:top_n]
+
+
+def _check_margin_not_surging(sid: str, start_date: str, end_date: str) -> tuple:
+    """
+    V9.2 Eric：融資餘額10日內遽增檢查（風控閘門，非選股加分項）。
+    回傳 (通過與否, 變動率%)。無資料或欄位缺漏時預設「通過」，避免誤殺。
+    """
+    try:
+        df_m = fetch_finmind("TaiwanStockMarginPurchaseShortSale", start_date, end_date, sid)
+        if df_m is None or df_m.empty or "MarginPurchaseTodayBalance" not in df_m.columns:
+            return True, 0.0
+
+        df_m = df_m.dropna(subset=["MarginPurchaseTodayBalance"])
+        if len(df_m) < 2:
+            return True, 0.0
+
+        df_m = df_m.sort_values("date") if "date" in df_m.columns else df_m
+        balances = df_m["MarginPurchaseTodayBalance"].tail(10)
+        if len(balances) < 2:
+            return True, 0.0
+
+        first_val = float(balances.iloc[0])
+        last_val = float(balances.iloc[-1])
+        if first_val <= 0:
+            return True, 0.0
+
+        change_pct = round((last_val - first_val) / first_val * 100, 2)
+        passed = change_pct < (JIEFU_MARGIN_SURGE_THRESHOLD * 100)
+        return passed, change_pct
+    except Exception:
+        return True, 0.0
+
+
+def _apply_jiefu_risk_params(s_data: dict) -> dict:
+    """
+    V9.2 Joe：姊夫池專屬停損停利（-7%/+8%，取代全局 ATR 動態停損），
+    並附加建議部位（依10萬本金、單筆2%曝險反推）。僅作用於姊夫池，
+    不影響其他魚池既有 stop_loss/target_price 計算邏輯。
+    """
+    try:
+        close_price = s_data.get("close")
+        if not isinstance(close_price, (int, float)) or close_price <= 0:
+            return s_data
+        stop_loss_val = round(close_price * (1 - JIEFU_STOP_PCT), 2)
+        target_val = round(close_price * (1 + JIEFU_TARGET_PCT), 2)
+        suggested_position = int(round((JIEFU_RISK_BUDGET / JIEFU_STOP_PCT) / 1000) * 1000)
+
+        s_data["stop_loss"] = stop_loss_val
+        s_data["stop_loss_mode"] = "JIEFU_FIXED_7PCT"
+        s_data["target_price"] = target_val
+        s_data["first_target"] = target_val
+        s_data["suggested_position"] = suggested_position
+    except Exception:
+        pass
+    return s_data
 
 
 # =====================================================================
@@ -1123,7 +1242,24 @@ def main():
         )[:TIGER_MAX]
         print(f"  - 🐅 猛虎池縮圈：保留前 {TIGER_MAX} 支（依強勢評分）")
 
-    print(f"  - 🔥 姊夫魚池：{POOL_SETTINGS['🔥 姊夫爆發小魚池']}")
+    # =====================================================================
+    # 🆕 V9.2 姊夫爆發小魚池：動態篩選（複用 market_pool，方案C 複合評分型）
+    # =====================================================================
+    jiefu_candidates = _select_jiefu_pool(market_pool, top_n=8)
+    jiefu_margin_skipped = 0
+    jiefu_final_sids = []
+    for cand in jiefu_candidates:
+        sid = cand['stock_id']
+        margin_ok, margin_change_pct = _check_margin_not_surging(sid, start_30d, today_str)
+        if not margin_ok:
+            jiefu_margin_skipped += 1
+            print(f"      - 🚫 {sid} 融資10日內增幅 {margin_change_pct}% 超過門檻，剔除姊夫池候選")
+            continue
+        jiefu_final_sids.append(sid)
+
+    POOL_SETTINGS["🔥 姊夫爆發小魚池"] = jiefu_final_sids
+    print(f"  - 🔥 姊夫魚池動態篩選：候選 {len(jiefu_candidates)} 支，融資閘門攔截 {jiefu_margin_skipped} 支，"
+          f"最終入選 {POOL_SETTINGS['🔥 姊夫爆發小魚池']}")
 
     with open(HISTORY_FILE, 'w', encoding='utf-8') as f:
         json.dump(new_history, f, ensure_ascii=False, indent=2)
@@ -1159,6 +1295,9 @@ def main():
                 yf_info={"industry": yf_industry_map.get(sid, ""),
                           "sector":   yf_sector_map.get(sid, "")})
             if s_data:
+                if pool_name == "🔥 姊夫爆發小魚池":
+                    s_data = _apply_jiefu_risk_params(s_data)
+                    s_data["director_holding_note"] = "⚠️建議人工查詢董監持股（尚未整合自動來源）"
                 results.append(s_data)
                 seen_in_pool.add(sid)
             time.sleep(0.5)
