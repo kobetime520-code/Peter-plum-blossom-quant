@@ -8,23 +8,23 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <style>
         :root {
+            /* V9.2 UI — 深海太空．極光玻璃版（Aurora Glass，與 index.html 同步） */
             --bg:
-                radial-gradient(ellipse at 18% 12%, rgba(76, 120, 255, 0.18) 0%, transparent 45%),
-                radial-gradient(ellipse at 85% 25%, rgba(188, 140, 255, 0.16) 0%, transparent 50%),
-                radial-gradient(ellipse at 70% 80%, rgba(0, 230, 200, 0.12) 0%, transparent 55%),
-                radial-gradient(ellipse at 25% 95%, rgba(255, 200, 100, 0.08) 0%, transparent 50%),
-                radial-gradient(circle at 50% 50%, #0A1A2F 0%, #050D1C 55%, #01040A 100%);
-            --panel-bg: rgba(14, 28, 56, 0.78);
-            --panel-border: rgba(100, 255, 218, 0.22);
-            --panel-glow: 0 0 40px rgba(100, 200, 255, 0.06), 0 8px 32px rgba(0, 0, 0, 0.45);
-            --text-main: #EAF3FF;
-            --text-muted: #9AAACB;
-            --neon-cyan: #64FFDA;
-            --neon-green: #00E676;
-            --neon-red: #FF5252;
-            --neon-gold: #FFD700;
-            --neon-purple: #BC8CFF;
-            --card-shadow: rgba(0,0,0,0.4);
+                radial-gradient(ellipse at 30% 0%, rgba(120, 80, 255, 0.22) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 100%, rgba(0, 200, 255, 0.16) 0%, transparent 55%),
+                radial-gradient(ellipse at 20% 90%, rgba(255, 200, 100, 0.05) 0%, transparent 50%),
+                linear-gradient(160deg, #050014 0%, #0a0522 50%, #000000 100%);
+            --panel-bg: rgba(255, 255, 255, 0.05);
+            --panel-border: rgba(180, 140, 255, 0.25);
+            --panel-glow: 0 0 40px rgba(167, 139, 250, 0.08), 0 8px 32px rgba(0, 0, 0, 0.45);
+            --text-main: #F0EAFF;
+            --text-muted: #B8A9D9;
+            --neon-cyan: #67E8F9;
+            --neon-green: #4ADE80;
+            --neon-red: #F87171;
+            --neon-gold: #FDE047;
+            --neon-purple: #A78BFA;
+            --card-shadow: rgba(80, 40, 160, 0.25);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -75,8 +75,8 @@
             pointer-events: none;
             z-index: 0;
             background:
-                radial-gradient(ellipse 80% 100% at 30% 0%, rgba(100,255,218,0.10), transparent 70%),
-                radial-gradient(ellipse 70% 100% at 75% 0%, rgba(188,140,255,0.10), transparent 70%);
+                radial-gradient(ellipse 80% 100% at 30% 0%, rgba(103,232,249,0.10), transparent 70%),
+                radial-gradient(ellipse 70% 100% at 75% 0%, rgba(167,139,250,0.10), transparent 70%);
             mix-blend-mode: screen;
         }
 
@@ -95,9 +95,9 @@
         /* ── 頁首 ── */
         #wr-header {
             background:
-                linear-gradient(90deg, rgba(0,32,64,0.92) 0%, rgba(0,64,128,0.88) 50%, rgba(0,32,64,0.92) 100%),
-                radial-gradient(ellipse at 30% 100%, rgba(188,140,255,0.15), transparent 60%);
-            border-bottom: 1px solid rgba(100, 255, 218, 0.35);
+                linear-gradient(90deg, rgba(30,20,60,0.65) 0%, rgba(50,30,90,0.6) 50%, rgba(30,20,60,0.65) 100%),
+                radial-gradient(ellipse at 30% 100%, rgba(103,232,249,0.15), transparent 60%);
+            border-bottom: 1px solid rgba(180, 140, 255, 0.35);
             padding: 22px 32px 18px;
             display: flex;
             align-items: center;
@@ -107,7 +107,7 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.55), 0 0 32px rgba(100,200,255,0.08);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.55), 0 0 32px rgba(167,139,250,0.08);
             backdrop-filter: blur(14px);
         }
 
@@ -116,7 +116,7 @@
             font-weight: 700;
             letter-spacing: 3px;
             color: var(--neon-cyan);
-            text-shadow: 0 0 18px rgba(100, 255, 218, 0.35);
+            text-shadow: 0 0 18px rgba(103, 232, 249, 0.35);
         }
 
         #wr-header .meta {
@@ -284,12 +284,12 @@
             border: 1px solid transparent;
         }
 
-        .chip-cyan   { background: rgba(100,255,218,0.1); color: #64FFDA; border-color: rgba(100,255,218,0.3); }
-        .chip-green  { background: rgba(0,230,118,0.1);  color: #00E676; border-color: rgba(0,230,118,0.3); }
-        .chip-gold   { background: rgba(255,215,0,0.1);  color: #FFD700; border-color: rgba(255,215,0,0.3); }
-        .chip-red    { background: rgba(255,82,82,0.1);  color: #FF5252; border-color: rgba(255,82,82,0.3); }
+        .chip-cyan   { background: rgba(103,232,249,0.1); color: #67E8F9; border-color: rgba(103,232,249,0.3); }
+        .chip-green  { background: rgba(74,222,128,0.1);  color: #4ADE80; border-color: rgba(74,222,128,0.3); }
+        .chip-gold   { background: rgba(253,224,71,0.1);  color: #FDE047; border-color: rgba(253,224,71,0.3); }
+        .chip-red    { background: rgba(248,113,113,0.1);  color: #F87171; border-color: rgba(248,113,113,0.3); }
         .chip-muted  { background: rgba(136,146,176,0.1);color: #8892B0; border-color: rgba(136,146,176,0.25); }
-        .chip-purple { background: rgba(188,140,255,0.12);color: #bc8cff; border-color: rgba(188,140,255,0.3); }
+        .chip-purple { background: rgba(167,139,250,0.12);color: #A78BFA; border-color: rgba(167,139,250,0.3); }
 
         /* ── Top 10 排行榜 ── */
         #wr-top10 {
@@ -335,7 +335,7 @@
             border-bottom: 1px solid rgba(255,255,255,0.06);
         }
         .rank-table tr { transition: background 0.2s; }
-        .rank-table tbody tr:hover { background: rgba(100,255,218,0.04); }
+        .rank-table tbody tr:hover { background: rgba(103,232,249,0.04); }
 
         .rank-num {
             font-size: 15px;
@@ -377,11 +377,11 @@
             font-weight: bold;
         }
 
-        .grade-S { background: rgba(255,215,0,0.15); color: #FFD700; border: 1px solid rgba(255,215,0,0.4); }
-        .grade-A { background: rgba(100,255,218,0.1); color: #64FFDA; border: 1px solid rgba(100,255,218,0.35); }
-        .grade-B { background: rgba(0,230,118,0.1);  color: #00E676; border: 1px solid rgba(0,230,118,0.35); }
+        .grade-S { background: rgba(253,224,71,0.15); color: #FDE047; border: 1px solid rgba(253,224,71,0.4); }
+        .grade-A { background: rgba(103,232,249,0.1); color: #67E8F9; border: 1px solid rgba(103,232,249,0.35); }
+        .grade-B { background: rgba(74,222,128,0.1);  color: #4ADE80; border: 1px solid rgba(74,222,128,0.35); }
         .grade-C { background: rgba(136,146,176,0.1);color: #8892B0; border: 1px solid rgba(136,146,176,0.25); }
-        .grade-X { background: rgba(255,82,82,0.08); color: #FF5252; border: 1px solid rgba(255,82,82,0.25); }
+        .grade-X { background: rgba(248,113,113,0.08); color: #F87171; border: 1px solid rgba(248,113,113,0.25); }
 
         /* ── 魚池健康度 ── */
         #wr-pools {
@@ -445,9 +445,9 @@
             display: inline-flex;
             align-items: center;
             gap: 5px;
-            background: rgba(255,215,0,0.1);
-            color: #FFD700;
-            border: 1px solid rgba(255,215,0,0.3);
+            background: rgba(253,224,71,0.1);
+            color: #FDE047;
+            border: 1px solid rgba(253,224,71,0.3);
             border-radius: 20px;
             padding: 4px 12px;
             font-size: 12px;
@@ -482,7 +482,7 @@
         }
 
         .back-link:hover {
-            background: rgba(100,255,218,0.1);
+            background: rgba(103,232,249,0.1);
         }
 
         @media (max-width: 768px) {
@@ -511,12 +511,12 @@
     <div class="gauge-wrap">
         <div>
             <div class="gauge-title">🌡️ 今日市場溫度</div>
-            <div class="gauge-score" id="wr-temp-score" style="color:#64FFDA">--</div>
+            <div class="gauge-score" id="wr-temp-score" style="color:#67E8F9">--</div>
             <div class="gauge-level" id="wr-temp-level">--</div>
         </div>
         <div class="gauge-body">
             <div class="gauge-track">
-                <div class="gauge-fill" id="wr-temp-fill" style="width:0%;background:linear-gradient(90deg,#00E676,#FFD700,#FF5252);"></div>
+                <div class="gauge-fill" id="wr-temp-fill" style="width:0%;background:linear-gradient(90deg,#4ADE80,#FDE047,#F87171);"></div>
             </div>
             <div class="gauge-labels">
                 <span>冷靜（0）</span>
@@ -548,9 +548,9 @@
 <!-- ── 四大分析師區 ── -->
 <div id="wr-analysts">
     <!-- Joe 技術面 -->
-    <div class="analyst-card" id="analyst-joe" style="border-top-color:#64FFDA;">
+    <div class="analyst-card" id="analyst-joe" style="border-top-color:#67E8F9;">
         <div class="analyst-header">
-            <div class="analyst-avatar" style="background:rgba(100,255,218,0.15);">📈</div>
+            <div class="analyst-avatar" style="background:rgba(103,232,249,0.15);">📈</div>
             <div>
                 <div class="analyst-name">Joe</div>
                 <div class="analyst-role">技術面研究員</div>
@@ -561,9 +561,9 @@
     </div>
 
     <!-- Eric 籌碼面 -->
-    <div class="analyst-card" id="analyst-eric" style="border-top-color:#FFD700;">
+    <div class="analyst-card" id="analyst-eric" style="border-top-color:#FDE047;">
         <div class="analyst-header">
-            <div class="analyst-avatar" style="background:rgba(255,215,0,0.15);">💰</div>
+            <div class="analyst-avatar" style="background:rgba(253,224,71,0.15);">💰</div>
             <div>
                 <div class="analyst-name">Eric</div>
                 <div class="analyst-role">籌碼分析研究員</div>
@@ -574,9 +574,9 @@
     </div>
 
     <!-- Grace 題材面 -->
-    <div class="analyst-card" id="analyst-grace" style="border-top-color:#bc8cff;">
+    <div class="analyst-card" id="analyst-grace" style="border-top-color:#A78BFA;">
         <div class="analyst-header">
-            <div class="analyst-avatar" style="background:rgba(188,140,255,0.15);">🔭</div>
+            <div class="analyst-avatar" style="background:rgba(167,139,250,0.15);">🔭</div>
             <div>
                 <div class="analyst-name">Grace</div>
                 <div class="analyst-role">題材面研究員</div>
@@ -587,9 +587,9 @@
     </div>
 
     <!-- Tim 魚池面 -->
-    <div class="analyst-card" id="analyst-tim" style="border-top-color:#00E676;">
+    <div class="analyst-card" id="analyst-tim" style="border-top-color:#4ADE80;">
         <div class="analyst-header">
-            <div class="analyst-avatar" style="background:rgba(0,230,118,0.15);">📊</div>
+            <div class="analyst-avatar" style="background:rgba(74,222,128,0.15);">📊</div>
             <div>
                 <div class="analyst-name">Tim</div>
                 <div class="analyst-role">基本面研究員</div>
@@ -605,8 +605,8 @@
     <div class="section-panel">
         <div class="section-title">🏆 今日 Top 10 強勢買入股（依強勢評分）</div>
         <div style="font-size:11px;color:var(--text-muted);margin:-8px 0 12px;">
-            收盤與 5／10／30 日均線：<span style="color:#00E676;font-weight:bold;">綠＝站上</span>、<span style="color:#FF5252;font-weight:bold;">紅＝跌破</span>；
-            <span style="color:#FFD700;font-weight:bold;">多頭</span>＝MA5＞MA10＞MA30 多頭排列
+            收盤與 5／10／30 日均線：<span style="color:#4ADE80;font-weight:bold;">綠＝站上</span>、<span style="color:#F87171;font-weight:bold;">紅＝跌破</span>；
+            <span style="color:#FDE047;font-weight:bold;">多頭</span>＝MA5＞MA10＞MA30 多頭排列
         </div>
         <table class="rank-table">
             <thead>
@@ -654,11 +654,12 @@
 <!-- ============================================================
      晨報摘要 — 由排程自動插入，每日覆蓋
      ============================================================ -->
-<div id="morning-brief-bar" style="background:linear-gradient(90deg,#002870,#0058a8);color:#fff;padding:14px 24px;margin-top:0;font-size:.82rem;line-height:1.9">
-  <strong>📰 Grace 今日題材掃描（2026-06-05）</strong><br>
-  【⚡ AI雙引擎最強股】飛宏(2457)強勢評分100分，搭載ZEROVA品牌跨足AI電力與充電樁市場，COMPUTEX展後外資持續掃貨，低軌衛星佔比23%目標下半年提升至40%，ma5站穩11日 — 相關：2457 飛宏 ｜
-  【🚢 航運法人狂掃】陽明(2609)外資30日買超高達14.6萬張居全場第一，萬海(2615)雙買訊號同步點燈；法人看貨櫃航商燃油超額轉嫁，Q2-Q3獲利逐季走高 — 相關：2609 陽明、2615 萬海 ｜
-  【🌊 市場多頭延續】今日買入率65.8%、市場溫度70分（強勢偏多），11支雙買個股，猛虎池全員買入加碼（8/8），半導體29支強勢在列<br>
+<div id="morning-brief-bar" style="background:linear-gradient(90deg,#1e1442,#3a2266);color:#fff;padding:14px 24px;margin-top:0;font-size:.82rem;line-height:1.9">
+  <strong>📰 Grace 今日題材掃描（2026/07/02）</strong><br>
+  【🚀 強勢領軍】🔬 半導體 <b>中美晶(5483)</b> 強勢評分 100 分居首，收盤 201.0、站穩 MA5 3 日、均線多頭排列，籌碼雙買 ｜
+  【💰 法人動向】外資買超王 <b>台塑(1301)</b> 30 日買超 +239,178 張；雙買訊號 19 支：精成科(6191)、群益台ESG低碳50(00923)、德微(3675)、台半(5425)… ｜
+  【🌊 市場總結】今日買入率 75%、市場溫度 71 分（📈 強勢偏多），主流題材：📌 其他×58、🔬 半導體×13、🚢 航運×2、📺 面板/光電×2，半導體強勢 13 支<br>
+  【📌 產業消息】中美晶(5483) 太空用太陽能電池已出貨美國客戶並進入量產導入，2026 Q1 EPS 1.83 元、下半年配息 2.5 元 — 相關：5483 中美晶 ｜ 法人資金積極卡位第三代半導體與 AI 供應鏈，ASIC、先進製程、伺服器需求穩健成長 — 相關：6191 精成科、5425 台半、6488 環球晶<br>
   <span style="opacity:.7;font-size:.72rem">新聞由 Claude 自動搜尋整理，請自行查證原始來源 · 僅供 Magic Lab 內部參考</span>
 </div>
 
@@ -787,9 +788,9 @@ function renderWarroom(data) {
     document.getElementById('wr-ocean-total').textContent = a.oceanTotal;
 
     const tempFill = document.getElementById('wr-temp-fill');
-    if (a.tempScore >= 85) tempFill.style.background = 'linear-gradient(90deg,#FF5252,#FF8C00)';
-    else if (a.tempScore >= 70) tempFill.style.background = 'linear-gradient(90deg,#FFD700,#FF8C00)';
-    else if (a.tempScore >= 55) tempFill.style.background = 'linear-gradient(90deg,#00E676,#64FFDA)';
+    if (a.tempScore >= 85) tempFill.style.background = 'linear-gradient(90deg,#F87171,#FF8C00)';
+    else if (a.tempScore >= 70) tempFill.style.background = 'linear-gradient(90deg,#FDE047,#FF8C00)';
+    else if (a.tempScore >= 55) tempFill.style.background = 'linear-gradient(90deg,#4ADE80,#67E8F9)';
     else tempFill.style.background = 'linear-gradient(90deg,#8892B0,#4fc3f7)';
 
     // ── Joe 技術面 ──
@@ -870,25 +871,25 @@ function renderWarroom(data) {
     // ── Top 10 表格 ──
     const tbody = document.getElementById('wr-top10-body');
     const chipColor = sig =>
-        sig === '雙買' ? '#FFD700' :
-        sig === '投信單買' ? '#00E676' :
-        sig === '外資單買' ? '#64FFDA' : '#8892B0';
+        sig === '雙買' ? '#FDE047' :
+        sig === '投信單買' ? '#4ADE80' :
+        sig === '外資單買' ? '#67E8F9' : '#8892B0';
     const scoreGrad = v =>
-        v >= 70 ? 'linear-gradient(90deg,#00E676,#64FFDA)' :
-        v >= 50 ? 'linear-gradient(90deg,#f39c12,#FFD700)' :
+        v >= 70 ? 'linear-gradient(90deg,#4ADE80,#67E8F9)' :
+        v >= 50 ? 'linear-gradient(90deg,#f39c12,#FDE047)' :
         'linear-gradient(90deg,#555,#8892B0)';
 
     // 均線儲存格：收盤站上→綠、跌破→紅
     const maCell = (close, ma) => {
         if (ma == null || ma === 0) return '<td style="color:var(--text-muted);font-size:12px;">--</td>';
         const up = close >= ma;
-        return `<td style="font-size:12px;font-weight:600;color:${up ? '#00E676' : '#FF5252'};">${ma}</td>`;
+        return `<td style="font-size:12px;font-weight:600;color:${up ? '#4ADE80' : '#F87171'};">${ma}</td>`;
     };
 
     tbody.innerHTML = a.top10.map((s, i) => {
         const closeUp = s.close >= (s.ma5 || 0);
         const bull = s.bull_align
-            ? '<span style="color:#FFD700;font-size:10px;margin-left:6px;border:1px solid rgba(255,215,0,0.4);border-radius:8px;padding:0 5px;">多頭</span>'
+            ? '<span style="color:#FDE047;font-size:10px;margin-left:6px;border:1px solid rgba(253,224,71,0.4);border-radius:8px;padding:0 5px;">多頭</span>'
             : '';
         return `
         <tr>
@@ -898,7 +899,7 @@ function renderWarroom(data) {
                 <span style="color:var(--text-main);font-weight:500;margin-left:6px;">${s.stock_name}</span>${bull}
                 <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">${s.theme_tag || '--'}</div>
             </td>
-            <td style="font-weight:700;color:${closeUp ? '#00E676' : '#FF5252'};">${s.close != null ? s.close : '--'}</td>
+            <td style="font-weight:700;color:${closeUp ? '#4ADE80' : '#F87171'};">${s.close != null ? s.close : '--'}</td>
             ${maCell(s.close, s.ma5)}
             ${maCell(s.close, s.ma10)}
             ${maCell(s.close, s.ma30)}
@@ -907,7 +908,7 @@ function renderWarroom(data) {
                     <div class="score-mini-track">
                         <div class="score-mini-fill" style="width:${s.strength_score}%;background:${scoreGrad(s.strength_score)};"></div>
                     </div>
-                    <span class="score-val" style="color:${s.strength_score>=70?'#00E676':s.strength_score>=50?'#FFD700':'#8892B0'}">${s.strength_score}</span>
+                    <span class="score-val" style="color:${s.strength_score>=70?'#4ADE80':s.strength_score>=50?'#FDE047':'#8892B0'}">${s.strength_score}</span>
                 </div>
             </td>
             <td><span class="grade-badge grade-${s.inst_grade}">${s.inst_grade}</span></td>
@@ -923,7 +924,7 @@ function renderWarroom(data) {
         const d = a.poolStats[pname];
         if (!d) return '';
         const pct = d.total > 0 ? Math.round(d.buy / d.total * 100) : 0;
-        const color = pct >= 80 ? '#00E676' : pct >= 50 ? '#FFD700' : '#8892B0';
+        const color = pct >= 80 ? '#4ADE80' : pct >= 50 ? '#FDE047' : '#8892B0';
         const shortName = pname.replace(/[🔥🍁🌟🔭🐅]/u, '').trim();
         return `
             <div class="pool-health-row">
@@ -952,8 +953,14 @@ function renderWarroom(data) {
     renderGraceBrief(data, a);
 }
 
+// ── 今日產業新聞（由排程任務執行 Claude 網路搜尋後寫入，每次執行覆蓋）──
+const TODAY_NEWS = [
+    { title: "集盛(1455) 3月營收月增66%惟仍虧損", body: "2025年全年營收62億元，2025Q4每股虧損0.33元，近期營收月增但年減；今日強勢評分100分居首，法人買盤推升股價", stocks: "1455 集盛" },
+    { title: "電子半導體領漲，三大法人籌碼分歧", body: "7/2三大法人合計賣超842.55億元（外資賣超890億、投信買超91億），AI供應鏈ASIC／先進製程／伺服器需求穩健，法人建議「選股不選市」", stocks: "6191 精成科、2484 希華、8182 加高" }
+];
+
 // ── Grace 今日題材掃描：依 plum_blossom_data.json 動態生成 ──
-// 純靜態頁無法抓外部新聞，改用當日選股資料自動產出摘要，資料每日更新摘要即每日更新。
+// 純靜態頁無法自行抓外部新聞，數據摘要由前端每日自動產出；產業新聞由排程任務的 Claude 搜尋後寫入 TODAY_NEWS。
 function renderGraceBrief(data, a) {
     const dt = (data.last_updated || '').split(' ')[0] || new Date().toLocaleDateString('zh-TW');
 
@@ -988,13 +995,16 @@ function renderGraceBrief(data, a) {
         : a.tempScore >= 40 ? '📡 中性觀望'
         : '❄️ 偏空謹慎';
 
+    const newsStr = TODAY_NEWS.map(n => `${n.title}（${n.body}） — 相關：${n.stocks}`).join(' ｜ ');
+
     const html =
         `<strong>📰 Grace 今日題材掃描（${dt}）</strong><br>` +
-        `<b style="color:#FFD700">【🚀 強勢領軍】</b>${topStr} ｜ ` +
-        `<b style="color:#64FFDA">【💰 法人動向】</b>${fStr}；${dualStr} ｜ ` +
-        `<b style="color:#00E676">【🌊 市場總結】</b>今日買入率 ${Math.round(a.buyRate * 100)}%、市場溫度 ${a.tempScore} 分（${lvl}），` +
+        `<b style="color:#FDE047">【🚀 強勢領軍】</b>${topStr} ｜ ` +
+        `<b style="color:#67E8F9">【💰 法人動向】</b>${fStr}；${dualStr} ｜ ` +
+        `<b style="color:#4ADE80">【🌊 市場總結】</b>今日買入率 ${Math.round(a.buyRate * 100)}%、市場溫度 ${a.tempScore} 分（${lvl}），` +
         `主流題材：${themeStr}${semi ? `，半導體強勢 ${semi} 支` : ''}<br>` +
-        `<span style="opacity:.7;font-size:.72rem">⚙️ 本摘要由戰情室依當日選股資料自動生成，每日隨戰報同步更新 · 僅供 Magic Lab 內部參考</span>`;
+        (newsStr ? `<b style="color:#F87171">【📌 產業消息】</b>${newsStr}<br>` : '') +
+        `<span style="opacity:.7;font-size:.72rem">新聞由 Claude 自動搜尋整理，請自行查證原始來源，本摘要每日隨戰報同步更新 · 僅供 Magic Lab 內部參考</span>`;
 
     const el = document.getElementById('morning-brief-bar');
     if (el) el.innerHTML = html;

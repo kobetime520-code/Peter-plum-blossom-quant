@@ -12,60 +12,64 @@
            1. 核心主題設定
            ========================================= */
         :root {
+            /* V9.2 UI — 深海太空．極光玻璃版（Aurora Glass） */
             --ocean-bg:
-                radial-gradient(ellipse at 18% 12%, rgba(76, 120, 255, 0.16) 0%, transparent 45%),
-                radial-gradient(ellipse at 85% 25%, rgba(188, 140, 255, 0.14) 0%, transparent 50%),
-                radial-gradient(ellipse at 70% 80%, rgba(0, 230, 200, 0.10) 0%, transparent 55%),
-                radial-gradient(ellipse at 25% 95%, rgba(255, 200, 100, 0.06) 0%, transparent 50%),
-                radial-gradient(circle at 30% 20%, #0D2137 0%, #061428 55%, #010810 100%);
-            --create-glow: rgba(100, 255, 218, 0.15);
-            --panel-bg: rgba(16, 32, 64, 0.75);
-            --panel-border: rgba(100, 255, 218, 0.2);
-            --text-main: #E6F1FF;
-            --text-muted: #8892B0;
-            --neon-cyan: #64FFDA;
-            --neon-green: #00E676;
-            --neon-red: #FF5252;
-            --neon-gold: #FFD700;
-            --title-bg: rgba(0, 0, 0, 0.4);
-            --badge-bg: rgba(0, 0, 0, 0.2);
-            --sim-bg: rgba(0, 0, 0, 0.2);
-            --input-bg: rgba(0, 0, 0, 0.3);
+                radial-gradient(ellipse at 30% 0%, rgba(120, 80, 255, 0.22) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 100%, rgba(0, 200, 255, 0.16) 0%, transparent 55%),
+                radial-gradient(ellipse at 20% 90%, rgba(255, 200, 100, 0.05) 0%, transparent 50%),
+                linear-gradient(160deg, #050014 0%, #0a0522 50%, #000000 100%);
+            --create-glow: rgba(167, 139, 250, 0.18);
+            --panel-bg: rgba(255, 255, 255, 0.05);
+            --panel-border: rgba(180, 140, 255, 0.25);
+            --text-main: #F0EAFF;
+            --text-muted: #B8A9D9;
+            --neon-cyan: #67E8F9;
+            --neon-green: #4ADE80;
+            --neon-red: #F87171;
+            --neon-gold: #FDE047;
+            --title-bg: rgba(30, 20, 60, 0.5);
+            --badge-bg: rgba(167, 139, 250, 0.15);
+            --sim-bg: rgba(20, 10, 40, 0.35);
+            --input-bg: rgba(20, 10, 40, 0.45);
             --watch-bg: rgba(255, 255, 255, 0.05);
-            --watch-border: rgba(255, 255, 255, 0.1);
-            --card-shadow: rgba(0, 0, 0, 0.4);
-            --log-bg: rgba(100, 255, 218, 0.05);
-            --note-bg: rgba(255, 215, 0, 0.05);
-            --ind-badge-bg: rgba(255, 255, 255, 0.1);
+            --watch-border: rgba(180, 140, 255, 0.18);
+            --card-shadow: rgba(80, 40, 160, 0.25);
+            --log-bg: rgba(167, 139, 250, 0.06);
+            --note-bg: rgba(253, 224, 71, 0.06);
+            --ind-badge-bg: rgba(255, 255, 255, 0.08);
             /* === V9.1 設計系統 token（間距／圓角，統一治理 inline style）=== */
             --space-xs: 4px; --space-sm: 8px; --space-md: 12px; --space-lg: 16px; --space-xl: 24px;
             --radius-sm: 6px; --radius-md: 10px; --radius-lg: 15px; --radius-pill: 20px;
             --zone-divider: var(--panel-border);
         }
 
-        /* 粉色海洋 V8.6 — 創意暖光升級 */
+        /* 粉色海洋 V9.2 UI — 泡泡糖波浪版（Bubblegum Wave） */
         [data-theme="light-ocean"] {
-            --ocean-bg: linear-gradient(150deg, #FFE8F2 0%, #EDADC8 40%, #C87AA0 100%);
-            --create-glow: rgba(220, 130, 170, 0.18);
-            --chip-border: rgba(200, 100, 140, 0.45);
-            --panel-bg: rgba(253, 235, 242, 0.92);
-            --panel-border: rgba(160, 60, 100, 0.28);
-            --text-main: #1A0810;
-            --text-muted: #6B2040;
-            --neon-cyan: #8C1F4A;
-            --neon-green: #6B4226;
-            --neon-red: #A01E1E;
-            --neon-gold: #8B3A62;
-            --title-bg: rgba(248, 220, 232, 0.94);
-            --badge-bg: rgba(160, 60, 100, 0.13);
-            --sim-bg: rgba(248, 220, 232, 0.65);
-            --input-bg: rgba(253, 235, 242, 0.94);
-            --watch-bg: rgba(0, 0, 0, 0.06);
-            --watch-border: rgba(0, 0, 0, 0.15);
-            --card-shadow: rgba(100, 20, 55, 0.18);
-            --log-bg: rgba(160, 60, 100, 0.07);
-            --note-bg: rgba(139, 58, 98, 0.07);
-            --ind-badge-bg: rgba(160, 60, 100, 0.13);
+            --ocean-bg:
+                radial-gradient(ellipse at 15% 15%, rgba(255, 120, 190, 0.3) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 10%, rgba(120, 230, 240, 0.3) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 100%, rgba(180, 140, 255, 0.2) 0%, transparent 55%),
+                linear-gradient(180deg, #0A1930 0%, #0E2244 50%, #1A1440 100%);
+            --create-glow: rgba(255, 126, 200, 0.2);
+            --chip-border: rgba(120, 230, 240, 0.4);
+            --panel-bg: rgba(20, 30, 60, 0.65);
+            --panel-border: rgba(120, 230, 240, 0.3);
+            --text-main: #EAFCFF;
+            --text-muted: #9FB8E0;
+            --neon-cyan: #7EE6F0;
+            --neon-green: #6EE7B7;
+            --neon-red: #FF6B9D;
+            --neon-gold: #FFD664;
+            --title-bg: rgba(20, 30, 60, 0.75);
+            --badge-bg: rgba(255, 126, 200, 0.15);
+            --sim-bg: rgba(15, 25, 55, 0.5);
+            --input-bg: rgba(20, 30, 60, 0.6);
+            --watch-bg: rgba(255, 255, 255, 0.05);
+            --watch-border: rgba(120, 230, 240, 0.2);
+            --card-shadow: rgba(255, 100, 180, 0.15);
+            --log-bg: rgba(255, 126, 200, 0.07);
+            --note-bg: rgba(255, 214, 100, 0.08);
+            --ind-badge-bg: rgba(255, 126, 200, 0.13);
         }
 
         body {
@@ -93,7 +97,7 @@
             opacity: 0.55;
             animation: idx-twinkle 10s ease-in-out infinite alternate;
         }
-        [data-theme="light-ocean"] body::before { opacity: 0; }
+        [data-theme="light-ocean"] body::before { opacity: 0.55; }
         @keyframes idx-twinkle {
             0%, 100% { opacity: 0.35; }
             50% { opacity: 0.7; }
@@ -362,8 +366,8 @@
             transform: translateY(-1px);
         }
         [data-theme="light-ocean"] .concept-chip {
-            background: rgba(160, 60, 100, 0.13); color: var(--neon-cyan);
-            border-color: var(--chip-border, rgba(200, 100, 140, 0.45));
+            background: rgba(255, 126, 200, 0.13); color: var(--neon-cyan);
+            border-color: var(--chip-border, rgba(120, 230, 240, 0.4));
         }
         [data-theme="light-ocean"] .concept-chip:hover {
             background: var(--create-glow); box-shadow: 0 0 10px var(--create-glow);
@@ -432,11 +436,11 @@
     <svg id="v86-neural-svg" xmlns="http://www.w3.org/2000/svg"></svg>
 
     <a href="warroom.html" class="warroom-tab-btn">📰 辰希抱爆報</a>
-    <button id="theme-toggle" class="theme-toggle-btn">🌸 切換粉色海洋版</button>
+    <button id="theme-toggle" class="theme-toggle-btn">🌸 切換泡泡糖波浪版</button>
 
     <div class="top-nav">
         <header class="header">
-            <h1>🌌 彼夫有擇模擬選股戰情室 <span class="version-badge">V9.2</span></h1>
+            <h1>🌌 彼夫有擇模擬選股戰情室 <span class="version-badge">V9.2 UI</span></h1>
             <div id="update-time" class="update-time">衛星同步中...</div>
             <div id="data-stale-alert" style="display:none; font-size:12px; font-weight:bold; margin-top:3px; text-align:center;"></div>
             <!-- 🆕 V8.9 任務3：大盤環境燈號橫幅（^TWII vs MA60） -->
@@ -628,6 +632,7 @@
                 </ul>
                 <b>🐅 三日成猛虎：</b>連續 3 個交易日符合汪洋大魚標準，自動晉升，代表籌碼與趨勢具高延續性。
                 <hr style="border: 0; border-top: 1px dashed var(--panel-border); margin: 15px 0;">
+                <b>🎨 V9.2 UI（2026-07-08）：</b>Dashboard 2.0 視覺改版 — 深海太空版換裝「極光玻璃」（紫青極光漸層背景＋磨砂玻璃質感面板＋漸層文字標題）；粉色海洋版換裝「泡泡糖波浪」（改為深藍夜幕底＋粉紅／青綠雙色對比，取代原淺色系，長時間盯盤降低刺眼與疲勞）；兩版皆保留星空層與既有版面結構，僅重製配色 token（--ocean-bg／--panel-bg／--neon-* 等），元件邏輯不變。<br>
                 <b>🔥 V9.2（2026-07-07）：</b>姊夫爆發小魚池改造 — 固定清單改為動態篩選（短線精銳池）：法人30日買超≥1000張（inst_grade S/A）＋趨勢向上（trend_quality STRONG/HEALTHY）＋剛站上均線（1~3日內突破）＋剔除金融/傳產，依強勢評分取前8檔；停損停利改專屬固定 -7%／+8%（強制執行，取代全局ATR動態停損）；卡片新增「建議部位」（10萬本金・單筆2%曝險反推）與「董監持股人工複核」提示；新增融資10日遽增風控閘門（FinMind，增幅≥30%自動剔除）。<br>
                 <b>🎨 V9.1 UI（2026-07-04）：</b>P1 資訊層級重排 — KPI 與魚池導航緊貼頁首、魚池主戰區前移，Dashboard／回測／公式橫幅／Moly 維運列移至魚池之後；魚池順序改決策優先（猛虎→汪洋→黃金→爆發→永動→觀察→卡娃）；導航列改由 JS 依同一順序動態生成，根除順序漂移；猛虎池預設展開；三張分頁入口卡縮為精簡按鈕列。P2 池內排序升級 — 新增「強勢評分」排序並設為預設、「買入加碼」卡片一律置頂、排序選擇 localStorage 跨日記憶。P3 卡片密度 — 新增「⚡ 緊湊列表」檢視切換（一行一股：代碼｜股名｜現價｜評分｜籌碼｜動作，點列展開完整戰情卡，選擇 localStorage 記憶，行動版自動隱藏籌碼欄）；卡片徽章雙列合併單列，卡高再減約 10%。P4 行動版動線 — 修復魚池導航列 sticky 吸頂（自 V8.6 起被圖層規則覆寫失效）；768px 以下分頁入口摺疊為 icon 圓鈕；行動版未手動選擇時預設緊湊列表。<br>
                 <b>🎯 V9.0（2026-06-08）：</b>汪洋大魚選股階段一升級（零新增 FinMind API，僅作用於汪洋大魚入池）— A1 籌碼方向閘門：第五關於合計淨買超 > 0 之外，加碼要求外資或投信至少一方同向買超，剔除「外資大賣＋投信亦賣但合計被拉正」之假合計正；A2 追高防護：新增 RSI 上限三段式（多頭 &lt;80／中性 &lt;75／空頭 &lt;70），避免追在波段高點；market_regime 新增 rsi_ceiling 欄位，戰報加列兩道關卡攔截統計。<br>
@@ -663,7 +668,7 @@
         themeBtn.addEventListener('click', () => {
             const isLight = document.documentElement.getAttribute('data-theme') === 'light-ocean';
             document.documentElement.setAttribute('data-theme', isLight ? '' : 'light-ocean');
-            themeBtn.innerText = isLight ? '🌸 切換粉色海洋版' : '🌌 切換深海太空版';
+            themeBtn.innerText = isLight ? '🌸 切換泡泡糖波浪版' : '🌌 切換極光玻璃版';
         });
 
         // V9.1 P1：魚池排列順序（決策池優先）。導航列與主戰區共用此順序，改一處即全站同步
