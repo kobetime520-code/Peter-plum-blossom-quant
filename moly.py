@@ -41,6 +41,9 @@ def run_radar():
     env = os.environ.copy()
     env["PYTHONIOENCODING"] = "utf-8"
     env["PYTHONUTF8"] = "1"
+    # 不緩衝：radar.py 輸出即時落地，看板可即時觀看進度；
+    # 且行程遭外部強制終止時（如 2026-07-10 的 0xC000013A）輸出不會隨緩衝區消失
+    env["PYTHONUNBUFFERED"] = "1"
 
     with open(RADAR_RUN_LOG, "w", encoding="utf-8") as f:
         result = subprocess.run(

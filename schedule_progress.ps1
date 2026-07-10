@@ -108,14 +108,14 @@ function Show-Dashboard {
         }
     }
 
-    # 日誌來源切換：排程執行中讀 moly_ps.log（radar.py 逐批掃描等即時全流輸出，
-    # 2026-07-09 起啟動腳本已修 UTF-8 解碼）；平時讀 moly.log（moly.py logger 摘要）
-    $pyRunning = Get-ScheduledTask -TaskName 'Moly-Daily','Moly-GraceDaily','Moly-BacktestWeekly' -ErrorAction SilentlyContinue |
-                 Where-Object { $_.State -eq 'Running' }
-    $psLog = Join-Path $Root 'moly_ps.log'
-    if ($pyRunning -and (Test-Path $psLog)) {
-        $molyLog = $psLog
-        $logTitle = '── 即時執行進度 moly_ps.log（最後 {0} 行）──────────────' -f $LogLines
+    # 日誌來源切換：Moly-Daily 執行中讀 radar_run.log（moly.py 將 radar.py stdout 導向此檔，
+    # 逐批掃描進度所在；PYTHONUNBUFFERED=1 使其即時落地）；平時讀 moly.log（logger 摘要）
+    # 註：moly_ps.log 僅含 moly.py logger 與 git_sync 輸出，無 radar 逐批進度，故不作為即時來源
+    $molyRunning = (Get-ScheduledTask -TaskName 'Moly-Daily' -ErrorAction SilentlyContinue).State -eq 'Running'
+    $radarLog = Join-Path $Root 'radar_run.log'
+    if ($molyRunning -and (Test-Path $radarLog)) {
+        $molyLog = $radarLog
+        $logTitle = '── 🔴 即時掃描進度 radar_run.log（最後 {0} 行）─────────' -f $LogLines
     } else {
         $molyLog = Join-Path $Root 'moly.log'
         $logTitle = '── Moly 執行日誌 moly.log（最後 {0} 行）───────────────' -f $LogLines
@@ -123,9 +123,8 @@ function Show-Dashboard {
     if (Test-Path $molyLog) {
         Write-Host ''
         Write-Host $logTitle -ForegroundColor DarkCyan
-        # moly_ps.log 為 PS 重導向產物（UTF-16 LE 含 BOM），交由預設 BOM 偵測；moly.log 為 Python 寫出的 UTF-8
-        $tail = if ($molyLog -like '*moly_ps.log') { Get-Content $molyLog -Tail $LogLines } else { Get-Content $molyLog -Tail $LogLines -Encoding UTF8 }
-        $tail | ForEach-Object {
+        # 兩者皆為 Python 以 UTF-8 寫出
+        Get-Content $molyLog -Tail $LogLines -Encoding UTF8 | ForEach-Object {
             $color = if ($_ -match '失敗|錯誤|Error|Fail') { 'Red' } elseif ($_ -match '完成|成功|OK') { 'Green' } else { 'Gray' }
             Write-Host "  $_" -ForegroundColor $color
         }
