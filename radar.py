@@ -1261,6 +1261,12 @@ def main():
     print(f"  - 🔥 姊夫魚池動態篩選：候選 {len(jiefu_candidates)} 支，融資閘門攔截 {jiefu_margin_skipped} 支，"
           f"最終入選 {POOL_SETTINGS['🔥 姊夫爆發小魚池']}")
 
+    # 🛡️ 記憶海防清空護欄：汪洋大魚 0 支的空手日不覆寫，保留既有累計
+    # （2026-07-09 汪洋 0 支導致整檔被 {} 洗空、累計 count 全滅；7/4 SSL 事件同機制）
+    if not new_history and history:
+        new_history = history
+        print("  - 🛡️ 汪洋大魚 0 支：記憶海維持原狀，不覆寫既有累計")
+
     with open(HISTORY_FILE, 'w', encoding='utf-8') as f:
         json.dump(new_history, f, ensure_ascii=False, indent=2)
 
