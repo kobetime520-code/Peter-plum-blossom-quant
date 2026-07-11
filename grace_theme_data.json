@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-07-10 08:27（自動排程）",
+  "last_updated": "2026-07-11 08:46（自動排程）",
   "analyst": "Grace（題材面研究員）",
   "theme": "被動元件",
   "source_price_date": "2026-07-09",
@@ -25,7 +25,7 @@
         "chip_signal": "投信單買",
         "inst_grade": "X",
         "rsi14": 43.1,
-        "vol_ratio": 0.76,
+        "vol_ratio": 0.75,
         "action": "靜候觀察"
       },
       {
@@ -41,7 +41,7 @@
         "chip_signal": "投信單買",
         "inst_grade": "S",
         "rsi14": 57.9,
-        "vol_ratio": 1.1,
+        "vol_ratio": 1.08,
         "action": "買入加碼"
       },
       {
@@ -57,7 +57,7 @@
         "chip_signal": "雙買",
         "inst_grade": "S",
         "rsi14": 39.2,
-        "vol_ratio": 1.63,
+        "vol_ratio": 1.61,
         "action": "靜候觀察"
       }
     ],
@@ -91,23 +91,23 @@
         "chip_signal": "投信單買",
         "inst_grade": "A",
         "rsi14": 45.8,
-        "vol_ratio": 0.88,
+        "vol_ratio": 0.87,
         "action": "靜候觀察"
       },
       {
         "stock_id": "2327",
         "stock_name": "國巨*",
         "theme_type": "被動元件 ─ 被動元件龍頭（MLCC）",
-        "catalyst": "AI 伺服器與資料中心帶動高階 MLCC 需求，疊加 MLCC 漲價循環與庫存回補；投信買盤點火，動能溫和增溫（強勢評分 46）。",
+        "catalyst": "AI 伺服器與資料中心帶動高階 MLCC 需求，疊加 MLCC 漲價循環與庫存回補；投信買盤點火，動能溫和增溫（強勢評分 42）。",
         "sustainability_level": "中",
         "sustainability_note": "動能與籌碼初步成形，需待量能進一步確認",
         "risk": "法人出現調節賣壓，籌碼面鬆動。",
         "close": 900.0,
-        "strength_score": 46,
+        "strength_score": 42,
         "chip_signal": "投信單買",
         "inst_grade": "X",
         "rsi14": 36.3,
-        "vol_ratio": 1.0,
+        "vol_ratio": 0.97,
         "action": "靜候觀察"
       },
       {
@@ -117,13 +117,13 @@
         "catalyst": "車用電子與工控需求回溫，電容急單與旺季拉貨題材發酵；法人態度中性、待籌碼轉強，動能待轉強（強勢評分 26）。",
         "sustainability_level": "低",
         "sustainability_note": "題材尚未獲量價籌碼共振，宜列觀察",
-        "risk": "量比 0.6 量能偏弱，缺乏資金續攻力道；法人出現調節賣壓，籌碼面鬆動。",
+        "risk": "量比 0.59 量能偏弱，缺乏資金續攻力道；法人出現調節賣壓，籌碼面鬆動。",
         "close": 188.5,
         "strength_score": 26,
         "chip_signal": "無買",
         "inst_grade": "X",
         "rsi14": 38.6,
-        "vol_ratio": 0.6,
+        "vol_ratio": 0.59,
         "action": "靜候觀察"
       },
       {
@@ -139,7 +139,7 @@
         "chip_signal": "外資單買",
         "inst_grade": "X",
         "rsi14": 32.1,
-        "vol_ratio": 0.98,
+        "vol_ratio": 0.96,
         "action": "靜候觀察"
       },
       {
@@ -149,13 +149,13 @@
         "catalyst": "AI 伺服器電源與車用電子推升電感用量，高階產品供不應求；法人態度中性、待籌碼轉強，動能待轉強（強勢評分 32）。",
         "sustainability_level": "低",
         "sustainability_note": "題材尚未獲量價籌碼共振，宜列觀察",
-        "risk": "量比 0.51 量能偏弱，缺乏資金續攻力道；法人出現調節賣壓，籌碼面鬆動。",
+        "risk": "量比 0.5 量能偏弱，缺乏資金續攻力道；法人出現調節賣壓，籌碼面鬆動。",
         "close": 178.0,
         "strength_score": 32,
         "chip_signal": "無買",
         "inst_grade": "X",
         "rsi14": 45.2,
-        "vol_ratio": 0.51,
+        "vol_ratio": 0.5,
         "action": "靜候觀察"
       },
       {
@@ -189,7 +189,7 @@
         "chip_signal": "投信單買",
         "inst_grade": "S",
         "rsi14": 38.5,
-        "vol_ratio": 3.82,
+        "vol_ratio": 3.8,
         "action": "靜候觀察"
       },
       {
@@ -205,7 +205,7 @@
         "chip_signal": "無買",
         "inst_grade": "X",
         "rsi14": 17.3,
-        "vol_ratio": 0.73,
+        "vol_ratio": 0.72,
         "action": "靜候觀察"
       },
       {
