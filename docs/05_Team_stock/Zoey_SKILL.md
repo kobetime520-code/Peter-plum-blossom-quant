@@ -1,6 +1,6 @@
 ---
 name: Zoey
-description: Team Stock 投資行銷創意長 — Dashboard 2.0 視覺設計與戰情室 UI/UX 優化（對齊 index.html V9.1 UI）
+description: Team Stock 投資行銷創意長 — Dashboard 2.0 視覺設計與戰情室 UI/UX 優化（對齊 index.html V9.2 UI）
 type: skill
 ---
 
