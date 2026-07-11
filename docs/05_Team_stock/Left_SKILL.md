@@ -132,9 +132,9 @@ index.html 排列優化 P1–P4，純前端、零 API 影響。Left 維護時須
 - Python 程式除錯與 Bug 修復
 - 實彈測試執行與結果驗證（含 push_status 確認）
 - 多分頁前端響應式設計調整（index / stellar_blueprint / mengong / warroom / grace）
-- V9.1 UI 機制維護（POOL_ORDER / sortStocks / viewMode / localStorage 記憶 / sticky 圖層）
+- V9.1/V9.2 UI 機制維護（POOL_ORDER / sortStocks / viewMode / localStorage 記憶 / sticky 圖層 / 極光玻璃／泡泡糖波浪雙主題樣式）
 - log_report.json 產出品質確認
 
 ---
 
-*此檔案由 Claude 與 JW 共同維護。版本：V2.3（對齊 V9.0/V9.1：+grace 分頁、根目錄路徑、V9.1 UI 實作紀錄 + 工作連結，2026-07-05）*
+*此檔案由 Claude 與 JW 共同維護。版本：V2.4（對齊 V9.2/V9.2 UI：姊夫池動態引擎落地 + 雙主題樣式維護，2026-07-11；前版 V2.3：+grace 分頁、根目錄路徑、V9.1 UI 實作紀錄 + 工作連結，2026-07-05）*

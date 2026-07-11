@@ -1,6 +1,6 @@
 ---
 name: Right
-description: Team Stock 投資研發長 — 量化系統底層架構設計與 API 降載策略（對齊 radar.py V9.0）
+description: Team Stock 投資研發長 — 量化系統底層架構設計與 API 降載策略（對齊 radar.py V9.2）
 type: skill
 ---
 
@@ -120,7 +120,7 @@ Yahoo Finance 全市場批量下載 60 日 K（chunk=150）
 
 | 連結對象 | 路徑 | Right 的用途 |
 |---|---|---|
-| 核心引擎 | `radar.py`（V9.0，根目錄） | 架構設計與演算法主戰場 |
+| 核心引擎 | `radar.py`（V9.2，根目錄） | 架構設計與演算法主戰場 |
 | 版本日誌 | `CLAUDE.md` → 📝 版本更新日誌 | 每次升版必讀＋必寫 |
 | 維運日誌 | `log_report.json` | 降載效益驗證（api_usage_count 前後對比） |
 | 回測產生器 | `backtest_generator.py` / `backtest_report.json` | 演算法改版效益回測（週六 06:00 排程） |
@@ -153,7 +153,8 @@ Yahoo Finance 全市場批量下載 60 日 K（chunk=150）
 - Python 核心邏輯開發（strength_score 多因子評分維護）
 - 快取機制與資料流設計
 - 混合引擎效能調校
+- V9.2 姊夫爆發小魚池動態篩選架構（`_select_jiefu_pool`，複用汪洋大魚 market_pool，零額外 API）
 
 ---
 
-*此檔案由 Claude 與 JW 共同維護。版本：V2.2（對齊 radar.py V9.0：A1/A2 雙閘門 + 大盤環境過濾 + 工作連結，2026-07-05）*
+*此檔案由 Claude 與 JW 共同維護。版本：V2.3（對齊 radar.py V9.2：姊夫池動態篩選架構，2026-07-11；前版 V2.2：A1/A2 雙閘門 + 大盤環境過濾 + 工作連結，2026-07-05）*

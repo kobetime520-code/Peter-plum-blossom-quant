@@ -1,6 +1,6 @@
 ---
 name: Joe
-description: Team Stock 技術面研究員 — MA/RSI/量比/趨勢品質判讀、甜蜜買進區與 ATR 動態停損、雙頂雙底型態戰術（對齊 radar.py V9.0）
+description: Team Stock 技術面研究員 — MA/RSI/量比/趨勢品質判讀、甜蜜買進區與 ATR 動態停損、雙頂雙底型態戰術（對齊 radar.py V9.2）
 type: skill
 ---
 
@@ -81,6 +81,7 @@ Joe 是 Team Stock 的技術面研究員，隸屬於 JW 指揮官的研究團隊
 - `stop_loss_fixed`：舊制 ×0.9 固定停損（保留對照）
 - `stop_loss_mode`：標記當前停損採用模式
 - Joe 解讀原則：`atr_pct` 偏高（波動大）→ 停損距離放寬但部位應縮；`atr_pct` 偏低 → 停損收緊可提高部位效率
+- **姊夫爆發小魚池例外（V9.2）**：該池停損停利改專屬固定 **−7% / +8%**（強制執行，`_apply_jiefu_risk_params`），不適用 ATR 動態停損；並新增建議部位欄位 `suggested_position`（10 萬本金、單筆 2% 曝險反推）
 
 ## V9.0 A2 追高防護：RSI 上限三段式（Joe 主責解讀）
 
@@ -144,7 +145,7 @@ Joe 是 Team Stock 的技術面研究員，隸屬於 JW 指揮官的研究團隊
 
 | 連結對象 | 路徑 | Joe 的用途 |
 |---|---|---|
-| 核心引擎 | `radar.py`（V9.0） | 技術/量能評分、ATR 停損、A2 RSI 上限的邏輯源頭 |
+| 核心引擎 | `radar.py`（V9.2） | 技術/量能評分、ATR 停損、A2 RSI 上限的邏輯源頭 |
 | 每日戰報 | `plum_blossom_data.json` | 汪洋大魚/猛虎池技術面欄位解讀 |
 | 深海戰術藍圖 | `stellar_blueprint.html` | 雙頂/雙底型態偵測工具頁 |
 | 週回測報告 | `backtest_report.json`（週六 06:00 產出） | 5/30/126 日勝率驗證技術訊號有效性 |
@@ -178,8 +179,9 @@ Joe 是 Team Stock 的技術面研究員，隸屬於 JW 指揮官的研究團隊
 - 汪洋大魚強勢評分排行與猛虎池健檢
 - 甜蜜買進區與停利計算（×1.15 / ×1.5）、ATR×2 波動度動態停損解讀（atr_pct 部位調整）
 - V9.0 A2 RSI 上限三段式與大盤環境（market_regime）連動判讀
+- V9.2 姊夫爆發小魚池專屬風控解讀（固定 −7%/+8% 停損停利、suggested_position 建議部位）
 - 雙頂／雙底型態辨識與頸線、等幅目標、停損推算（深海戰術藍圖）
 
 ---
 
-*此檔案由 Claude 與 JW 共同維護。版本：V2.3（對齊 radar.py V9.0：ATR 動態停損 + A2 RSI 上限 + 工作連結，2026-07-05）*
+*此檔案由 Claude 與 JW 共同維護。版本：V2.4（對齊 radar.py V9.2：姊夫池專屬停損停利 −7%/+8% + 建議部位欄位，2026-07-11；前版 V2.3：ATR 動態停損 + A2 RSI 上限 + 工作連結，2026-07-05）*
