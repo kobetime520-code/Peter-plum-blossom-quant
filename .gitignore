@@ -6,11 +6,18 @@ stock_result_cache.json
 
 # === 本地執行日誌與報告 ===
 # log_report.json 需推送 GitHub，供 Zoey 儀表板讀取，故不排除
+# 所有 *.log 皆為本機執行產物，一律不推（moly_ps.log、legacy 歸檔等）
+*.log
 morning_report.log
 moly.log
 mengong_auto.log
 radar_run.log
 晨報/
+
+# === 本地測試 / 驗證腳本（沙盒實驗，不推上 GitHub）===
+test_atr_stop.py
+test_market_regime.py
+verify_v89.py
 
 # === 回測績效報告（任務1 復活：每週六由 backtest_run.py 產生並推送，供 index.html 讀取）===
 # backtest_report.json — 已重新納入追蹤
