@@ -1,11 +1,15 @@
 """
 git_sync.py — 彼夫有責戰情室自動推送腳本
-V1.1 | 2026-05-12
+V1.2 | 2026-07-13
 用途：將三大戰報檔案精準推送至 GitHub main 分支
       ・本地執行 radar.py 時由 radar.py 結尾自動呼叫
       ・GitHub Actions 環境由 auto_radar.yml 負責，不重複呼叫
 嚴禁：finmind_cache.json / finmind_info_cache.json 等快取檔不在推送清單中
 改善：pull --rebase 前自動 stash 殘留變動；JSON 衝突自動以本地掃描結果覆蓋
+V1.2 修復：修正 stash 判定 bug — 無本地變動時 git stash 不建立 stash，舊版
+      誤以 `git stash list` 非空判定 stashed，導致事後誤 pop 到堆疊中的舊 stash
+      （曾使 CLAUDE.md 反覆冒出衝突標記、阻斷排程推送）。改以 stash 前後數量差
+      判定，且 pop 時指名本次那顆 stash@{0}。
 """
 import sys
 import io
@@ -97,9 +101,18 @@ def sync_to_github():
     # ── Step 3：stash 殘留變動，確保工作區乾淨再 pull --rebase ─────────────
     # 注意：不用 --include-untracked，避免 yf_info_cache.json 等快取檔被吃進 stash
     # 導致 pop 時因檔案已被 radar.py 更新而衝突，誤觸 returncode ≠ 0
-    ok_stash, stash_out = run_git(["stash"])
-    _, stash_list_out = run_git(["stash", "list"])
-    stashed = ok_stash and bool(stash_list_out.strip())
+    #
+    # ⚠️ 關鍵防呆（V1.2）：「無本地變動」時 git stash 回傳 0 但不建立 stash，
+    # 若只看 `git stash list` 非空就判定 stashed，會誤 pop 到堆疊裡的舊 stash
+    # （曾導致 CLAUDE.md 反覆冒出衝突標記）。改以「stash 前後數量差」判斷本次
+    # 是否真的建立 stash，且事後只 pop 本次那顆（stash@{0}，剛建立必在頂端）。
+    def _stash_count():
+        _, lst = run_git(["stash", "list"])
+        return len(lst.splitlines()) if lst.strip() else 0
+
+    before_count = _stash_count()
+    ok_stash, stash_out = run_git(["stash", "push", "-m", "molysync-auto"])
+    stashed = ok_stash and _stash_count() > before_count
     if stashed:
         print(f"  📦 stash：暫存殘留變動，確保 rebase 可執行（{stash_out[:60]}）")
 
@@ -123,19 +136,19 @@ def sync_to_github():
                 print(f"  ❌ rebase --continue 失敗：{cont_out}")
                 run_git(["rebase", "--abort"])
                 if stashed:
-                    run_git(["stash", "pop"])
+                    run_git(["stash", "pop", "stash@{0}"])
                 return False
             print("  ✅ 衝突已解除，本地掃描結果已保留")
         else:
             print(f"  ⚠️ git pull --rebase 失敗：{out}")
             if stashed:
-                run_git(["stash", "pop"])
+                run_git(["stash", "pop", "stash@{0}"])
             return False
     else:
         print("  ✅ git pull --rebase 完成")
 
     if stashed:
-        run_git(["stash", "pop"])
+        run_git(["stash", "pop", "stash@{0}"])
         print("  📦 stash pop：殘留變動已還原")
 
     # ── Step 4：git push（最多重試 2 次，間隔 15 秒）────────────────────
