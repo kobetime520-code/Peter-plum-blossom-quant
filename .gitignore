@@ -19,6 +19,12 @@ test_atr_stop.py
 test_market_regime.py
 verify_v89.py
 
+# === Claude Code 本機工具設定（開發用，不推上 GitHub）===
+.claude/
+
+# === 逐字稿（本機暫存，不推上 GitHub）===
+yongguang_transcript.txt
+
 # === 回測績效報告（任務1 復活：每週六由 backtest_run.py 產生並推送，供 index.html 讀取）===
 # backtest_report.json — 已重新納入追蹤
 
