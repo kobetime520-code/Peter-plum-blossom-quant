@@ -3,5 +3,6 @@
   "api_usage_count": 128,
   "stocks_processed": 102,
   "cache_hits": 7,
-  "status": "Success"
+  "status": "Success",
+  "push_status": "OK"
 }
