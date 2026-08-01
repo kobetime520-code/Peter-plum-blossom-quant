@@ -18,17 +18,12 @@ import os
 import logging
 import subprocess
 
-LOCAL_PATH = os.path.dirname(os.path.abspath(__file__))
-_log_file = os.path.join(LOCAL_PATH, "moly.log")
+from log_setup import setup_logging
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - Moly 🌸 [Backtest] - %(message)s',
-    handlers=[
-        logging.FileHandler(_log_file, encoding='utf-8', mode='a'),
-        logging.StreamHandler(sys.stdout),
-    ],
-)
+LOCAL_PATH = os.path.dirname(os.path.abspath(__file__))
+
+# 2026-08-01（稽核 E1）：改用共用的輪替 logger，取代原本無輪替的 FileHandler
+setup_logging('Moly 🌸 [Backtest]')
 
 GENERATOR = os.path.join(LOCAL_PATH, "backtest_generator.py")
 GIT_SYNC = os.path.join(LOCAL_PATH, "git_sync.py")

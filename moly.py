@@ -5,18 +5,13 @@ import sys
 import json
 from datetime import datetime
 
+from log_setup import setup_logging
+
 LOCAL_PATH = os.path.dirname(os.path.abspath(__file__))
-_log_file = os.path.join(LOCAL_PATH, "moly.log")
 RADAR_RUN_LOG = os.path.join(LOCAL_PATH, "radar_run.log")
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - Moly 🌸 - %(message)s',
-    handlers=[
-        logging.FileHandler(_log_file, encoding='utf-8', mode='a'),
-        logging.StreamHandler(sys.stdout)
-    ]
-)
+# 2026-08-01（稽核 E1）：改用共用的輪替 logger，取代原本無輪替的 FileHandler
+setup_logging('Moly 🌸')
 
 # ============================================================
 # 方案 B：本地主算核心（2026-05-04 架構重心轉移）
