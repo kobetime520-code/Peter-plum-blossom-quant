@@ -1212,13 +1212,25 @@ def main():
 
     # 🎯 V7 核心升級：Date-Lock 日期防呆機制與向下相容
     today_ocean_sids = [s['stock_id'] for s in market_pool]
+
+    # 🛡️ 2026-08-01 記憶海「真·僅追加」修正
+    # 舊版以 new_history = {} 起手、只寫入當日命中股 → 等同每日整檔覆寫，
+    # 與 CLAUDE.md「僅追加，不刪除歷史記錄」的設計矛盾；
+    # 2026-07-09 加的「0 支不覆寫」護欄只擋得住當日完全掃不到，
+    # 擋不住「當日只命中少數幾支」這個常態（實測 07-06 119 支 → 07-30 3 支），
+    # 導致 count 無法累積、🐅 猛虎池長期近乎空池。
+    # 改為：以既有累計為基底正規化複製，當日未命中者原樣保留。
     new_history = {}
+    for sid, old_data in history.items():
+        if isinstance(old_data, int):          # 向下相容：V6 以前為純數字計數
+            old_data = {"count": old_data, "last_date": ""}
+        new_history[sid] = {
+            "count": old_data.get("count", 0),
+            "last_date": old_data.get("last_date", ""),
+        }
 
     for sid in today_ocean_sids:
-        old_data = history.get(sid, {"count": 0, "last_date": ""})
-
-        if isinstance(old_data, int):
-            old_data = {"count": old_data, "last_date": ""}
+        old_data = new_history.get(sid, {"count": 0, "last_date": ""})
 
         count = old_data["count"]
         last_date = old_data["last_date"]
@@ -1261,11 +1273,15 @@ def main():
     print(f"  - 🔥 姊夫魚池動態篩選：候選 {len(jiefu_candidates)} 支，融資閘門攔截 {jiefu_margin_skipped} 支，"
           f"最終入選 {POOL_SETTINGS['🔥 姊夫爆發小魚池']}")
 
-    # 🛡️ 記憶海防清空護欄：汪洋大魚 0 支的空手日不覆寫，保留既有累計
-    # （2026-07-09 汪洋 0 支導致整檔被 {} 洗空、累計 count 全滅；7/4 SSL 事件同機制）
-    if not new_history and history:
+    # 🛡️ 記憶海防縮水護欄（2026-08-01 強化）
+    # 真·僅追加下 new_history 必為 history 的超集；一旦筆數變少即代表
+    # 上游有非預期路徑（例外吞掉、資料格式異常等），寧可不寫也不洗掉累計。
+    # 原「汪洋 0 支不覆寫」護欄已被此條涵蓋（0 支時 new_history == history）。
+    if len(new_history) < len(history):
+        print(f"  - 🛡️ 記憶海異常縮水（{len(history)} → {len(new_history)} 支）：維持原狀，不覆寫既有累計")
         new_history = history
-        print("  - 🛡️ 汪洋大魚 0 支：記憶海維持原狀，不覆寫既有累計")
+    elif not today_ocean_sids:
+        print(f"  - 🛡️ 汪洋大魚 0 支：記憶海保留既有累計 {len(new_history)} 支，本日無新增")
 
     with open(HISTORY_FILE, 'w', encoding='utf-8') as f:
         json.dump(new_history, f, ensure_ascii=False, indent=2)
