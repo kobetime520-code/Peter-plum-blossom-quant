@@ -1,7 +1,21 @@
 # 彼夫有責戰情室 — Claude 協作記憶檔
 
-> 最後更新：2026-07-04
+> 最後更新：2026-08-01
 > 負責人：Jeff（kobetime520@gmail.com）
+> 版本：**V9.2 ／ 前端 V9.2 UI**
+
+---
+
+## 📖 文件分工（單一事實來源）
+
+| 文件 | 定位 |
+|---|---|
+| **`CLAUDE.md`（本檔）** | **規格唯一事實來源**：魚池設定、強勢評分、技術架構、排程、前端主題、版本日誌 |
+| `README.md` | 對外簡介與導引，規格一律連回本檔，不重複載明 |
+| `docs/00_INDEX.md` | 知識庫檔案位置索引；成員 SKILL 版本以各 SKILL 檔尾自述為準，索引不複製版本號 |
+| `docs/05_Team_stock/*_SKILL.md` | 各成員角色設定正本（含自身版本宣告） |
+
+> 規格若有異動，只改本檔；其他文件僅在「位置／連結」變動時才需同步。此規則於 2026-08-01（C1）建立，用以根除同一事實散在三處造成的漂移。
 
 ---
 
@@ -51,10 +65,10 @@
 | 🍁 楓大永動魚池 | 穩定動能股（2308、00923、00910、2327、1785、2344、6485） | 7 支 |
 | 🌟 彼神黃金魚池 | 核心精選股（3028、2484、3221、8182、8289、3042） | 6 支 |
 | 🔭 測試員觀察水域 | 觀察中候選股（5289、5292、4749、6770、1711、8299、3673、3675） | 8 支 |
-| 🐅 三日成猛虎水池 | 記憶海出現 ≥ 3 次自動晉升 | 動態 |
-| 🌊 汪洋大魚 | 全市場掃描後符合三關篩選的強勢股（依強勢評分排序） | 動態 |
+| 🐅 三日成猛虎水池 | 記憶海出現 ≥ 3 次自動晉升（精銳上限 8 支，V8.8） | 動態（≤8 支） |
+| 🌊 汪洋大魚 | 全市場掃描後通過四關粗篩 + A1／A2 雙閘門的強勢股（依強勢評分排序） | 動態 |
 
-> 🐅 猛虎池條件：`history/ocean_history.json` 中出現次數 ≥ 3 次，自動加入
+> 🐅 猛虎池條件：`ocean_history.json`（根目錄）中出現次數 ≥ 3 次，自動加入；該檔為**真·僅追加**，未命中股原樣保留（V9.2 / 2026-08-01 A1 修正）。
 
 ---
 
@@ -64,18 +78,23 @@
 - **FinMind API**（主力精濾）：帳號 PeterJeff0226，綁定 kobetime520@gmail.com
 - **Yahoo Finance yfinance**（全市場粗篩，批量下載每次 150 檔）
 
-### V8.5 混合引擎流程
+### 混合引擎流程（V8.5 骨幹 + V8.8 第四關 + V9.0 雙閘門）
 ```
 Yahoo Finance 全市場批量粗篩（chunk=150）
   ↓ 第一關：成交量 ≥ 2,000 張
   ↓ 第二關：收盤價 > MA30
   ↓ 第三關：收盤價 ≥ MA5（前置預篩，省 FinMind API）
+  ↓ 第四關：量比 ≥ 1.2（V8.8 縮圈）
 FinMind 法人籌碼細部製卡
-  ↓ 動作訊號判斷 + 強勢評分（0–100 分）
+  ↓ A1 籌碼方向閘門：合計淨買超 > 0 外，須外資或投信至少一方同向買超（剔除假合計正，V9.0）
+  ↓ A2 追高防護：RSI < 上限（多頭 80／中性 75／空頭 70，V9.0）
+  ↓ 動作訊號判斷 + 強勢評分（0–100 分）+ ATR×2 動態停損（V8.9）
 輸出至 plum_blossom_data.json（汪洋大魚依強勢評分排序）
 ```
 
-### V8.5 核心功能
+> 🔥 姊夫爆發小魚池複用上述 market_pool 再做動態篩選（V9.2），零額外 API；該池套用專屬固定停損停利 −7%／+8%，不吃全局 ATR 動態停損。
+
+### 核心功能
 - **本地快取**：`finmind_cache.json` 避免重複呼叫 API
 - **API 計數器**：`_api_calls_count` 精確計算（快取命中不計）
 - **粗篩門檻**：成交量 ≥ **2,000 張**（縮圈戰術）
@@ -84,13 +103,20 @@ FinMind 法人籌碼細部製卡
 - **籌碼分級標籤**：chip_signal（雙買/投信單買/外資單買/無買）、inst_grade（S/A/B/C/X 級）
 
 ### 核心指標
-- 收盤價（Close）、成交量（Volume，單位：張）
-- MA5、MA10、MA30
-- RSI14（14日RSI，Wilder平均法）
-- vol_ratio（量比 = 當日量 / 5日均量）
-- bull_align（多頭排列：MA5 > MA10 > MA30）
-- 三大法人 30 日買賣超：`inst_buy`（合計）、`foreign_buy`（外資）、`trust_buy`（投信）
-- 目標價 = 收盤 × 1.5、停損價 = 收盤 × 0.9
+
+| 指標 | 說明 |
+|---|---|
+| Close / Volume | 收盤價 / 成交量（單位：張） |
+| MA5 / MA10 / MA30 | 移動平均線 |
+| RSI14 | 14 日 RSI（Wilder 平均法） |
+| vol_ratio | 量比 = 當日量 / 5 日均量 |
+| bull_align | 多頭排列：MA5 > MA10 > MA30 |
+| trend_quality | 3/5/8 趨勢品質（STRONG / HEALTHY / WATCH / WEAK，V8.8） |
+| ma5_breakout_day | 站上 MA5 天數（V8.7；搭配 breakout_label、ma5_above_ma10_days） |
+| inst_buy / foreign_buy / trust_buy | 三大法人 30 日買賣超（合計 / 外資 / 投信） |
+| chip_signal / inst_grade | 籌碼分級標籤（雙買・投信單買・外資單買・無買 / S・A・B・C・X 級） |
+| 目標價 | 收盤 × 1.5 |
+| 停損價 | ATR×2 動態停損（護欄 −6%～−15%，V8.9 起取代固定 ×0.9；姊夫池另用 −7% 固定值） |
 
 ### 動作訊號邏輯
 ```python
@@ -112,6 +138,19 @@ action = "買入加碼" if close_price >= ma5 and inst_buy_30d > 0 else "靜候�
 **籌碼面（最高 35 分）**
 - 法人組合：外資+投信雙買 +15 / 投信單買 +10 / 外資單買 +7
 - 強度等級：S級(≥5000張) +20 / A級(≥1000張) +15 / B級(≥500張) +10 / C級(>0張) +5
+
+> 大盤環境過濾（V8.9）：^TWII vs MA60 三段式，空頭時以 `_SCORE_FACTOR` 對評分降權並縮倉。
+
+---
+
+## 🎨 前端主題（V9.2 UI）
+
+| 主題 | 風格 | 說明 |
+|---|---|---|
+| 深海太空・極光玻璃版（Aurora Glass） | 預設 | 紫青極光漸層底 + 磨砂玻璃面板 + 星空層 |
+| 粉紅泡泡糖・莓果馬卡龍版（Berry Macaron） | 可切換 | 淺色泡泡糖粉底 + 莓紅／薰衣草／蜜桃三色光暈，深莓文字（WCAG AA 全過），關閉星空層 |
+
+> 右上角「🌸 切換粉紅泡泡糖版 ／ 🌌 切換極光玻璃版」按鈕切換（`[data-theme="light-ocean"]`）。分頁：`grace.html`（Grace 題材）、`mengong.html`（孟恭道路指引）、`warroom.html`、`stellar_blueprint.html`。
 
 ---
 
@@ -255,6 +294,7 @@ action = "買入加碼" if close_price >= ma5 and inst_buy_30d > 0 else "靜候�
 | 2026-07-09 | — | **排程進度看板 + 日誌編碼修復**：① 新增 `schedule_progress.ps1`（前景終端機看板：四排程狀態／戰報檔新鮮度／log_report 摘要／日誌尾行；`-Watch` 即時刷新、Ctrl+C 離開）與 `排程進度看板.bat`（雙擊啟動，非背景作業）② 修復 `C:\Moly\` 三支啟動腳本（moly/grace/backtest_start.ps1）`*>>` 重導向編碼：Python 輸出前加 `[Console]::OutputEncoding=UTF8`，中文不再於寫檔前經 CP950 損毀（修復後 `moly_ps.log` 為 UTF-16 LE 含 BOM，讀取靠 BOM 自動偵測）③ 受損舊檔歸檔 `moly_ps_legacy_20260709.log` ④ 看板日誌雙軌（2026-07-10 修正即時來源為 `radar_run.log`，見下列）；孟恭監看目標為 `mengong_summary.json`。 |
 | 2026-07-11 | — | **名冊與 SKILL 版本同步稽核**（29 位 agent 全數註冊正常、16 個 skill 掛載正常）：Team Stock 5 人 SKILL 對齊 V9.2 — Eric V1.3（姊夫池融資 10 日遽增風控閘門）、Right V2.3（姊夫池動態篩選架構）、Joe V2.4（姊夫池專屬停損停利 −7%/+8% + suggested_position）、Zoey V2.4（V9.2 UI 極光玻璃／泡泡糖波浪雙主題，修正檔內 V8.9 徽章殘留）、Left V2.4（V9.2 UI 雙主題維護）；Tim V2.2 footer 補記名單同步日期（2026-07-11）；`.claude\agents\` 對應 5 檔版本宣告同步；本檔魚池表姊夫池改動態篩選描述、協作規範版本更新至 V9.2。 |
 | 2026-07-07 | V9.2 | **姊夫爆發小魚池改造**（Right架構+Joe停損停利+Eric籌碼閘門，短線精銳池）：固定5檔清單 → 動態篩選（`_select_jiefu_pool`，複用汪洋大魚 market_pool，零額外API）：inst_grade S/A（法人30日買超≥1000）+ trend_quality STRONG/HEALTHY（趨勢向上）+ ma5_breakout_day 1~3日（剛站上均線）+ 剔除金融/傳產（`JIEFU_EXCLUDED_INDUSTRIES`），取strength_score前8檔。停損停利改專屬固定 -7%/+8%（`_apply_jiefu_risk_params`，取代全局ATR動態停損，僅作用此池）；新增建議部位欄位 `suggested_position`（10萬本金、單筆2%曝險反推，固定約2.9萬）；新增融資10日遽增風控閘門 `_check_margin_not_surging`（FinMind `TaiwanStockMarginPurchaseShortSale`，增幅≥30%剔除，無資料/API異常預設放行不誤殺）。董監持股：評估 wespai（stock.wespai.com/pick）爬蟲整合，因robots.txt缺失、頁面穩定性未驗證，**JW決議暫緩**，改留 `director_holding_note` 人工複核提示欄位。已通過 `py_compile` 與10項離線邏輯自測（閘門/排序/防禦性容錯）。 |
+| 2026-08-01 | — | **文件單一事實來源建立（稽核 C1，對應發現 F-06／F-04）**：魚池設定、強勢評分、技術架構、排程、前端主題五段規格集中於本檔，新增「📖 文件分工」章節載明規則；`README.md` 刪除上述重複段落，改為簡介＋導引＋連回本檔；`docs/00_INDEX.md` 移除成員 SKILL 版本號硬編欄位，改以「版本以各 SKILL 檔尾自述為準」指向正本，根除索引與檔案版本漂移。併入 README 專有且較新的事實：流程圖補第四關量比與 A1／A2 雙閘門、核心指標改表格並補 trend_quality／ma5_breakout_day、停損價由過期的「收盤 × 0.9」更正為 ATR×2 動態停損、猛虎池補精銳上限 8 支、記憶海路徑由 `history/ocean_history.json` 更正為根目錄、新增前端雙主題章節。 |
 | 2026-07-13 | V9.2 UI | **粉色海洋版換膚「粉紅泡泡糖・莓果馬卡龍」**（Zoey 配色，純前端、零 API 影響，僅動 `[data-theme="light-ocean"]` 變數與連動處，極光玻璃版與版面邏輯不變）：背景由 V9.2「深藍夜幕底」改為淺色泡泡糖粉底（`linear-gradient #FFF0F6→#FFD6E7→#F4A6C8` ＋莓紅／薰衣草／蜜桃三色 radial 光暈）；文字改深色系確保淺底可讀 — `--text-main #4B1528`（對比 12.94）、`--text-muted #993556`（6.20）；主強調 `--neon-cyan #B83A63`（莓粉，4.85）、`--neon-gold #8A5807`（深金，5.33）皆加深至過 WCAG AA 4.5（含 12px 小字）；買入綠 `#3B6D11`（5.50）／停損紅 `#C0392B`（4.82）語意色保留；面板改白粉半透明玻璃感；淺底關閉星空層 `body::before`（白星點不可見）；neon-cyan 加深後 `.version-badge`／active nav 徽章改白字維持對比。同步更新切換鈕文字「🌸 切換粉紅泡泡糖版」與 V9.2 UI 說明。全數對比度以程式化計算＋新建元素套變數實測確認（AA 全過）。 |
 
 ---

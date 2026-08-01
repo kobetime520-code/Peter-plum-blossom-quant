@@ -1,6 +1,8 @@
 # 📚 docs 知識庫總索引
 
-> 最後更新：2026-07-06 ｜ 維護：JW & Claude
+> 最後更新：2026-08-01 ｜ 維護：JW & Claude
+>
+> 本檔為**位置索引**，不載明規格與版本號。系統規格見 [`CLAUDE.md`](../CLAUDE.md)（唯一事實來源）；成員版本以各 SKILL 檔尾自述為準。
 
 `docs/` 現僅存放 **Team Stock 成員 SKILL 正本**（`05_Team_stock/`，git 版控）。
 其餘團隊的 SKILL 正本位於各 Team 資料夾（repo 外），原 `01~04` 過時鏡像副本已於 2026-07-06 移除（`git rm`，歷史保留，可隨時還原）。
@@ -18,25 +20,28 @@
 | 📈 Team Stock | `docs/05_Team_stock/`（本 repo） | 見下表 |
 | ✨ Magic Lab | `C:\AIworkplace\AI Agent\` | Terry、Miles、Wayne、Wesley（Claude Code skill 形式） |
 
-> 全員已註冊 Claude Code agent：`C:\AIworkplace\.claude\agents\`（25 位）。
-> 總清冊：`AI總管理處\團隊人員清冊與Skill核對表_20260706.md`｜Agent 速查：`AI總管理處\AI員工總清單_25Agent_20260706.md`
+> 全員已註冊 Claude Code agent：`C:\AIworkplace\.claude\agents\`（**29 位**，2026-08-01 實地清點）。
+> 總清冊：`AI總管理處\團隊人員清冊與Skill核對表_20260706.md`｜Agent 速查：`AI總管理處\AI員工總清單_25Agent_20260706.md`（檔名停在 25 位，內容待補）
 
 ---
 
 ## 📈 05_Team_stock（Team Stock 成員 SKILL 正本）
 
-| 檔案 | 說明 | 版本 |
-|------|------|------|
-| `Peter_SKILL.md` | Peter — 投資執行長 & 策略長 | V1.1 |
-| `Maple_SKILL.md` | Maple — 投資採購及財務長 | — |
-| `Right_SKILL.md` | Right — 投資研發長（架構與 API 降載） | V2.2 |
-| `Left_SKILL.md` | Left — 投資程設助理（Git/Bug/UI） | V2.3 |
-| `Moly_SKILL.md` | Moly — 投資排程營運長（本機四排程） | V2.2 |
-| `Zoey_SKILL.md` | Zoey — 投資行銷創意長（Dashboard 2.0） | V2.3 |
-| `Tim_SKILL.md` | Tim — 基本面研究員（楓大永動/彼神黃金） | V2.1 |
-| `Grace_SKILL.md` | Grace — 題材面研究員 & 高階投資顧問 | V2.4 |
-| `Joe_SKILL.md` | Joe — 技術面研究員（+quant-research 回測） | V2.3 |
-| `Eric_SKILL.md` | Eric — 籌碼分析研究員（A1 閘門） | V1.2 |
+> ⚠️ 版本號不在此表維護。各成員版本以 **SKILL 檔尾自述**為準，避免索引與正本漂移（2026-08-01 稽核 C1／發現 F-04）。
+
+| 檔案 | 說明 |
+|------|------|
+| [`Peter_SKILL.md`](05_Team_stock/Peter_SKILL.md) | Peter — 投資執行長 & 策略長 |
+| [`Maple_SKILL.md`](05_Team_stock/Maple_SKILL.md) | Maple — 投資採購及財務長 |
+| [`Right_SKILL.md`](05_Team_stock/Right_SKILL.md) | Right — 投資研發長（架構與 API 降載） |
+| [`Left_SKILL.md`](05_Team_stock/Left_SKILL.md) | Left — 投資程設助理（Git/Bug/UI） |
+| [`Moly_SKILL.md`](05_Team_stock/Moly_SKILL.md) | Moly — 投資排程營運長（本機四排程） |
+| [`Zoey_SKILL.md`](05_Team_stock/Zoey_SKILL.md) | Zoey — 投資行銷創意長（Dashboard 2.0） |
+| [`Zoey_war-room-designer_SKILL.md`](05_Team_stock/Zoey_war-room-designer_SKILL.md) | Zoey — 戰情室視覺設計（第二份，職責界線待 D2 釐清） |
+| [`Tim_SKILL.md`](05_Team_stock/Tim_SKILL.md) | Tim — 基本面研究員（楓大永動/彼神黃金） |
+| [`Grace_SKILL.md`](05_Team_stock/Grace_SKILL.md) | Grace — 題材面研究員 & 高階投資顧問 |
+| [`Joe_SKILL.md`](05_Team_stock/Joe_SKILL.md) | Joe — 技術面研究員（+quant-research 回測） |
+| [`Eric_SKILL.md`](05_Team_stock/Eric_SKILL.md) | Eric — 籌碼分析研究員（A1 閘門、姊夫池融資閘門） |
 
 ### 📰 05_Team_stock/晨報
 
@@ -53,4 +58,4 @@
 
 ---
 
-*由 Claude 更新 ｜ 2026-07-06（原版由 Jemini 生成，2026-05-12）*
+*由 Claude 更新 ｜ 2026-08-01 稽核 C1（原版由 Jemini 生成，2026-05-12；2026-07-06 改版）*
