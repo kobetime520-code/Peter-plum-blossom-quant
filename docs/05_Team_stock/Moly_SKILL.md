@@ -43,7 +43,7 @@ moly_start.bat 啟動
   ↓
 radar.py 自動呼叫 git_sync.py → Git commit & push 上 GitHub（非 GitHub Actions 環境時）
   ↓
-推送結果寫回 log_report.json 的 push_status
+推送結果寫入本機 push_status.json（不進版控，2026-08-01 稽核 E5）
 ```
 
 > **架構重心**：運算主力在本地，GitHub 僅作為戰報存檔與版本管控。不依賴 GitHub Actions 雲端運算。
@@ -58,8 +58,8 @@ radar.py 自動呼叫 git_sync.py → Git commit & push 上 GitHub（非 GitHub 
 | 排程進入點 | `C:\Moly\moly_start.ps1`（UTF-8 BOM，含交易日判斷）＋ `backtest_start.ps1` / `grace_start.ps1` |
 | 假日判斷 | `C:\Moly\holidays.txt`（**單一資料源**，2026 下半年證交所休市日） |
 | 雷達程式 | `radar.py`（V9.0，根目錄） |
-| 自動推送 | `git_sync.py`（精準推送 5 個戰報檔） |
-| 戰報監控目標 | `log_report.json`；排程輸出 `moly_ps.log`（避免 UTF-16 污染，舊 log 歸檔為 `moly_legacy_20260704.log`） |
+| 自動推送 | `git_sync.py`（全系統唯一推送實作；預設 5 個戰報檔，孟恭以 files 參數傳入；`.git_sync.lock` 互斥） |
+| 戰報監控目標 | `log_report.json` ＋ `push_status.json`（推送狀態 sidecar）；排程輸出 `moly_ps.log`（避免 UTF-16 污染，舊 log 歸檔於 `_archive/`） |
 | GitHub Repo | `kobetime520-code/Peter-plum-blossom-quant` |
 | 工具需求 | Python 3.13（`C:\Users\User\AppData\Local\Programs\Python\Python313\`，已入 PATH）、`git` |
 | SSL 憑證 | `C:\Moly\norton_root.pem`（Norton 根憑證備份，見新機移轉注意事項） |
@@ -74,10 +74,23 @@ radar.py 自動呼叫 git_sync.py → Git commit & push 上 GitHub（非 GitHub 
   "api_usage_count": 0,    // 本次 FinMind API 實際消耗（快取命中不計）
   "stocks_processed": 0,   // 成功處理（顯示）的個股檔數
   "cache_hits": 0,         // 快取命中次數（節省量）
-  "status": "Success",     // Success / Skipped-Holiday
-  "push_status": "OK"      // OK / FAILED / TIMEOUT / ERROR
+  "status": "Success"      // Success / Skipped-Holiday
 }
 ```
+
+推送狀態自 2026-08-01（稽核 E5）起改存本機 `push_status.json`，**不進版控、不推 GitHub**：
+
+```json
+{
+  "push_status": "OK",                    // OK / FAILED / TIMEOUT / ERROR
+  "last_update": "2026-06-06 20:39:00",   // 須與 log_report.json 同名欄位一致才算本輪結果
+  "checked_at": "2026-06-06 21:24:11"
+}
+```
+
+> 原因：舊做法把 push_status 在 git_sync 提交「之後」才回寫 `log_report.json`，
+> 使 GitHub 上的值永遠慢一輪，且工作區每次執行後恆為 dirty ——
+> git_sync 因此每一次都被迫走 stash／pull／pop（該路徑曾有 stash 誤 pop 問題）。
 
 **評估基準（api_usage_count）**：
 - < 300 次 → 優良（縮圈與快取效率高）
@@ -92,10 +105,12 @@ radar.py 已自動推送；若需手動補推：
 
 ```powershell
 cd "C:\AIworkplace\AI Magic\Team stock"
-git add "plum_blossom_data.json" "log_report.json" "ocean_history.json"
-git commit -m "Auto: 每日戰報同步 $(Get-Date -Format 'yyyy-MM-dd HH:mm')"
-git push origin main
+python git_sync.py                        # 預設推送 5 個戰報檔
+python git_sync.py mengong_summary.json   # 只補推指定檔案
 ```
+
+> 一律走 `git_sync.py`，勿手打 `git add/commit/push` —— 它內含 stash 防呆、
+> rebase 衝突處理、推送重試與 `.git_sync.lock` 互斥，繞過等於重蹈孟恭旁路的覆轍。
 
 ---
 

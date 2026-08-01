@@ -1,6 +1,6 @@
 """
 孟恭的道路指引 — 全自動彙整腳本
-版本：V2.0 | 2026-06-03
+版本：V2.1 | 2026-08-01
 
 排程時間（台灣時間）：
     每天 21:00（晚上 9 點）
@@ -9,7 +9,11 @@
     1. 抓取 YouTube RSS（股癌頻道最新影片）— 公開來源，無需 API
     2. 本機規則式彙整投資要點 — 純關鍵字解析，零外部依賴、無需任何 API
     3. 寫入 mengong_summary.json
-    4. git commit + push 至 GitHub
+    4. 交由 git_sync.sync_to_github 推送至 GitHub
+
+V2.1（稽核 D1／F-09）：移除自帶的 git add/commit/push 旁路，
+    改呼叫共用的 git_sync，與 radar 共用同一套 stash/pull/pop/重試
+    及 .git_sync.lock 互斥鎖。推送時機不變。
 
 執行方式（手動測試）：
     python mengong_auto.py
@@ -18,10 +22,11 @@
 import os
 import re
 import json
-import subprocess
 import requests
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone, timedelta
+
+from git_sync import sync_to_github
 
 # ==========================================
 # 設定區
@@ -178,28 +183,28 @@ def write_output(videos: list[dict], summary: str) -> None:
 
 
 # ==========================================
-# 4. Git commit + push
+# 4. Git commit + push（V2.1：改走共用的 git_sync）
 # ==========================================
 def git_push() -> None:
-    print(f"[4/4] 🚀 Git commit + push...")
+    """
+    改由 git_sync.sync_to_github 統一推送（稽核 D1／F-09）。
+
+    原本此處自帶 git add/commit/push，是繞過白名單的第二條推送路徑，
+    且 21:00 的執行時點落在 radar（20:39 起、實測約 45 分鐘）區間內，
+    衝突全靠 git_sync 的 stash/pull/pop 碰運氣化解。改走共用模組後，
+    兩條路徑共用同一套重試邏輯，並由 .git_sync.lock 互斥排隊。
+    推送時機不變，孟恭資料仍於 21:00 當下上線。
+    """
+    print(f"[4/4] 🚀 交由 git_sync 推送...")
     today = datetime.now(TW_TZ).strftime("%Y-%m-%d %H:%M")
-    try:
-        subprocess.run(["git", "add", OUTPUT_JSON], cwd=REPO_DIR, check=True)
-        result = subprocess.run(
-            ["git", "diff", "--cached", "--quiet"],
-            cwd=REPO_DIR
-        )
-        if result.returncode == 0:
-            print("      ℹ️  無變更，跳過 commit")
-            return
-        subprocess.run([
-            "git", "commit", "-m",
-            f"🤖 自動彙整：孟恭道路指引 {today}"
-        ], cwd=REPO_DIR, check=True)
-        subprocess.run(["git", "push", "origin", "main"], cwd=REPO_DIR, check=True)
+    ok = sync_to_github(
+        files=[OUTPUT_JSON],
+        commit_msg=f"🤖 自動彙整：孟恭道路指引 {today}",
+    )
+    if ok:
         print(f"      ✅ Push 完成")
-    except subprocess.CalledProcessError as e:
-        print(f"      ❌ Git 錯誤：{e}")
+    else:
+        print(f"      ❌ 推送未完成，請手動執行：python git_sync.py {OUTPUT_JSON}")
 
 
 # ==========================================

@@ -102,7 +102,25 @@ function Show-Dashboard {
             Write-Host '── 最近一次雷達掃描結果 (log_report.json) ────────────' -ForegroundColor DarkCyan
             $statusColor = if ($r.status -eq 'Success') { 'Green' } else { 'Red' }
             Write-Host ("  更新時間 {0} | 處理 {1} 支 | API {2} 次 | 快取 {3} 次" -f $r.last_update, $r.stocks_processed, $r.api_usage_count, $r.cache_hits)
-            Write-Host ("  掃描狀態 {0} | 推送狀態 {1}" -f $r.status, $r.push_status) -ForegroundColor $statusColor
+
+            # 推送狀態自 2026-08-01（稽核 E5）起改存本機 push_status.json，
+            # 不再回寫 log_report.json（避免該檔恆為 dirty 而逼 git_sync 每次走 stash）。
+            # last_update 不一致代表 sidecar 是上一輪殘留，不可當本輪結果。
+            $pushStatus = '--'
+            $pushFile = Join-Path $Root 'push_status.json'
+            if (Test-Path $pushFile) {
+                try {
+                    $p = Get-Content $pushFile -Raw -Encoding UTF8 | ConvertFrom-Json
+                    if ($p.last_update -eq $r.last_update) {
+                        $pushStatus = $p.push_status
+                    } else {
+                        $pushStatus = '-- (非本輪)'
+                    }
+                } catch {
+                    $pushStatus = '-- (解析失敗)'
+                }
+            }
+            Write-Host ("  掃描狀態 {0} | 推送狀態 {1}" -f $r.status, $pushStatus) -ForegroundColor $statusColor
         } catch {
             Write-Host '  log_report.json 解析失敗' -ForegroundColor Red
         }

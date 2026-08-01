@@ -6,6 +6,12 @@ stock_result_cache.json
 
 # === 本地執行日誌與報告 ===
 # log_report.json 需推送 GitHub，供 Zoey 儀表板讀取，故不排除
+# push_status.json 為本機推送狀態 sidecar（稽核 E5）：原本此欄位在 git_sync
+#   提交「之後」才回寫 log_report.json，害工作區恆為 dirty、逼 git_sync 每次
+#   走 stash/pull/pop。讀取者僅本機三處，故整欄移出推送檔且不進版控。
+push_status.json
+# .git_sync.lock 為推送互斥鎖（稽核 D1），純執行期產物
+.git_sync.lock
 # 所有 *.log 皆為本機執行產物，一律不推（moly_ps.log、legacy 歸檔等）
 *.log
 morning_report.log

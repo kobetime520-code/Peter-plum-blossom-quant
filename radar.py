@@ -75,6 +75,14 @@ RESULT_CACHE_FILE = "stock_result_cache.json" # 🆕 V8.8 PLAN H：前日低分�
 INFO_CACHE_EXPIRY_DAYS = 7                    # 🆕 V7.5：股票基本資料 7 天更新一次
 CACHE_TTL_HOURS = 30                          # 🆕 V7.8：FinMind 快取有效期（30 小時，確保昨日資料今日仍可命中）
 LOG_REPORT_FILE = "log_report.json"           # 🆕 V7.9：維運日誌輸出路徑（供 Zoey 儀表板讀取）
+# 🆕 V9.2 稽核 E5：推送狀態改寫本機 sidecar，不再回寫 log_report.json。
+#    原本 push_status 於 git_sync 提交「之後」才寫入 log_report.json，導致
+#    ① GitHub 上的值永遠慢一輪 ② 工作區每次執行後恆為 dirty，使 git_sync
+#    每一次啟動都被迫走 stash／pull／pop 路徑（該路徑曾有 stash 誤 pop 問題）。
+#    實測 index.html 未讀此欄位，讀取者僅 moly.py／schedule_progress.ps1／
+#    tests/verify_v89.py 三個本機端，故整欄移出推送檔。
+PUSH_STATUS_FILE = "push_status.json"
+SYNC_TIMEOUT_SECONDS = 360                    # git_sync 子程序逾時（含最多 180 秒推送鎖等待）
 
 # --- 2. 魚池設定區 ---
 # 🆕 V9.2 Right：姊夫爆發小魚池改為動態篩選（見 _select_jiefu_pool），
@@ -130,6 +138,25 @@ def _write_log_report(taiwan_time, stocks_processed=0, status="Success"):
         print(f"  - 📝 維運日誌已寫出：{LOG_REPORT_FILE}")
     except Exception as e:
         print(f"  - ⚠️ 維運日誌寫出失敗：{e}")
+
+
+def _write_push_status(push_status, taiwan_time):
+    """
+    🆕 V9.2 稽核 E5：推送狀態寫入本機 sidecar（push_status.json，不進版控）。
+
+    帶上與 log_report.json 相同的 last_update，供讀取端做時效比對 ——
+    若兩者不一致，代表此檔為上一輪的殘留，不可當成本輪推送結果。
+    """
+    try:
+        payload = {
+            "push_status": push_status,
+            "last_update": taiwan_time.strftime("%Y-%m-%d %H:%M:%S"),
+            "checked_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        }
+        with open(PUSH_STATUS_FILE, 'w', encoding='utf-8') as f:
+            json.dump(payload, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        print(f"  - ⚠️ 推送狀態寫出失敗：{e}")
 
 
 def fetch_finmind(dataset, start_date, end_date, data_id, retries=2):
@@ -1430,24 +1457,18 @@ def main():
         push_status = "OK"
         try:
             git_sync_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "git_sync.py")
-            result = subprocess.run([sys.executable, git_sync_path], check=False, timeout=120)
+            # 逾時需涵蓋 git_sync 的推送鎖等待（最多 180 秒）＋ 實際推送時間
+            result = subprocess.run([sys.executable, git_sync_path], check=False, timeout=SYNC_TIMEOUT_SECONDS)
             if result.returncode != 0:
                 push_status = "FAILED"
                 print(f"  ⚠️ git_sync.py 結束碼：{result.returncode}，請手動確認推送")
         except subprocess.TimeoutExpired:
             push_status = "TIMEOUT"
-            print("  ⚠️ git_sync.py 超過 120 秒未完成，可能為網路異常，請手動執行推送")
+            print(f"  ⚠️ git_sync.py 超過 {SYNC_TIMEOUT_SECONDS} 秒未完成，可能為網路異常，請手動執行推送")
         except Exception as e:
             push_status = "ERROR"
             print(f"  ⚠️ git_sync.py 呼叫失敗（不影響本次結果）：{e}")
-        try:
-            with open(LOG_REPORT_FILE, 'r', encoding='utf-8') as f:
-                _log = json.load(f)
-            _log["push_status"] = push_status
-            with open(LOG_REPORT_FILE, 'w', encoding='utf-8') as f:
-                json.dump(_log, f, ensure_ascii=False, indent=2)
-        except Exception:
-            pass
+        _write_push_status(push_status, taiwan_time)
 
 
 if __name__ == "__main__":

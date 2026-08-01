@@ -81,14 +81,29 @@ def _is_report_fresh():
 
 
 def _check_push_status():
-    """讀取 log_report.json，回傳 push_status 欄位（預設 OK）"""
+    """
+    讀取 push_status.json，回傳 push_status 欄位。
+
+    2026-08-01（稽核 E5）起，推送狀態由 radar.py 寫入本機 sidecar，
+    不再回寫 log_report.json（該檔於 git_sync 提交後即維持乾淨）。
+    以 last_update 與 log_report.json 比對時效：不一致代表 sidecar 是上一輪
+    的殘留（例如 radar 在寫入前被終止），回傳 UNKNOWN 觸發告警，
+    避免舊的 OK 被誤讀成本輪推送成功。
+    """
     try:
+        status_path = os.path.join(LOCAL_PATH, "push_status.json")
+        with open(status_path, 'r', encoding='utf-8') as f:
+            payload = json.load(f)
         log_path = os.path.join(LOCAL_PATH, "log_report.json")
         with open(log_path, 'r', encoding='utf-8') as f:
             report = json.load(f)
-        return report.get("push_status", "OK")
-    except Exception:
-        return "OK"
+        if payload.get("last_update") != report.get("last_update"):
+            return "UNKNOWN（push_status.json 非本輪產出）"
+        return payload.get("push_status", "UNKNOWN")
+    except FileNotFoundError:
+        return "UNKNOWN（找不到 push_status.json）"
+    except Exception as e:
+        return f"UNKNOWN（讀取失敗：{e}）"
 
 
 def main():

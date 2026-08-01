@@ -36,12 +36,15 @@ Left 不負責底層架構設計與演算法優化，此類任務由研發長 Ri
 
 ---
 
-## 自動推送機制（V7.9）
+## 自動推送機制（V7.9，2026-08-01 稽核 D1／E5 更新）
 
-radar.py 在**非 GitHub Actions 環境**執行完畢後，會自動呼叫同目錄的 `git_sync.py` 推送戰報，推送結果（OK / FAILED / TIMEOUT / ERROR）寫回 `log_report.json` 的 `push_status`。
+radar.py 在**非 GitHub Actions 環境**執行完畢後，會自動呼叫同目錄的 `git_sync.py` 推送戰報，推送結果（OK / FAILED / TIMEOUT / ERROR）寫入本機 **`push_status.json`**（不進版控）。
 
+- **推送狀態不再寫回 `log_report.json`**：原本該欄位在 git_sync 提交「之後」才回寫，害 GitHub 上的值永遠慢一輪、且工作區每次執行後恆為 dirty，逼 git_sync 每一次都走 stash／pull／pop（該路徑曾有 stash 誤 pop 問題）。改存 sidecar 後，`log_report.json` 提交完即保持乾淨。
+- `push_status.json` 帶 `last_update`，須與 `log_report.json` 的同名欄位一致才算本輪結果；不一致代表是上一輪殘留。
+- **只有一條推送路徑**：`git_sync.sync_to_github(files=..., commit_msg=...)`。`mengong_auto.py` 已於 2026-08-01 停用自帶的 git 指令，改呼叫此函式；`.git_sync.lock` 確保兩者不同時操作 repo。
 - Left 職責：確認 `push_status` 正常；若為 FAILED/TIMEOUT，手動補推並排查
-- 手動補推：`git add` **5 個戰報檔**（plum_blossom_data / ocean_history / log_report / backtest_report / grace_theme_data）→ `git commit` → `git push origin main`
+- 手動補推：`python git_sync.py`（預設 5 個戰報檔：plum_blossom_data / ocean_history / log_report / backtest_report / grace_theme_data），或 `python git_sync.py <指定檔案>`
 
 ---
 
@@ -66,7 +69,8 @@ index.html 排列優化 P1–P4，純前端、零 API 影響。Left 維護時須
 2. **本地修改**：在工作目錄執行程式碼修改
 3. **實彈測試**：執行 `python radar.py`，確認三點：
    - `plum_blossom_data.json` 格式正確，無 JSON 解析錯誤
-   - `log_report.json` status 為 Success、push_status 為 OK
+   - `log_report.json` status 為 Success；`push_status.json` 的 push_status 為 OK 且 last_update 與前者一致
+   - `git status` 為乾淨（E5 後工作區不應殘留 `M log_report.json`）
    - 各前端分頁在手機與桌機瀏覽不跑版（UI 修改時）
 4. **提交**：`git add .` 與 `git commit`，附上修改說明
 5. **回報**：完成後回報 JW 指揮官
@@ -102,9 +106,9 @@ index.html 排列優化 P1–P4，純前端、零 API 影響。Left 維護時須
 | 連結對象 | 路徑 | Left 的用途 |
 |---|---|---|
 | 核心引擎 | `radar.py`（V9.0） | 實彈測試對象（核心邏輯改動須 Right 授權） |
-| 自動推送 | `git_sync.py` | 5 個戰報檔精準推送邏輯 |
+| 自動推送 | `git_sync.py` | 全系統唯一推送實作（預設 5 個戰報檔，可帶 files 參數；含 `.git_sync.lock` 互斥鎖） |
 | 前端五分頁 | `index.html` / `stellar_blueprint.html` / `mengong.html` / `warroom.html` / `grace.html` | 響應式 UI 維護主戰場 |
-| 維運日誌 | `log_report.json` | 實彈測試驗收（status / push_status） |
+| 維運日誌 | `log_report.json` | 實彈測試驗收（status）；推送狀態另見本機 `push_status.json` |
 | 手動備援 | `.github/workflows/manual_radar_update.yml` | GitHub Actions 手動觸發（僅 workflow_dispatch） |
 | 專屬工具 Skill | `skills/karpathy-coder/SKILL.md` | commit 前程式碼紀律守門 |
 
