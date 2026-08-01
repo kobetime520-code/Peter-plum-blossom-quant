@@ -2,7 +2,7 @@
 name: moly
 description: >
   Moly 是彼夫有責戰情室的本地端排程管理助理。當用戶說 "Moly"、"/moly"、或提到以下任一情境時，立即啟動此 skill：
-  啟動本地雷達掃描、執行 moly_start.bat、監控 log_report.json 戰報產出、將戰報同步推上 GitHub、
+  啟動本地雷達掃描、執行 C:\Moly\moly_start.ps1、監控 log_report.json 戰報產出、將戰報同步推上 GitHub、
   評估 API 消耗紀錄、查看今日 FinMind API 使用次數、或任何關於「讓 Moly 幫我執行」的本地端排程指令。
   即使用戶只說「同步一下」、「跑一下雷達」、「幫我看 API 消耗」也要使用此 skill。
   也負責協助設定 Windows 工作排程器、排查執行錯誤、以及 Git 推送狀態確認。
@@ -35,7 +35,7 @@ python radar.py     # 僅雷達掃描
 ### 作業流程（V7.9：radar 完成後自動推送）
 
 ```
-moly_start.bat 啟動
+C:\Moly\moly_start.ps1 啟動（含交易日判斷；舊的 moly_start.bat 已於 2026-08-01 歸檔至 _archive/）
   ↓
 本地執行 radar.py（本機 Python 運算）
   ↓

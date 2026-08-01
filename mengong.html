@@ -69,7 +69,7 @@
             </div>
             <div class="bg-blue-50 border border-blue-100 rounded-lg p-3">
                 <p class="text-xs font-bold text-ocean-blue mb-1">🤖 Claude AI 彙整說明</p>
-                <p class="text-xs text-gray-500">AI 彙整由本機 Python 腳本執行，不需在此填入 API Key。<br>執行方式：<code class="bg-white px-1 rounded border">python mengong_summary.py</code></p>
+                <p class="text-xs text-gray-500">彙整由本機 Python 腳本自動執行，不需在此填入 API Key。<br>每日 21:00 排程自動更新，手動執行：<code class="bg-white px-1 rounded border">python mengong_auto.py</code></p>
             </div>
         </div>
         <div class="flex gap-3 mt-6">
@@ -139,7 +139,7 @@
                     🤖 Claude AI 投資要點彙整
                     <span class="text-xs font-normal bg-white/20 px-2 py-0.5 rounded-full text-blue-200">本機運算</span>
                 </h3>
-                <p class="text-blue-300 text-sm mt-1">由本機 <code class="bg-white/10 px-1 rounded">mengong_summary.py</code> 執行 Claude API 彙整，結果存入 JSON 供頁面讀取</p>
+                <p class="text-blue-300 text-sm mt-1">由本機 <code class="bg-white/10 px-1 rounded">mengong_auto.py</code> 以規則式彙整（零 API），每日 21:00 排程自動更新，結果存入 JSON 供頁面讀取</p>
             </div>
             <div class="flex-shrink-0 text-right">
                 <p class="text-blue-400 text-xs">上次彙整</p>
@@ -149,7 +149,7 @@
         <div id="aiSummaryResult" class="bg-white/10 rounded-xl p-4 text-blue-100 text-sm leading-relaxed border border-white/20 min-h-[60px]">
             <span class="text-blue-400 animate-pulse">讀取彙整結果中...</span>
         </div>
-        <p class="text-blue-500 text-xs mt-3">※ 更新彙整：本機執行 <code class="bg-white/10 px-1 rounded">python mengong_summary.py</code> → git push</p>
+        <p class="text-blue-500 text-xs mt-3">※ 更新彙整：每日 21:00 排程自動執行；手動補跑 <code class="bg-white/10 px-1 rounded">python mengong_auto.py</code>（內含 git_sync 推送）</p>
     </div>
 
     <!-- ===== 即時動態：YouTube + Facebook ===== -->
@@ -310,7 +310,7 @@ async function loadSummaryJson() {
                 .replace(/\n/g, '<br>')
                 .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
         } else {
-            summaryEl.innerHTML = '<span class="text-blue-400">尚無彙整內容，請本機執行 mengong_summary.py</span>';
+            summaryEl.innerHTML = '<span class="text-blue-400">尚無彙整內容，請本機執行 mengong_auto.py</span>';
         }
         timestampEl.textContent = data.last_updated || '—';
 
@@ -324,7 +324,7 @@ async function loadSummaryJson() {
         }
     } catch(e) {
         document.getElementById('aiSummaryResult').innerHTML =
-            '<span class="text-blue-400">尚無彙整檔案，請本機執行：<code class="bg-white/10 px-1 rounded">python mengong_summary.py</code></span>';
+            '<span class="text-blue-400">尚無彙整檔案，請本機執行：<code class="bg-white/10 px-1 rounded">python mengong_auto.py</code></span>';
         document.getElementById('summaryTimestamp').textContent = '—';
     }
     return false;
