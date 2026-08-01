@@ -2,11 +2,24 @@
 name: war-room-designer
 description: "戰情室視覺設計工具：Dashboard 2.0 版面規劃、Chart.js 圖表選型、各品牌分頁視覺一致性、響應式斷點、色彩與資訊層級。用於把數據與戰報轉成一眼看懂、風格統一的戰情室介面。觸發條件：'戰情室介面'、'Dashboard 設計'、'加個圖表'、'視覺一致性'、'響應式版面'、'配色/字級'、'/war-room-designer'。"
 owner: Zoey（Team Stock 投資行銷創意長）
-aligns_with: index.html V9.1 UI / grace.html 題材分頁 / Chart.js / plum_blossom_data.json 資料源
+aligns_with: index.html V9.2 UI（極光玻璃／粉紅泡泡糖雙主題）/ grace.html 題材分頁 / Chart.js / plum_blossom_data.json 資料源
 installed: 2026-07-06
+updated: 2026-08-01
 ---
 
 # War Room Designer — 戰情室視覺設計引擎
+
+> 📌 **本檔為方法論工具包**（怎麼做視覺設計：資訊層級 → 圖表選型 → 配色 → 響應式驗收），
+> 已獨立安裝為全域 skill `war-room-designer`（`C:\AIworkplace\.claude\skills\war-room-designer\SKILL.md`）。
+> 觸發：「Dashboard 設計」「加個圖表」「視覺一致性」「響應式版面」「/war-room-designer」。
+>
+> Zoey 的**角色人格正本**是另一份 `Zoey_SKILL.md`（是誰、管哪些檔案、負責什麼），
+> 觸發：「請用 Zoey 身份」「切換到 Zoey 模式」。
+>
+> **兩者不重疊、不合併**：人格檔決定「誰在做」，本檔決定「用什麼流程做」。
+> 需要 Zoey 完整操刀一項視覺工作時兩份併用。（2026-08-01 稽核 D2／F-10 釐清）
+>
+> ⚠️ 本檔修改後須同步全域安裝副本，否則兩邊會再度漂移（本次漂移即 V9.1 → V9.2 未同步所致）。
 
 > Zoey 用於把「一堆數字與戰報」變成一眼看懂、跨分頁風格一致的戰情室介面。
 > 核心信念：「先定資訊層級，再選圖表，最後才談配色。好看是結果，看得懂才是目的。」
@@ -41,7 +54,7 @@ installed: 2026-07-06
 - 原則：能用表格說清楚就不硬上花俏圖；圖表一律附單位與時間戳
 
 ### Phase 3 — 視覺一致性（跨分頁）
-- **共用設計 token**：主色/警示色/背景/字級階梯，統一沿用 index.html V9.1 既有變數，不新增雜色
+- **共用設計 token**：主色/警示色/背景/字級階梯，統一沿用 index.html V9.2 UI 既有變數（雙主題各自的 CSS 變數），不新增雜色
 - 燈號語意固定：🔴 風險/賣、🟡 觀察、🟢 穩固/買（全站一致，不可分頁各自定義）
 - 元件複用：卡片、標籤、表格樣式共用同一套 class，新分頁繼承而非另造
 
@@ -56,7 +69,7 @@ installed: 2026-07-06
 
 ```
 ## 戰情室視覺規格：[頁面/元件]
-資料源：[JSON 檔] | 目標裝置：[桌機/手機] | 版本對齊：index.html V9.1
+資料源：[JSON 檔] | 目標裝置：[桌機/手機] | 版本對齊：index.html V9.2 UI
 
 ### 資訊層級（三秒重點）
 [使用者最先看到的 1–2 項]
@@ -88,4 +101,5 @@ installed: 2026-07-06
 ---
 
 **Owner:** Zoey ｜ **實作交棒:** [[karpathy-coder]]（Left）｜ **資料品質前置:** [[data-quality-auditor]]
-**對齊:** index.html V9.1 UI / grace.html 題材分頁 / Chart.js
+**角色人格正本:** `Zoey_SKILL.md`（本檔為方法論工具包，兩者分工見檔首）
+**對齊:** index.html V9.2 UI（極光玻璃／粉紅泡泡糖雙主題）/ grace.html 題材分頁 / Chart.js

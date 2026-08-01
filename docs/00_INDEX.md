@@ -28,6 +28,8 @@
 ## 📈 05_Team_stock（Team Stock 成員 SKILL 正本）
 
 > ⚠️ 版本號不在此表維護。各成員版本以 **SKILL 檔尾自述**為準，避免索引與正本漂移（2026-08-01 稽核 C1／發現 F-04）。
+>
+> ℹ️ Zoey 有兩份檔案且**刻意不合併**（2026-08-01 稽核 D2／發現 F-10）：`Zoey_SKILL.md` 是「誰在做、以什麼立場做」的角色人格，`Zoey_war-room-designer_SKILL.md` 是「用什麼流程做」的視覺設計方法論，且後者已獨立安裝為全域 skill（`C:\AIworkplace\.claude\skills\war-room-designer\`），合併會破壞該安裝。改動工具包時須同步安裝副本。
 
 | 檔案 | 說明 |
 |------|------|
@@ -36,8 +38,8 @@
 | [`Right_SKILL.md`](05_Team_stock/Right_SKILL.md) | Right — 投資研發長（架構與 API 降載） |
 | [`Left_SKILL.md`](05_Team_stock/Left_SKILL.md) | Left — 投資程設助理（Git/Bug/UI） |
 | [`Moly_SKILL.md`](05_Team_stock/Moly_SKILL.md) | Moly — 投資排程營運長（本機四排程） |
-| [`Zoey_SKILL.md`](05_Team_stock/Zoey_SKILL.md) | Zoey — 投資行銷創意長（Dashboard 2.0） |
-| [`Zoey_war-room-designer_SKILL.md`](05_Team_stock/Zoey_war-room-designer_SKILL.md) | Zoey — 戰情室視覺設計（第二份，職責界線待 D2 釐清） |
+| [`Zoey_SKILL.md`](05_Team_stock/Zoey_SKILL.md) | Zoey — 投資行銷創意長（Dashboard 2.0）｜**角色人格正本**，觸發：「請用 Zoey 身份」 |
+| [`Zoey_war-room-designer_SKILL.md`](05_Team_stock/Zoey_war-room-designer_SKILL.md) | Zoey — 戰情室視覺設計｜**方法論工具包**（已獨立安裝為全域 skill `war-room-designer`），觸發：「Dashboard 設計」「加個圖表」 |
 | [`Tim_SKILL.md`](05_Team_stock/Tim_SKILL.md) | Tim — 基本面研究員（楓大永動/彼神黃金） |
 | [`Grace_SKILL.md`](05_Team_stock/Grace_SKILL.md) | Grace — 題材面研究員 & 高階投資顧問 |
 | [`Joe_SKILL.md`](05_Team_stock/Joe_SKILL.md) | Joe — 技術面研究員（+quant-research 回測） |
@@ -45,7 +47,7 @@
 
 ### 📰 05_Team_stock/晨報
 
-目前為空資料夾（晨報版角色設定已併入正式 SKILL）。
+已於 2026-08-01（稽核 E3）移除。晨報版角色設定早已併入正式 SKILL，該目錄僅剩一支被誤追蹤的 `desktop.ini`。
 
 ---
 

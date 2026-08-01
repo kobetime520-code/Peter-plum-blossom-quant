@@ -215,6 +215,7 @@
                     <span id="logCount" class="text-xs bg-ocean-blue text-white px-2 py-1 rounded font-bold"></span>
                 </div>
                 <p class="text-gray-400 text-sm">精選集數結構化摘要，戰術行動永久存檔</p>
+                <p id="logsFrozenNote" class="text-amber-600 text-xs mt-1 bg-amber-50 border border-amber-200 rounded px-2 py-1 inline-block" style="display:none"></p>
             </div>
             <div class="relative w-full md:w-72">
                 <input type="text" id="logSearch" oninput="filterLogs()" placeholder="搜尋題材、集數、關鍵字..." class="w-full px-5 py-2.5 rounded-full border border-gray-200 focus:border-ocean-blue focus:ring-4 focus:ring-blue-100 outline-none transition text-sm">
@@ -440,6 +441,21 @@ async function loadLogs() {
     }
     filterLogs();
     document.getElementById('logCount').textContent = `${logData.length} / ${logData.length} 筆`;
+
+    // 凍結資料標註（稽核 E4／F-14）：mengong_logs.json 為手動維護、無自動寫入者，
+    // 陣列本身無 metadata，故取資料中最新的 date 當作截止日，避免被誤認為即時值。
+    const note = document.getElementById('logsFrozenNote');
+    if (note && logData.length) {
+        const latest = logData
+            .map(x => (x && x.date) ? String(x.date) : '')
+            .filter(Boolean)
+            .sort()
+            .pop();
+        if (latest) {
+            note.textContent = `📌 手動維護典藏庫 · 資料截至 ${latest}（不隨每日 21:00 排程更新）`;
+            note.style.display = 'inline-block';
+        }
+    }
 }
 
 // 情緒溫度計顏色
