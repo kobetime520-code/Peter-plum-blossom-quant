@@ -30,12 +30,16 @@
 | 路徑 | 說明 |
 |---|---|
 | `radar.py` | 核心雷達掃描程式（正式版，根目錄） |
-| `moly.py` / `git_sync.py` | 本地主算入口 / 精準推送（5 個戰報檔） |
+| `moly.py` / `git_sync.py` | 本地主算入口 / **全系統唯一推送實作**（預設 5 個戰報檔，可帶 files 參數；`.git_sync.lock` 互斥，2026-08-01 D1） |
+| `log_setup.py` | 三支排程執行器共用的輪替 logger（單檔 2 MB、保留 3 份，2026-08-01 E1） |
 | `plum_blossom_data.json` | 每日選股戰報（根目錄） |
 | `ocean_history.json` | 記憶海（根目錄，**真·僅追加**，2026-08-01 A1 修正） |
 | `log_report.json` / `backtest_report.json` / `grace_theme_data.json` | 維運日誌 / 週回測 / Grace 題材 |
+| `push_status.json` | 推送狀態 sidecar（**本機專有、不進版控**，2026-08-01 E5；帶 `last_update` 供時效比對） |
 | `index.html` / `grace.html` / `mengong.html` | 前端展示頁面（根目錄） |
 | `backtest_run.py` / `grace_run.py` / `mengong_auto.py` | 排程執行器（回測 / 題材 / 孟恭） |
+| `tests/` | 離線回歸測試（`run_all.py` 為批次入口；`manual_*.py` 需連網，不入批次，2026-08-01 D3） |
+| `_archive/` | 已停用檔案歸檔（附 README 逐檔記錄停用原因，2026-08-01 E2）；**內容一律不要直接執行** |
 | `finmind_cache.json` 等 `*_cache.json` | 本地快取（不推送） |
 | `C:\Moly\`（倉庫外） | 排程進入點：`moly_start.ps1`（含交易日判斷）、`backtest_start.ps1`、`grace_start.ps1`、`holidays.txt`（證交所休市日）、`norton_root.pem` |
 | `.github/workflows/manual_radar_update.yml` | GitHub Actions 手動備援（僅 workflow_dispatch，無 cron） |
@@ -260,6 +264,8 @@ action = "買入加碼" if close_price >= ma5 and inst_buy_30d > 0 else "靜候�
 5. **優化前端展示**（直接改 `index.html`／`grace.html`／`mengong.html`）
 6. **維護手動備援**（`.github/workflows/manual_radar_update.yml`，僅 `workflow_dispatch`）
 7. **排查排程異常**（`排程進度看板.bat`／`moly_ps.log`／`radar_run.log`）
+8. **跑回歸測試**（改動 `radar.py` 閘門邏輯後執行 `python tests/run_all.py`，全離線、零 API）
+9. **手動補推**（`python git_sync.py`＝5 個戰報檔；`python git_sync.py <檔名>`＝指定檔案）
 
 ---
 
@@ -269,8 +275,10 @@ action = "買入加碼" if close_price >= ma5 and inst_buy_30d > 0 else "靜候�
 - 工作流程：**Plan Mode 規劃 → JW 授權 → 直接改正式版**（沙盒資料夾 `radar test/`、`index test/` 已於 2026-05-17 廢止並移除）
 - 規格文件單一事實來源為本檔，`README.md` 與 `docs/00_INDEX.md` 只作導引（見「📖 文件分工」）
 - `ocean_history.json`（根目錄）**真·僅追加**：以既有累計為基底，當日未命中股原樣保留；筆數縮水即不覆寫
-- 所有程式、戰報、快取、前端頁面皆位於**專案根目錄**（2026-07-04 起集中，無子資料夾分層）
-- FinMind API token 以環境變數傳入，不寫入程式碼；日誌目前仍會落明文 token（稽核 B 群待辦）
+- **推送一律走 `git_sync.py`**（2026-08-01 D1 收斂後為唯一實作），勿在任何腳本內自行 `git add/commit/push`——會繞過 stash 防呆、rebase 衝突處理、推送重試與 `.git_sync.lock` 互斥，重蹈孟恭旁路的覆轍
+- **改動 `radar.py` 閘門邏輯後須跑 `python tests/run_all.py`**（離線、零 API），並視情況補測試
+- 程式、戰報、快取、前端頁面位於**專案根目錄**（2026-07-04 起集中）；例外為 `tests/`（回歸測試）與 `_archive/`（停用檔歸檔），皆 2026-08-01 建立
+- FinMind API token 以環境變數傳入，不寫入程式碼；日誌目前仍會落明文 token（**JW 決議接受風險、不處置**，自保方式為日誌不外傳）
 
 ---
 
@@ -295,6 +303,11 @@ action = "買入加碼" if close_price >= ma5 and inst_buy_30d > 0 else "靜候�
 | 2026-08-01 | — | **版本日誌重排與過期路徑校正（稽核 C3，對應發現 F-07／F-08）**：① 版本日誌表由亂序（6 月與 7 月交錯、07-09 排在 07-10 之後）改為**依日期降序**，同日多筆依當日執行先後排列；② 「常見協作任務」路徑校正至根目錄（`radar/radar.py`→`radar.py`、`V7 daily json/`→根目錄、`auto radar yml/auto_radar.yml`→`.github/workflows/manual_radar_update.yml`），並補「維護手動備援」「排查排程異常」兩項；③ 「協作規範」移除已廢止的 `*test` 沙盒流程敘述，改載明 Plan Mode → JW 授權 → 直接正式版，記憶海路徑與真·僅追加語意同步；④ 每日 SOP 移除不存在的 `每日作業SOP.html` 引用、`index/index.html`→`index.html`、補排程看板；⑤ 「最新戰情快照」由 2026-04-28 更新至 08-01 實測值並註明非即時值；⑥ 成員索引 Moly 的 `moly_start.bat` 改為 `C:\Moly\moly_start.ps1`、Joe 的「停損×0.9」改為 ATR×2 動態停損。 |
 | 2026-08-01 | — | **魚池表對齊 radar.py 實況**（C3 施工中發現的新漂移，F-06 殘留；以程式為準）：🍁 楓大永動 `6485` → **`6155`**；🌟 彼神黃金移除 `3028`、補 `3675`；🔭 測試員觀察由 8 支修正為**實際 14 支**（移除 `1711`／`3675`，補 `5425`、`6224`、`3707`、`3016`、`5274`、`6270`、`6667`、`3706`）；補列文件從未記載的 **🃏 被動卡娃魚池**（`PASSIVE_KAWA_TIERS`，display-only 13 支，分 Tier 1 核心／Tier 2 主力／Tier 3 衛星，不參與篩選、不影響猛虎晉升、不計入多空統計），並加入魚池 × 成員速查表。表下加註「名單正本在 `radar.py`，改名單須同步兩處」。 |
 | 2026-08-01 | — | **啟動橫幅版本號同步（稽核 C4，對應發現 F-05）**：`radar.py` 啟動橫幅長期停在 V8.9（未列 V9.0 雙閘門與 V9.2 姊夫池動態引擎），導致日誌／看板無法據以判斷執行版本。修法不只改字串，另新增模組常數 `RADAR_VERSION`／`RADAR_VERSION_NOTE` 集中管理，啟動橫幅與完成訊息（原「V8.9 儀表板數據」）改引用同一常數，升版只需改一行，根除「兩處各自寫死而落後」的復發路徑。檔頭註解原已為 V9.2，無須更動。已過 `py_compile` 與橫幅實際輸出驗證。 |
+| 2026-08-01 | — | **推送流程收斂 + push_status 移出戰報檔（稽核 D1／E5，對應發現 F-09／F-15）**：兩項合併處理，因為 E5 使 `log_report.json` 恆為 dirty、逼 `git_sync` 每次都走 stash／pull／pop，而 D1 的旁路又在同一時間窗競用 repo。① **D1**：`mengong_auto.py` 移除自帶的 `git add/commit/push`，改呼叫 `git_sync.sync_to_github(files=..., commit_msg=...)`；`git_sync` 參數化（V1.2 → V1.3）並新增 `.git_sync.lock` 互斥鎖（等待上限 180 秒、陳舊鎖 10 分鐘自動回收），孟恭 21:00 與 radar 20:39～21:25 的時間窗重疊改為明確排隊；衝突處理的 `checkout --theirs` 目標改為本次傳入的檔案，不再寫死 `SYNC_FILES`。**推送時機不變**，孟恭資料仍於 21:00 當下上線（若改採「只產檔、交給白名單」會延到隔天、週末不上線，故不採）。② **E5**：`push_status` 原本在 `git_sync` 提交「之後」才回寫 `log_report.json`，使 GitHub 上的值永遠慢一輪，且工作區每次執行後恆為 dirty。實測 `index.html` **未讀此欄位**，讀取者僅 `moly.py`／`schedule_progress.ps1`／`tests/verify_v89.py` 三個本機端，故整欄移至 `push_status.json`（gitignored），並帶 `last_update` 供時效比對；`moly.py` 讀取失敗不再樂觀回傳 OK，改回 `UNKNOWN` 觸發告警。③ 順帶修復 `git_sync` 的無變更誤判：工作區有其他未暫存變動時 git 回「no changes added to commit」而非「nothing to commit」，舊字串比對漏接會把無變更誤判為推送失敗；改以 `git diff --cached --quiet` 明確判定。此瑕疵原被 `log_report.json` 恆 dirty 遮蔽，E5 讓工作區恢復乾淨後才會踩到。驗證：推送鎖三情境實測、無變更路徑回傳 True 不產生 commit、`push_status` 四種偵測路徑（正常／非本輪殘留／FAILED／檔案不存在）全對。 |
+| 2026-08-01 | — | **建立 `tests/` 並補 V9.x 閘門離線回歸測試（稽核 D3，對應發現 F-11）**：三支測試腳本原散在根目錄且被 `.gitignore` 逐檔排除，V9.0～V9.2 的四道新閘門完全沒有版控中的自動化保護。① 建立 `tests/` 納入版控，既有三支移入並依是否需連網分流（`manual_atr_stop.py`／`manual_market_regime.py` 需 yfinance，不入批次；`verify_v89.py` 離線，補 `chdir` 修正相對路徑）；② 新增 `tests/test_gates.py`（**57 項離線斷言**，零 API、零網路）涵蓋 A1 籌碼方向閘門、A2 追高防護、記憶海真·僅追加與防縮水護欄、姊夫池動態篩選與排序、−7%／+8% 停損停利、融資閘門容錯放行、大盤三段式與 `rsi_ceiling`；③ 新增 `tests/run_all.py` 批次入口。為使最高風險邏輯可測，將兩段 inline 碼**原地抽為純函式（判斷條件一字未改）**：`_passes_ocean_gates(s_data, rsi_ceiling)` 與 `merge_ocean_history(history, hits, today)`。抽取等價性以 25,000 組隨機輸入對「抽取前原始碼逐字重現版」比對，**差異 0 筆**。 |
+| 2026-08-01 | — | **日誌自動輪替（稽核 E1，對應發現 F-12）**：`moly.py`／`grace_run.py`／`backtest_run.py` 三支排程執行器各自以 `FileHandler(mode='a')` 寫同一支 `moly.log`，完全沒有輪替、只能單向成長；過去兩次歸檔（07-04、07-09）都是編碼修復時順手做的人工動作。新增 `log_setup.py`（`RotatingFileHandler`，單檔 2 MB、保留 3 份、`delay=True`），三支共用同一份設定避免再度漂移；`mengong_auto_run.bat` 另加大小檢查（該日誌由 `.bat` 的 `>>` 重導產生、檔案由 cmd 持有，Python 端無法輪替），並以子程序取得檔案大小，避開「在 `if` 區塊內取用同區塊剛設定的變數」需延遲展開的 batch 陷阱。**不在此次範圍**：`moly_ps.log` 由倉庫外的 `C:\Moly\moly_start.ps1` 重導產生，另案處理。已知限制：週六 06:00 兩支排程同時觸發、同寫 `moly.log`，Windows 檔案鎖可能使該次 rollover 失敗（僅影響輪替，不影響寫入）。 |
+| 2026-08-01 | — | **停用檔歸檔與殘留清理（稽核 E2／E3，對應發現 F-13）**：建立 `_archive/` 並附 README 逐檔記錄停用原因，**一律 `git mv`、不做實體刪除**。歸檔 8 檔：`moly_start.bat`（已被 `C:\Moly\moly_start.ps1` 取代，且無交易日判斷、誤用會在假日產出無效戰報）、`mengong_summary.py`（功能已併入 `mengong_auto.py`）、`setup_mengong_schedule.bat`、`MengongAuto_Daily.xml`、兩支 legacy log、`institutional_investors_test.csv`（`finmind_gateway testing/` 唯一殘留檔，實測為**未追蹤**而非稽核所載的已追蹤，父層兩級空殼目錄一併移除）、`yongguang_transcript.txt`。清除殘留：`docs/05_Team_stock/晨報/desktop.ini`（`git rm --cached`＋移除空目錄）、`__pycache__/`、`.claude/worktrees/`（`git worktree list` 確認未註冊、0 檔案）。連帶修正引用：`mengong.html` 五處 `mengong_summary.py` 文案、`Moly_SKILL.md` 兩處殘留的 `moly_start.bat`（C3 當時只改到本檔成員索引，SKILL 正本仍是舊值）。 |
+| 2026-08-01 | — | **Zoey 雙 SKILL 明確分工＋凍結資料標註（稽核 D2／E4，對應發現 F-10／F-14）**：① **D2**：Zoey 兩份 SKILL **刻意不合併** —— `Zoey_SKILL.md` 是角色人格正本（誰在做、以什麼立場做），`Zoey_war-room-designer_SKILL.md` 是視覺設計方法論工具包（用什麼流程做）且已獨立安裝為全域 skill（`C:\AIworkplace\.claude\skills\war-room-designer\`），合併會破壞該安裝。兩檔檔首互指並各自載明觸發條件，`docs/00_INDEX.md` 補說明；同時校正工具包內落後的 V9.1 字串 4 處為 V9.2 UI 雙主題並**同步全域安裝副本**（本次漂移正是兩邊未同步所致，故加註「修改後須同步副本」）。② **E4**：兩份已凍結的手動資料前端仍當現行資料呈現 —— `grace.html` 個股轉型深度專題取既有 `last_updated`（2026-06-27）、`mengong.html` 歷史航跡典藏庫因陣列無 metadata 改取資料中最新 `date`（2026.05.23），皆標示「手動維護 · 資料截至 …（不隨排程更新）」。兩頁以瀏覽器實測渲染正確、無 console 錯誤。 |
 | 2026-07-13 | V9.2 UI | **粉色海洋版換膚「粉紅泡泡糖・莓果馬卡龍」**（Zoey 配色，純前端、零 API 影響，僅動 `[data-theme="light-ocean"]` 變數與連動處，極光玻璃版與版面邏輯不變）：背景由 V9.2「深藍夜幕底」改為淺色泡泡糖粉底（`linear-gradient #FFF0F6→#FFD6E7→#F4A6C8` ＋莓紅／薰衣草／蜜桃三色 radial 光暈）；文字改深色系確保淺底可讀 — `--text-main #4B1528`（對比 12.94）、`--text-muted #993556`（6.20）；主強調 `--neon-cyan #B83A63`（莓粉，4.85）、`--neon-gold #8A5807`（深金，5.33）皆加深至過 WCAG AA 4.5（含 12px 小字）；買入綠 `#3B6D11`（5.50）／停損紅 `#C0392B`（4.82）語意色保留；面板改白粉半透明玻璃感；淺底關閉星空層 `body::before`（白星點不可見）；neon-cyan 加深後 `.version-badge`／active nav 徽章改白字維持對比。同步更新切換鈕文字「🌸 切換粉紅泡泡糖版」與 V9.2 UI 說明。全數對比度以程式化計算＋新建元素套變數實測確認（AA 全過）。 |
 | 2026-07-11 | — | **名冊與 SKILL 版本同步稽核**（29 位 agent 全數註冊正常、16 個 skill 掛載正常）：Team Stock 5 人 SKILL 對齊 V9.2 — Eric V1.3（姊夫池融資 10 日遽增風控閘門）、Right V2.3（姊夫池動態篩選架構）、Joe V2.4（姊夫池專屬停損停利 −7%/+8% + suggested_position）、Zoey V2.4（V9.2 UI 極光玻璃／泡泡糖波浪雙主題，修正檔內 V8.9 徽章殘留）、Left V2.4（V9.2 UI 雙主題維護）；Tim V2.2 footer 補記名單同步日期（2026-07-11）；`.claude\agents\` 對應 5 檔版本宣告同步；本檔魚池表姊夫池改動態篩選描述、協作規範版本更新至 V9.2。 |
 | 2026-07-10 | — | **Moly-Daily 失敗排查 + 記憶海防清空護欄**：① 排程 20:39 失敗排查：回傳碼 0xC000013A（外部強制終止，非程式錯誤；同時段 nordsec-threatprotection-service 異常終止 2 次為最可疑源），手動重跑 radar.py 完整成功不可重現，戰報以手動重跑弭平 ② 定位記憶海清空根因：7/9 汪洋大魚合法掃出 0 支 → radar.py `new_history` 僅保留今日出現股票 → 整檔被 `{}` 覆寫（7/4 SSL 事件洗空為同一機制），與「僅追加」設計矛盾 ③ radar.py 加防清空護欄：汪洋 0 支時保留舊記憶海不覆寫 ④ 記憶海資料修復：以 7/8 版本(d7ca0aa)為基準套用今日掃描合併重建（56 支，count≥3 猛虎候選 7 支：1909=6、1216/2889/4114/2637=4、2369/2601=3）⑤ **看板即時進度來源修正**：radar.py 的 stdout 由 moly.py 導向 `radar_run.log`（非 `moly_ps.log`，後者僅含 logger 與 git_sync 輸出），看板執行中改讀前者；moly.py 子程序環境加 `PYTHONUNBUFFERED=1`（實測：未設時執行中檔案為 0 bytes、8KB 區塊緩衝至結束才 flush，故看板看不到逐批進度，且行程遭強制終止時輸出全失 — 這正是今日 radar_run.log 為 0 bytes 的原因，該檔無法用於判定死亡時點）。 |
