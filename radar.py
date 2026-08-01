@@ -724,6 +724,78 @@ _THEME_MAP = [
 ]
 
 
+def _passes_ocean_gates(s_data: dict, rsi_ceiling) -> tuple:
+    """
+    🆕 V9.0 汪洋大魚入池雙閘門（2026-08-01 稽核 D3 由 main() 原地抽出，判斷條件未變）。
+
+    A1 籌碼方向閘門：合計淨買超 > 0 之外，至少一主力（外資或投信）同向買超，
+                     剔除「假合計正」（自營商撐起的合計正值）。
+    A2 追高防護    ：RSI 達環境上限（多頭 80／中性 75／空頭 70）即剔除，避免買在波段高點。
+
+    回傳 (通過與否, 攔截原因)；原因為 "chip"／"rsi"，通過時為空字串。
+    """
+    if not (s_data['foreign_buy'] > 0 or s_data['trust_buy'] > 0):
+        return False, "chip"
+    if s_data['rsi14'] >= rsi_ceiling:
+        return False, "rsi"
+    return True, ""
+
+
+def merge_ocean_history(history: dict, today_ocean_sids, today_str: str) -> tuple:
+    """
+    🛡️ 記憶海「真·僅追加」合併（2026-08-01 A1 修正；稽核 D3 由 main() 原地抽出，邏輯未變）。
+
+    舊版以 new_history = {} 起手、只寫入當日命中股 → 等同每日整檔覆寫，
+    與 CLAUDE.md「僅追加，不刪除歷史記錄」的設計矛盾；
+    2026-07-09 加的「0 支不覆寫」護欄只擋得住當日完全掃不到，
+    擋不住「當日只命中少數幾支」這個常態（實測 07-06 119 支 → 07-30 3 支），
+    導致 count 無法累積、🐅 猛虎池長期近乎空池。
+    改為：以既有累計為基底正規化複製，當日未命中者原樣保留。
+
+    回傳 (new_history, promoted_sids, guard)：
+      promoted_sids — 當日命中且累計 ≥ 3 次者，供呼叫端晉升猛虎池
+                      （刻意只從當日命中股取，避免拉入無當日股價個股觸發雙重火力補抓、推高 API）
+      guard         — None／("shrank", 合併後筆數)／("empty_day", None)
+                      "shrank" 時 new_history 已改回既有累計，故縮水後的筆數一併回傳供告警列印
+    """
+    new_history = {}
+    for sid, old_data in history.items():
+        if isinstance(old_data, int):          # 向下相容：V6 以前為純數字計數
+            old_data = {"count": old_data, "last_date": ""}
+        new_history[sid] = {
+            "count": old_data.get("count", 0),
+            "last_date": old_data.get("last_date", ""),
+        }
+
+    promoted_sids = []
+    for sid in today_ocean_sids:
+        old_data = new_history.get(sid, {"count": 0, "last_date": ""})
+
+        count = old_data["count"]
+        last_date = old_data["last_date"]
+
+        if last_date != today_str:
+            count += 1
+
+        new_history[sid] = {"count": count, "last_date": today_str}
+
+        if count >= 3:
+            promoted_sids.append(sid)
+
+    # 🛡️ 記憶海防縮水護欄（2026-08-01 強化）
+    # 真·僅追加下 new_history 必為 history 的超集；一旦筆數變少即代表
+    # 上游有非預期路徑（例外吞掉、資料格式異常等），寧可不寫也不洗掉累計。
+    # 原「汪洋 0 支不覆寫」護欄已被此條涵蓋（0 支時 new_history == history）。
+    guard = None
+    if len(new_history) < len(history):
+        guard = ("shrank", len(new_history))
+        new_history = history
+    elif not today_ocean_sids:
+        guard = ("empty_day", None)
+
+    return new_history, promoted_sids, guard
+
+
 def _get_theme_tag(industry: str, yf_industry: str = "", yf_sector: str = "") -> str:
     """V8.7 Grace：題材標籤對應（優先 yfinance industry/sector，備援 FinMind industry_category）"""
     combined = " ".join(filter(None, [industry, yf_industry, yf_sector]))
@@ -1223,13 +1295,12 @@ def main():
                 yf_info={"industry": yf_industry_map.get(sid, ""),
                           "sector":   yf_sector_map.get(sid, "")})
             if s_data and s_data['action'] == "買入加碼":
-                # 🆕 V9.0 A1 籌碼方向閘門：合計淨買超>0 之外，至少一主力（外資或投信）同向買超，剔除「假合計正」
-                if not (s_data['foreign_buy'] > 0 or s_data['trust_buy'] > 0):
-                    yf_skipped_chip += 1
-                    continue
-                # 🆕 V9.0 A2 追高防護：RSI 超過環境上限（多頭80/中性75/空頭70）即剔除，避免買在波段高點
-                if s_data['rsi14'] >= RSI_CEILING:
-                    yf_skipped_rsi += 1
+                ok_gate, gate_reason = _passes_ocean_gates(s_data, RSI_CEILING)
+                if not ok_gate:
+                    if gate_reason == "chip":
+                        yf_skipped_chip += 1
+                    else:
+                        yf_skipped_rsi += 1
                     continue
                 market_pool.append(s_data)
                 added_market_sids.add(sid)
@@ -1245,34 +1316,9 @@ def main():
     # 🎯 V7 核心升級：Date-Lock 日期防呆機制與向下相容
     today_ocean_sids = [s['stock_id'] for s in market_pool]
 
-    # 🛡️ 2026-08-01 記憶海「真·僅追加」修正
-    # 舊版以 new_history = {} 起手、只寫入當日命中股 → 等同每日整檔覆寫，
-    # 與 CLAUDE.md「僅追加，不刪除歷史記錄」的設計矛盾；
-    # 2026-07-09 加的「0 支不覆寫」護欄只擋得住當日完全掃不到，
-    # 擋不住「當日只命中少數幾支」這個常態（實測 07-06 119 支 → 07-30 3 支），
-    # 導致 count 無法累積、🐅 猛虎池長期近乎空池。
-    # 改為：以既有累計為基底正規化複製，當日未命中者原樣保留。
-    new_history = {}
-    for sid, old_data in history.items():
-        if isinstance(old_data, int):          # 向下相容：V6 以前為純數字計數
-            old_data = {"count": old_data, "last_date": ""}
-        new_history[sid] = {
-            "count": old_data.get("count", 0),
-            "last_date": old_data.get("last_date", ""),
-        }
-
-    for sid in today_ocean_sids:
-        old_data = new_history.get(sid, {"count": 0, "last_date": ""})
-
-        count = old_data["count"]
-        last_date = old_data["last_date"]
-
-        if last_date != today_str:
-            count += 1
-
-        new_history[sid] = {"count": count, "last_date": today_str}
-
-        if count >= 3 and sid not in POOL_SETTINGS["🐅 三日成猛虎水池"]:
+    new_history, promoted_sids, guard = merge_ocean_history(history, today_ocean_sids, today_str)
+    for sid in promoted_sids:
+        if sid not in POOL_SETTINGS["🐅 三日成猛虎水池"]:
             POOL_SETTINGS["🐅 三日成猛虎水池"].append(sid)
 
     # 🆕 V8.8 PLAN J：猛虎池精銳上限 8 支（依強勢評分排序）
@@ -1305,14 +1351,9 @@ def main():
     print(f"  - 🔥 姊夫魚池動態篩選：候選 {len(jiefu_candidates)} 支，融資閘門攔截 {jiefu_margin_skipped} 支，"
           f"最終入選 {POOL_SETTINGS['🔥 姊夫爆發小魚池']}")
 
-    # 🛡️ 記憶海防縮水護欄（2026-08-01 強化）
-    # 真·僅追加下 new_history 必為 history 的超集；一旦筆數變少即代表
-    # 上游有非預期路徑（例外吞掉、資料格式異常等），寧可不寫也不洗掉累計。
-    # 原「汪洋 0 支不覆寫」護欄已被此條涵蓋（0 支時 new_history == history）。
-    if len(new_history) < len(history):
-        print(f"  - 🛡️ 記憶海異常縮水（{len(history)} → {len(new_history)} 支）：維持原狀，不覆寫既有累計")
-        new_history = history
-    elif not today_ocean_sids:
+    if guard and guard[0] == "shrank":
+        print(f"  - 🛡️ 記憶海異常縮水（{len(history)} → {guard[1]} 支）：維持原狀，不覆寫既有累計")
+    elif guard and guard[0] == "empty_day":
         print(f"  - 🛡️ 汪洋大魚 0 支：記憶海保留既有累計 {len(new_history)} 支，本日無新增")
 
     with open(HISTORY_FILE, 'w', encoding='utf-8') as f:

@@ -20,10 +20,14 @@ mengong_auto.log
 radar_run.log
 晨報/
 
-# === 本地測試 / 驗證腳本（沙盒實驗，不推上 GitHub）===
-test_atr_stop.py
-test_market_regime.py
-verify_v89.py
+# === 測試（稽核 D3）===
+# 2026-08-01 起三支散在根目錄的腳本移入 tests/ 並納入版控：
+#   tests/test_gates.py            離線閘門回歸測試（無網路、無 API）
+#   tests/run_all.py               離線測試批次入口
+#   tests/verify_v89.py            讀本機 JSON 的唯讀驗收（離線）
+#   tests/manual_*.py              需 yfinance 連網，手動執行，不列入批次
+# 原本逐檔排除（test_atr_stop.py / test_market_regime.py / verify_v89.py）已移除，
+# 否則 V9.x 的新閘門永遠不會有版控中的回歸保護。
 
 # === Claude Code 本機工具設定（開發用，不推上 GitHub）===
 .claude/
