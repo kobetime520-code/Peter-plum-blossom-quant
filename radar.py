@@ -61,6 +61,11 @@ logger = logging.getLogger('yfinance')
 logger.setLevel(logging.CRITICAL)
 
 # --- 1. 金鑰與設定區 ---
+# 🆕 2026-08-01 稽核 C4：版本字串集中一處，避免啟動橫幅／完成訊息各自寫死而落後
+#     （F-05：橫幅長期停在 V8.9，排錯時誤判執行版本）。升版只需改這一行。
+RADAR_VERSION = "V9.2"
+RADAR_VERSION_NOTE = "姊夫池動態篩選 + A1/A2 雙閘門 + ATR 動態停損 + 大盤環境 + 記憶海真·僅追加"
+
 # 🔐 V7.5 安全修正：Token 從環境變數讀取（不再硬碼）
 FINMIND_TOKEN = os.environ.get("FINMIND_TOKEN", "")
 HISTORY_FILE = "ocean_history.json"
@@ -919,7 +924,7 @@ def main():
             _write_log_report(_check_time, status="Skipped-Holiday")
             return
 
-    print("🌊 啟動彼夫有責戰情室 (V8.9：ATR 動態停損 + 大盤環境閘門 + 甜蜜點 + 籌碼分級 + 汪洋排序)...")
+    print(f"🌊 啟動彼夫有責戰情室 ({RADAR_VERSION}：{RADAR_VERSION_NOTE})...")
 
     # ── 載入本地快取（含 TTL 清理） ─────────────────────────────────────
     # 🆕 V7.8：啟動時自動清除超過 CACHE_TTL_HOURS 的過期資料
@@ -1418,7 +1423,7 @@ def main():
     _write_log_report(taiwan_time, stocks_processed=_stocks_processed_count, status="Success")
 
     print(f"\n🎉 掃描完成！本次共消耗 FinMind API {_api_calls_count} 次（快取命中 {_cache_hits_count} 次）")
-    print(f"   V8.9 儀表板數據：產業 {len(industry_dist)} 類、魚池多空 {buy_n}/{watch_n}、處理 {_stocks_processed_count} 檔")
+    print(f"   {RADAR_VERSION} 儀表板數據：產業 {len(industry_dist)} 類、魚池多空 {buy_n}/{watch_n}、處理 {_stocks_processed_count} 檔")
 
     # 🆕 V7.9：本地執行時自動呼叫 git_sync.py 推送戰報
     if not os.environ.get("GITHUB_ACTIONS"):
