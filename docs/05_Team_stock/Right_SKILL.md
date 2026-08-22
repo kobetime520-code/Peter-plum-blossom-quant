@@ -1,6 +1,6 @@
 ---
 name: Right
-description: Team Stock 投資研發長 — 量化系統底層架構設計與 API 降載策略（對齊 radar.py V9.2）
+description: Team Stock 投資研發長 — 量化系統底層架構設計與 API 降載策略（對齊 radar.py V9.3）
 type: skill
 ---
 
@@ -153,8 +153,8 @@ Yahoo Finance 全市場批量下載 60 日 K（chunk=150）
 - Python 核心邏輯開發（strength_score 多因子評分維護）
 - 快取機制與資料流設計
 - 混合引擎效能調校
-- V9.2 姊夫爆發小魚池動態篩選架構（`_select_jiefu_pool`，複用汪洋大魚 market_pool，零額外 API）
+- V9.3 姊夫爆發小魚池改制：動態篩選架構（`_select_jiefu_pool`）已拆除，改為貴金屬 ETF 固定池（`JIEFU_ETF_PARAMS` 為名單與參數正本）。改制依據為 34 個掃描日回放：19 日掛零（56%），瓶頸在 trend_quality 與 ma5_breakout_day 兩條件交集過窄——**此為條件設計的經驗教訓：多條件疊加前需先回放交集規模，避免疊出理論正確但實務空集合的閘門**
 
 ---
 
-*此檔案由 Claude 與 JW 共同維護。版本：V2.3（對齊 radar.py V9.2：姊夫池動態篩選架構，2026-07-11；前版 V2.2：A1/A2 雙閘門 + 大盤環境過濾 + 工作連結，2026-07-05）*
+*此檔案由 Claude 與 JW 共同維護。版本：V2.4（對齊 radar.py V9.3：姊夫池動態篩選架構拆除、改貴金屬 ETF 固定池，2026-08-22；前版 V2.3：姊夫池動態篩選架構，2026-07-11）*

@@ -1,7 +1,16 @@
 # ==========================================
-# 靜水流深戰情室：核心監控與全域雷達 V9.2
+# 靜水流深戰情室：核心監控與全域雷達 V9.3
 # ==========================================
-# V9.2 姊夫爆發小魚池改造（短線精銳池，複用 market_pool，Right/Joe/Eric 協作）：
+# V9.3 姊夫爆發小魚池重新設計（動態個股篩選 → 貴金屬 ETF 固定池，JW 2026-08-22 決議）：
+#   移除全部 5 道動態條件（inst_grade S/A、trend_quality、ma5_breakout_day、
+#     產業排除、融資遽增閘門）與 _select_jiefu_pool／_is_excluded_industry／
+#     _check_margin_not_surging 三個函式，改為固定 4 檔貴金屬期貨 ETF
+#   成員：00635U 黃金期貨、00708L 黃金正2、00674R 黃金反1、00738U 白銀期貨
+#   停損停利依商品分級（JIEFU_ETF_PARAMS）：原型／反向 -7%/+8%，正2倍槓桿 -10%/+12%
+#   訊號改純技術判定（close ≥ MA5 且 量比 ≥ 1.0）—— ETF 法人資料為自營避險造市，
+#     沿用 inst_buy_30d > 0 會失真；反向 ETF 另加註「訊號成立＝偏空方向」
+# ==========================================
+# V9.2 姊夫爆發小魚池改造（短線精銳池，複用 market_pool，Right/Joe/Eric 協作）—— 已於 V9.3 移除：
 #   固定清單 → 動態篩選：inst_grade S/A（法人30日買超≥1000）
 #     + trend_quality STRONG/HEALTHY（5日均線持續在上＋底部墊高）
 #     + ma5_breakout_day 1~3日（剛站上均線）+ 剔除金融/傳產，取strength_score前8檔
@@ -63,8 +72,8 @@ logger.setLevel(logging.CRITICAL)
 # --- 1. 金鑰與設定區 ---
 # 🆕 2026-08-01 稽核 C4：版本字串集中一處，避免啟動橫幅／完成訊息各自寫死而落後
 #     （F-05：橫幅長期停在 V8.9，排錯時誤判執行版本）。升版只需改這一行。
-RADAR_VERSION = "V9.2"
-RADAR_VERSION_NOTE = "姊夫池動態篩選 + A1/A2 雙閘門 + ATR 動態停損 + 大盤環境 + 記憶海真·僅追加"
+RADAR_VERSION = "V9.3"
+RADAR_VERSION_NOTE = "姊夫池改貴金屬ETF固定池 + A1/A2 雙閘門 + ATR 動態停損 + 大盤環境 + 記憶海真·僅追加"
 
 # 🔐 V7.5 安全修正：Token 從環境變數讀取（不再硬碼）
 FINMIND_TOKEN = os.environ.get("FINMIND_TOKEN", "")
@@ -85,10 +94,10 @@ PUSH_STATUS_FILE = "push_status.json"
 SYNC_TIMEOUT_SECONDS = 360                    # git_sync 子程序逾時（含最多 180 秒推送鎖等待）
 
 # --- 2. 魚池設定區 ---
-# 🆕 V9.2 Right：姊夫爆發小魚池改為動態篩選（見 _select_jiefu_pool），
-#    不再是固定清單，初始為空陣列，執行時依籌碼+趨勢+突破條件動態填入。
+# 🆕 V9.3：姊夫爆發小魚池由 V9.2 動態篩選改回固定清單，成員為 4 檔貴金屬期貨 ETF
+#    （名單與參數正本見 JIEFU_ETF_POOL／JIEFU_ETF_PARAMS）。不再依籌碼／趨勢動態填入。
 POOL_SETTINGS = {
-    "🔥 姊夫爆發小魚池": [],
+    "🔥 姊夫爆發小魚池": ["00635U", "00708L", "00674R", "00738U"],
     "🍁 楓大永動魚池": ["2308", "00923", "00910", "2327", "1785", "2344", "6155"],
     "🌟 彼神黃金魚池": ["2484", "3221", "8182", "8289", "3042", "3675"],
     "🔭 測試員觀察水域": ["5289", "5292", "4749", "6770", "8299", "3673", "5425", "6224", "3707", "3016", "5274", "6270", "6667", "3706"],
@@ -580,108 +589,116 @@ def _calc_trend_quality(df: pd.DataFrame) -> dict:
 
 
 # =====================================================================
-# 🆕 V9.2 姊夫爆發小魚池：動態選股引擎（Right 架構 + Joe 停損停利 + Eric 籌碼閘門）
+# 🆕 V9.3 姊夫爆發小魚池：貴金屬期貨 ETF 固定池（取代 V9.2 動態選股引擎）
+# =====================================================================
+# 設計決議（JW 2026-08-22）：
+#   ① 移除 V9.2 全部 5 道動態條件（inst_grade S/A、trend_quality STRONG/HEALTHY、
+#      ma5_breakout_day 1~3 日、金融傳產排除、融資 10 日遽增閘門）。實測 34 個掃描日
+#      中 19 日掛零（56%），主要卡在「趨勢已走 5~8 日」與「MA5 剛上穿 MA30 1~3 日」
+#      兩條件的交集過窄，本池已失去每日可用性。
+#   ② 改為固定 4 檔貴金屬期貨 ETF，恆定入池，不再有空池日。
+#   ③ 停損停利依商品槓桿倍數分級（見 JIEFU_ETF_PARAMS），不再一律 -7%/+8%。
+#   ④ 訊號改純技術判定：ETF 的法人買賣以自營商避險造市為主，
+#      沿用 inst_buy_30d > 0 會失真，改用 close >= MA5 且 vol_ratio >= 1.0。
 # =====================================================================
 
-# 產業排除清單：金融、傳產（需求6）。比對 FinMind industry_category 字串。
-JIEFU_EXCLUDED_INDUSTRIES = [
-    "金融保險業", "證券業", "保險業",
-    "水泥工業", "食品工業", "塑膠工業", "紡織纖維", "鋼鐵工業",
-    "造紙工業", "橡膠工業", "建材營造", "航運業", "觀光事業",
-    "貿易百貨", "油電燃氣業",
-]
-
-JIEFU_STOP_PCT = 0.07     # 停損 -7%（固定於 5~10% 區間，強制執行）
-JIEFU_TARGET_PCT = 0.08   # 停利 +8%
 JIEFU_RISK_BUDGET = 2000  # 單筆最大可承受虧損（10萬本金 × 2%）
-JIEFU_MARGIN_SURGE_THRESHOLD = 0.30  # 融資餘額10日內增幅門檻，超過視為過熱剔除
 
+# 名單與商品參數正本（改名單／改停損停利請只動這裡）
+JIEFU_ETF_PARAMS = {
+    "00635U": {
+        "label": "黃金期貨ETF", "underlying": "黃金期貨", "kind": "原型",
+        "direction": "多", "leverage": 1.0,
+        "stop_pct": 0.07, "target_pct": 0.08,
+        "note": "🟡 追蹤黃金期貨：想參與金價，但不是直接持有黃金（有期貨轉倉成本）",
+    },
+    "00708L": {
+        "label": "黃金槓桿ETF", "underlying": "黃金期貨單日正向2倍", "kind": "槓桿",
+        "direction": "多", "leverage": 2.0,
+        "stop_pct": 0.10, "target_pct": 0.12,
+        "note": "⚠️ 單日正向2倍：放大單日漲跌、每日重設，長抱有波動耗損，不宜當一般ETF理解",
+    },
+    "00674R": {
+        "label": "黃金反向ETF", "underlying": "黃金期貨單日反向1倍", "kind": "反向",
+        "direction": "空", "leverage": -1.0,
+        "stop_pct": 0.07, "target_pct": 0.08,
+        "note": "⚠️ 單日反向1倍：本ETF上漲代表金價下跌，訊號成立＝偏向金價下跌方向的策略交易",
+    },
+    "00738U": {
+        "label": "白銀期貨ETF", "underlying": "白銀期貨", "kind": "原型",
+        "direction": "多", "leverage": 1.0,
+        "stop_pct": 0.07, "target_pct": 0.08,
+        "note": "⚪ 追蹤白銀期貨：台股市場參與白銀行情的工具（白銀波動大於黃金）",
+    },
+}
 
-def _is_excluded_industry(industry: str) -> bool:
-    """V9.2：判斷是否為金融或傳產（需剔除）。"""
-    if not industry:
-        return False
-    return any(kw in industry for kw in JIEFU_EXCLUDED_INDUSTRIES)
+JIEFU_ETF_POOL = list(JIEFU_ETF_PARAMS.keys())
 
-
-def _select_jiefu_pool(market_pool: list, top_n: int = 8) -> list:
-    """
-    V9.2 Right：姊夫爆發小魚池動態篩選（方案C 複合評分型）。
-    完全複用汪洋大魚 market_pool 已計算之欄位，零額外 API 消耗。
-    條件：
-      ① inst_grade 為 S/A（inst_buy_30d ≥ 1000張）
-      ② trend_quality 為 STRONG/HEALTHY（5日均線持續在上＋底部墊高，趨勢向上）
-      ③ ma5_breakout_day 落在 1~3 日（剛站上均線）
-      ④ 排除金融與傳產
-    依 strength_score 排序取前 top_n 檔。
-    """
-    candidates = []
-    for s in market_pool:
-        if s.get('inst_grade') not in ("S", "A"):
-            continue
-        if s.get('trend_quality') not in ("STRONG", "HEALTHY"):
-            continue
-        breakout_day = s.get('ma5_breakout_day', 0)
-        if not (1 <= breakout_day <= 3):
-            continue
-        if _is_excluded_industry(s.get('industry', '')):
-            continue
-        candidates.append(s)
-
-    candidates.sort(key=lambda x: x.get('strength_score', 0), reverse=True)
-    return candidates[:top_n]
-
-
-def _check_margin_not_surging(sid: str, start_date: str, end_date: str) -> tuple:
-    """
-    V9.2 Eric：融資餘額10日內遽增檢查（風控閘門，非選股加分項）。
-    回傳 (通過與否, 變動率%)。無資料或欄位缺漏時預設「通過」，避免誤殺。
-    """
-    try:
-        df_m = fetch_finmind("TaiwanStockMarginPurchaseShortSale", start_date, end_date, sid)
-        if df_m is None or df_m.empty or "MarginPurchaseTodayBalance" not in df_m.columns:
-            return True, 0.0
-
-        df_m = df_m.dropna(subset=["MarginPurchaseTodayBalance"])
-        if len(df_m) < 2:
-            return True, 0.0
-
-        df_m = df_m.sort_values("date") if "date" in df_m.columns else df_m
-        balances = df_m["MarginPurchaseTodayBalance"].tail(10)
-        if len(balances) < 2:
-            return True, 0.0
-
-        first_val = float(balances.iloc[0])
-        last_val = float(balances.iloc[-1])
-        if first_val <= 0:
-            return True, 0.0
-
-        change_pct = round((last_val - first_val) / first_val * 100, 2)
-        passed = change_pct < (JIEFU_MARGIN_SURGE_THRESHOLD * 100)
-        return passed, change_pct
-    except Exception:
-        return True, 0.0
+# 訊號量比門檻：ETF 法人資料失真，改以價（站上 MA5）＋量（量比）雙確認
+JIEFU_SIGNAL_VOLRATIO = 1.0
 
 
 def _apply_jiefu_risk_params(s_data: dict) -> dict:
     """
-    V9.2 Joe：姊夫池專屬停損停利（-7%/+8%，取代全局 ATR 動態停損），
-    並附加建議部位（依10萬本金、單筆2%曝險反推）。僅作用於姊夫池，
-    不影響其他魚池既有 stop_loss/target_price 計算邏輯。
+    V9.3：姊夫池（貴金屬 ETF）專屬停損停利，依商品槓桿倍數分級，
+    取代全局 ATR 動態停損。建議部位以 10 萬本金、單筆 2% 曝險反推
+    （曝險金額 ÷ 停損幅度），槓桿商品因停損幅度較寬，部位自動縮小。
+    僅作用於姊夫池，不影響其他魚池既有 stop_loss／target_price 計算。
     """
     try:
         close_price = s_data.get("close")
         if not isinstance(close_price, (int, float)) or close_price <= 0:
             return s_data
-        stop_loss_val = round(close_price * (1 - JIEFU_STOP_PCT), 2)
-        target_val = round(close_price * (1 + JIEFU_TARGET_PCT), 2)
-        suggested_position = int(round((JIEFU_RISK_BUDGET / JIEFU_STOP_PCT) / 1000) * 1000)
 
-        s_data["stop_loss"] = stop_loss_val
-        s_data["stop_loss_mode"] = "JIEFU_FIXED_7PCT"
-        s_data["target_price"] = target_val
-        s_data["first_target"] = target_val
-        s_data["suggested_position"] = suggested_position
+        sid = str(s_data.get("stock_id", ""))
+        cfg = JIEFU_ETF_PARAMS.get(sid, {})
+        stop_pct   = cfg.get("stop_pct", 0.07)
+        target_pct = cfg.get("target_pct", 0.08)
+
+        s_data["stop_loss"]    = round(close_price * (1 - stop_pct), 2)
+        s_data["target_price"] = round(close_price * (1 + target_pct), 2)
+        s_data["first_target"] = s_data["target_price"]
+        s_data["stop_loss_mode"] = f"JIEFU_ETF_{int(round(stop_pct * 100))}PCT"
+        s_data["suggested_position"] = int(round((JIEFU_RISK_BUDGET / stop_pct) / 1000) * 1000)
+
+        if cfg:
+            s_data["etf_label"]     = cfg["label"]
+            s_data["etf_kind"]      = cfg["kind"]
+            s_data["etf_underlying"] = cfg["underlying"]
+            s_data["etf_direction"] = cfg["direction"]
+            s_data["etf_leverage"]  = cfg["leverage"]
+            s_data["etf_note"]      = cfg["note"]
+    except Exception:
+        pass
+    return s_data
+
+
+def _apply_jiefu_etf_signal(s_data: dict) -> dict:
+    """
+    V9.3：姊夫池（貴金屬 ETF）專屬動作訊號。
+    全局邏輯為 close >= MA5 且 inst_buy_30d > 0，但 ETF 的三大法人買賣超
+    以自營商避險造市為主（Dealer_Hedging），不代表看多，據以判斷會失真。
+    改為純技術雙確認：close >= MA5（價站上）且 vol_ratio >= 1.0（量能不縮）。
+    反向 ETF 另加註方向說明，避免把「買入加碼」誤讀成看多金價。
+    """
+    try:
+        close_price = s_data.get("close")
+        ma5 = s_data.get("ma5")
+        if not isinstance(close_price, (int, float)) or not isinstance(ma5, (int, float)):
+            return s_data
+
+        vol_ratio = s_data.get("vol_ratio") or 0
+        is_buy = close_price >= ma5 and vol_ratio >= JIEFU_SIGNAL_VOLRATIO
+        s_data["action"] = "買入加碼" if is_buy else "靜候觀察"
+        s_data["action_basis"] = f"技術雙確認：收盤 ≥ MA5 且 量比 ≥ {JIEFU_SIGNAL_VOLRATIO}（ETF 不採法人條件）"
+        s_data["chip_note"] = "ℹ️ 期貨ETF的法人買賣以自營商避險造市為主，不代表看多看空，故不納入訊號判定"
+
+        sid = str(s_data.get("stock_id", ""))
+        cfg = JIEFU_ETF_PARAMS.get(sid, {})
+        if cfg.get("direction") == "空":
+            s_data["signal_direction_note"] = "🔻 訊號成立＝偏向金價下跌方向（本ETF與金價反向）"
+        elif cfg:
+            s_data["signal_direction_note"] = f"🔺 訊號成立＝偏向{cfg['underlying'].replace('單日正向2倍', '')}上漲方向"
     except Exception:
         pass
     return s_data
@@ -1333,23 +1350,11 @@ def main():
         print(f"  - 🐅 猛虎池縮圈：保留前 {TIGER_MAX} 支（依強勢評分）")
 
     # =====================================================================
-    # 🆕 V9.2 姊夫爆發小魚池：動態篩選（複用 market_pool，方案C 複合評分型）
+    # 🆕 V9.3 姊夫爆發小魚池：貴金屬 ETF 固定池（V9.2 動態篩選已移除）
     # =====================================================================
-    jiefu_candidates = _select_jiefu_pool(market_pool, top_n=8)
-    jiefu_margin_skipped = 0
-    jiefu_final_sids = []
-    for cand in jiefu_candidates:
-        sid = cand['stock_id']
-        margin_ok, margin_change_pct = _check_margin_not_surging(sid, start_30d, today_str)
-        if not margin_ok:
-            jiefu_margin_skipped += 1
-            print(f"      - 🚫 {sid} 融資10日內增幅 {margin_change_pct}% 超過門檻，剔除姊夫池候選")
-            continue
-        jiefu_final_sids.append(sid)
-
-    POOL_SETTINGS["🔥 姊夫爆發小魚池"] = jiefu_final_sids
-    print(f"  - 🔥 姊夫魚池動態篩選：候選 {len(jiefu_candidates)} 支，融資閘門攔截 {jiefu_margin_skipped} 支，"
-          f"最終入選 {POOL_SETTINGS['🔥 姊夫爆發小魚池']}")
+    POOL_SETTINGS["🔥 姊夫爆發小魚池"] = list(JIEFU_ETF_POOL)
+    print(f"  - 🔥 姊夫魚池（V9.3 貴金屬ETF固定池）：{JIEFU_ETF_POOL}"
+          f"｜停損停利依商品分級、訊號採技術雙確認（不吃法人條件）")
 
     if guard and guard[0] == "shrank":
         print(f"  - 🛡️ 記憶海異常縮水（{len(history)} → {guard[1]} 支）：維持原狀，不覆寫既有累計")
@@ -1392,7 +1397,7 @@ def main():
             if s_data:
                 if pool_name == "🔥 姊夫爆發小魚池":
                     s_data = _apply_jiefu_risk_params(s_data)
-                    s_data["director_holding_note"] = "⚠️建議人工查詢董監持股（尚未整合自動來源）"
+                    s_data = _apply_jiefu_etf_signal(s_data)
                 results.append(s_data)
                 seen_in_pool.add(sid)
             time.sleep(0.5)
@@ -1440,9 +1445,12 @@ def main():
 
     # 🃏 被動卡娃魚池為純展示池，與汪洋大魚一併排除於多空/健康度統計外
     _stats_exclude = {"🌊 汪洋大魚", PASSIVE_KAWA_POOL_NAME}
+    # 🆕 V9.3：姊夫池已改為貴金屬 ETF（含反向 ETF），其「買入加碼」代表偏向金價下跌，
+    #    與個股多空語意不同，故額外排除於全域多空比之外（池內健康度仍保留可看訊號數）。
+    _global_ratio_exclude = _stats_exclude | {"🔥 姊夫爆發小魚池"}
     named_stocks = []
     for pname, pstocks in final_data_structure.items():
-        if pname not in _stats_exclude:
+        if pname not in _global_ratio_exclude:
             named_stocks.extend(pstocks)
     buy_n = sum(1 for s in named_stocks if s.get('action') == '買入加碼')
     watch_n = len(named_stocks) - buy_n

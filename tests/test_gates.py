@@ -7,9 +7,9 @@ tests/test_gates.py — V9.x 選股閘門離線回歸測試（稽核 D3）
 涵蓋範圍（皆為 V9.0～V9.2 新增、原本毫無自動化保護的邏輯）：
   ① A1 籌碼方向閘門 ＋ A2 追高防護     _passes_ocean_gates
   ② 記憶海真·僅追加 ＋ 防縮水護欄      merge_ocean_history
-  ③ 姊夫池動態篩選                     _select_jiefu_pool / _is_excluded_industry
-  ④ 姊夫池專屬停損停利                 _apply_jiefu_risk_params
-  ⑤ 融資遽增風控閘門的容錯放行         _check_margin_not_surging
+  ③ 姊夫池貴金屬 ETF 固定名單          JIEFU_ETF_POOL / JIEFU_ETF_PARAMS（V9.3）
+  ④ 姊夫池分級停損停利與建議部位       _apply_jiefu_risk_params（V9.3）
+  ⑤ 姊夫池 ETF 技術訊號與方向標註      _apply_jiefu_etf_signal（V9.3）
   ⑥ 大盤環境三段式與 rsi_ceiling       _calc_market_regime（以假資料替換 yfinance）
 """
 import sys
@@ -120,107 +120,101 @@ def test_merge_ocean_history():
 
 
 # =====================================================================
-# ③ 姊夫池動態篩選
+# ③ 姊夫池貴金屬 ETF 固定名單（V9.3：V9.2 動態篩選已移除）
 # =====================================================================
-def _cand(sid, grade="S", trend="STRONG", breakout=2, industry="半導體業", score=90):
-    return {
-        "stock_id": sid, "inst_grade": grade, "trend_quality": trend,
-        "ma5_breakout_day": breakout, "industry": industry, "strength_score": score,
-    }
+def test_jiefu_etf_pool():
+    section("③ 姊夫池貴金屬 ETF 固定名單（V9.3）")
+    ok(radar.JIEFU_ETF_POOL == ["00635U", "00708L", "00674R", "00738U"],
+       f"名單為圖表指定的 4 檔（實得 {radar.JIEFU_ETF_POOL}）")
+    ok(radar.POOL_SETTINGS["🔥 姊夫爆發小魚池"] == radar.JIEFU_ETF_POOL,
+       "POOL_SETTINGS 與 JIEFU_ETF_POOL 一致（不會出現空池日）")
+    ok(list(radar.JIEFU_ETF_PARAMS.keys()) == radar.JIEFU_ETF_POOL,
+       "參數表覆蓋全部成員，無漏設")
 
+    for sid, cfg in radar.JIEFU_ETF_PARAMS.items():
+        need = {"label", "underlying", "kind", "direction", "leverage",
+                "stop_pct", "target_pct", "note"}
+        ok(need <= set(cfg), f"{sid} 參數欄位齊全")
+        ok(0 < cfg["stop_pct"] <= 0.15, f"{sid} 停損幅度在合理區間（{cfg['stop_pct']:.0%}）")
 
-def test_jiefu_pool():
-    section("③ 姊夫池動態篩選（inst_grade／trend／突破日／產業／排序）")
-    ok(radar._is_excluded_industry("金融保險業") is True, "金融保險業 → 排除")
-    ok(radar._is_excluded_industry("水泥工業") is True, "水泥工業（傳產）→ 排除")
-    ok(radar._is_excluded_industry("半導體業") is False, "半導體業 → 不排除")
-    ok(radar._is_excluded_industry("") is False, "產業別空字串 → 不排除（不誤殺）")
+    ok(radar.JIEFU_ETF_PARAMS["00674R"]["direction"] == "空", "00674R 標記為反向（空方向）")
+    ok(radar.JIEFU_ETF_PARAMS["00708L"]["leverage"] == 2.0, "00708L 標記為 2 倍槓桿")
+    ok(radar.JIEFU_ETF_PARAMS["00708L"]["stop_pct"] > radar.JIEFU_ETF_PARAMS["00635U"]["stop_pct"],
+       "槓桿商品停損幅度大於原型（避免被 2 倍波動頻繁掃出）")
 
-    pool = [
-        _cand("A1", grade="S", score=95),
-        _cand("A2", grade="A", score=80),
-        _cand("B1", grade="B", score=99),                    # 籌碼等級不足
-        _cand("C1", trend="WATCH", score=99),                # 趨勢品質不足
-        _cand("D1", breakout=0, score=99),                   # 尚未站上 MA5
-        _cand("D2", breakout=4, score=99),                   # 站上太久，非「剛突破」
-        _cand("E1", industry="金融保險業", score=99),         # 產業排除
-    ]
-    got = [s["stock_id"] for s in radar._select_jiefu_pool(pool, top_n=8)]
-    ok(got == ["A1", "A2"], f"四道條件全部生效，僅 A1／A2 入選（實得 {got}）")
-
-    # 邊界：突破日 1 與 3 應通過
-    edge = [_cand("F1", breakout=1), _cand("F2", breakout=3)]
-    ok(len(radar._select_jiefu_pool(edge)) == 2, "突破日 1 與 3 皆通過（邊界）")
-
-    # 依 strength_score 由高到低取前 N
-    many = [_cand(f"S{i}", score=i) for i in range(12)]
-    top = [s["stock_id"] for s in radar._select_jiefu_pool(many, top_n=8)]
-    ok(top == [f"S{i}" for i in range(11, 3, -1)], "依 strength_score 降序取前 8 檔")
-    ok(len(radar._select_jiefu_pool(many, top_n=8)) == 8, "上限 8 檔生效")
-    ok(radar._select_jiefu_pool([]) == [], "空 market_pool 回傳空清單，不炸")
+    # V9.2 的動態篩選與融資閘門必須確實移除，避免死碼殘留
+    for gone in ("_select_jiefu_pool", "_is_excluded_industry",
+                 "_check_margin_not_surging", "JIEFU_EXCLUDED_INDUSTRIES"):
+        ok(not hasattr(radar, gone), f"V9.2 殘留已移除：{gone}")
 
 
 # =====================================================================
-# ④ 姊夫池專屬停損停利
+# ④ 姊夫池分級停損停利與建議部位
 # =====================================================================
 def test_jiefu_risk_params():
-    section("④ 姊夫池專屬停損停利（−7%／+8%／建議部位）")
-    d = radar._apply_jiefu_risk_params({"close": 100.0, "stop_loss": 90.0, "stop_loss_mode": "ATR"})
-    ok(d["stop_loss"] == 93.0, "停損 = 收盤 ×0.93（−7%），覆蓋原本的 ATR 動態停損")
-    ok(d["target_price"] == 108.0 and d["first_target"] == 108.0, "停利 = 收盤 ×1.08（+8%）")
-    ok(d["stop_loss_mode"] == "JIEFU_FIXED_7PCT", "停損模式標記為姊夫池固定值")
+    section("④ 姊夫池分級停損停利（依商品槓桿倍數）")
+    d = radar._apply_jiefu_risk_params(
+        {"stock_id": "00635U", "close": 100.0, "stop_loss": 90.0, "stop_loss_mode": "ATR"})
+    ok(d["stop_loss"] == 93.0, "原型 ETF 停損 = 收盤 ×0.93（−7%），覆蓋 ATR 動態停損")
+    ok(d["target_price"] == 108.0 and d["first_target"] == 108.0, "原型 ETF 停利 = 收盤 ×1.08（+8%）")
+    ok(d["stop_loss_mode"] == "JIEFU_ETF_7PCT", "停損模式標記為姊夫池 ETF 分級值")
     ok(d["suggested_position"] == 29000, "建議部位 = 2000/0.07 取千位 ≈ 29,000 元")
+    ok(d["etf_kind"] == "原型" and d["etf_note"], "帶出商品類型與風險說明欄位")
 
-    # 防禦性容錯：不合法收盤價原樣返回，不得寫壞欄位
-    bad = radar._apply_jiefu_risk_params({"close": 0, "stop_loss": 90.0})
+    lev = radar._apply_jiefu_risk_params({"stock_id": "00708L", "close": 100.0})
+    ok(lev["stop_loss"] == 90.0 and lev["target_price"] == 112.0, "槓桿 ETF 為 −10%／+12%")
+    ok(lev["stop_loss_mode"] == "JIEFU_ETF_10PCT", "槓桿 ETF 停損模式標記正確")
+    ok(lev["suggested_position"] == 20000, "停損放寬 → 建議部位自動縮小為 20,000 元")
+
+    rev = radar._apply_jiefu_risk_params({"stock_id": "00674R", "close": 100.0})
+    ok(rev["stop_loss"] == 93.0 and rev["etf_direction"] == "空", "反向 ETF 為 −7%／方向標記為空")
+
+    # 防禦性容錯
+    unknown = radar._apply_jiefu_risk_params({"stock_id": "9999", "close": 100.0})
+    ok(unknown["stop_loss"] == 93.0 and "etf_note" not in unknown,
+       "未知代號 → 採 7%／8% 預設，不寫入 ETF 說明欄位")
+    bad = radar._apply_jiefu_risk_params({"stock_id": "00635U", "close": 0, "stop_loss": 90.0})
     ok(bad["stop_loss"] == 90.0 and "suggested_position" not in bad, "收盤價為 0 → 原樣返回，不覆寫")
-    bad2 = radar._apply_jiefu_risk_params({"stop_loss": 90.0})
+    bad2 = radar._apply_jiefu_risk_params({"stock_id": "00635U", "stop_loss": 90.0})
     ok("suggested_position" not in bad2, "缺 close 欄位 → 原樣返回，不炸")
 
 
 # =====================================================================
-# ⑤ 融資遽增風控閘門（容錯放行，不誤殺）
+# ⑤ 姊夫池 ETF 技術訊號（取代失真的法人條件）
 # =====================================================================
-def test_margin_gate():
-    section("⑤ 融資遽增風控閘門（Eric，無資料時放行不誤殺）")
-    original = radar.fetch_finmind
-    try:
-        def stub(df):
-            return lambda *a, **k: df
+def test_jiefu_etf_signal():
+    section("⑤ 姊夫池 ETF 技術訊號（close ≥ MA5 且 量比 ≥ 1.0）")
+    buy = radar._apply_jiefu_etf_signal(
+        {"stock_id": "00635U", "close": 47.0, "ma5": 46.0, "vol_ratio": 1.3, "inst_buy": -9999})
+    ok(buy["action"] == "買入加碼", "站上 MA5 且量比達標 → 買入加碼（法人淨賣不影響）")
+    ok("不採法人條件" in buy["action_basis"], "訊號依據欄位載明不採法人條件")
+    ok("自營商避險" in buy["chip_note"], "附上 ETF 籌碼解讀說明")
 
-        radar.fetch_finmind = stub(None)
-        ok(radar._check_margin_not_surging("2330", "", "") == (True, 0.0), "API 回 None → 放行（不誤殺）")
+    below = radar._apply_jiefu_etf_signal(
+        {"stock_id": "00635U", "close": 45.0, "ma5": 46.0, "vol_ratio": 2.0, "inst_buy": 99999})
+    ok(below["action"] == "靜候觀察", "跌破 MA5 → 靜候觀察（法人大買也不成立）")
 
-        radar.fetch_finmind = stub(pd.DataFrame())
-        ok(radar._check_margin_not_surging("2330", "", "") == (True, 0.0), "空 DataFrame → 放行")
+    thin = radar._apply_jiefu_etf_signal(
+        {"stock_id": "00635U", "close": 47.0, "ma5": 46.0, "vol_ratio": 0.9})
+    ok(thin["action"] == "靜候觀察", "量比 0.9 < 1.0 → 靜候觀察")
 
-        radar.fetch_finmind = stub(pd.DataFrame({"date": ["2026-07-31"], "other": [1]}))
-        ok(radar._check_margin_not_surging("2330", "", "") == (True, 0.0), "缺融資餘額欄位 → 放行")
+    edge = radar._apply_jiefu_etf_signal(
+        {"stock_id": "00635U", "close": 46.0, "ma5": 46.0, "vol_ratio": 1.0})
+    ok(edge["action"] == "買入加碼", "收盤等於 MA5 且量比恰為 1.0 → 成立（邊界）")
 
-        def boom(*a, **k):
-            raise RuntimeError("FinMind 異常")
-        radar.fetch_finmind = boom
-        ok(radar._check_margin_not_surging("2330", "", "") == (True, 0.0), "API 拋例外 → 放行（風控閘門不阻斷主流程）")
+    rev = radar._apply_jiefu_etf_signal(
+        {"stock_id": "00674R", "close": 27.0, "ma5": 26.5, "vol_ratio": 1.5})
+    ok("金價下跌" in rev["signal_direction_note"], "反向 ETF 訊號標註為偏空方向，避免誤讀成看多金價")
 
-        # 融資平穩 → 通過；遽增 ≥30% → 攔截
-        calm = pd.DataFrame({"date": ["2026-07-2%d" % i for i in range(1, 9)],
-                             "MarginPurchaseTodayBalance": [1000, 1010, 1020, 1030, 1040, 1050, 1060, 1070]})
-        radar.fetch_finmind = stub(calm)
-        passed, pct = radar._check_margin_not_surging("2330", "", "")
-        ok(passed is True and pct == 7.0, f"融資 10 日增 7% → 通過（實得 {pct}%）")
+    fwd = radar._apply_jiefu_etf_signal(
+        {"stock_id": "00738U", "close": 55.0, "ma5": 54.0, "vol_ratio": 1.5})
+    ok("白銀期貨" in fwd["signal_direction_note"], "原型 ETF 標註對應標的方向")
 
-        surge = pd.DataFrame({"date": ["2026-07-2%d" % i for i in range(1, 9)],
-                              "MarginPurchaseTodayBalance": [1000, 1100, 1200, 1250, 1300, 1350, 1400, 1500]})
-        radar.fetch_finmind = stub(surge)
-        passed, pct = radar._check_margin_not_surging("2330", "", "")
-        ok(passed is False and pct == 50.0, f"融資 10 日增 50% ≥ 門檻 30% → 攔截（實得 {pct}%）")
-
-        exact = pd.DataFrame({"date": ["a", "b"], "MarginPurchaseTodayBalance": [1000, 1300]})
-        radar.fetch_finmind = stub(exact)
-        passed, pct = radar._check_margin_not_surging("2330", "", "")
-        ok(passed is False and pct == 30.0, "恰好 30% → 攔截（邊界為 <30 才通過）")
-    finally:
-        radar.fetch_finmind = original
+    # 防禦性容錯
+    miss = radar._apply_jiefu_etf_signal({"stock_id": "00635U", "close": 47.0})
+    ok("action" not in miss, "缺 MA5 → 不覆寫 action，不炸")
+    novr = radar._apply_jiefu_etf_signal({"stock_id": "00635U", "close": 47.0, "ma5": 46.0})
+    ok(novr["action"] == "靜候觀察", "量比欄位缺漏 → 視為 0，保守判為靜候觀察")
 
 
 # =====================================================================
@@ -292,9 +286,9 @@ def test_market_regime():
 TESTS = [
     test_ocean_gates,
     test_merge_ocean_history,
-    test_jiefu_pool,
+    test_jiefu_etf_pool,
     test_jiefu_risk_params,
-    test_margin_gate,
+    test_jiefu_etf_signal,
     test_market_regime,
 ]
 

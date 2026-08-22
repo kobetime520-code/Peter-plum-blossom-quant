@@ -43,7 +43,7 @@
 | [`Tim_SKILL.md`](05_Team_stock/Tim_SKILL.md) | Tim — 基本面研究員（楓大永動/彼神黃金） |
 | [`Grace_SKILL.md`](05_Team_stock/Grace_SKILL.md) | Grace — 題材面研究員 & 高階投資顧問 |
 | [`Joe_SKILL.md`](05_Team_stock/Joe_SKILL.md) | Joe — 技術面研究員（+quant-research 回測） |
-| [`Eric_SKILL.md`](05_Team_stock/Eric_SKILL.md) | Eric — 籌碼分析研究員（A1 閘門、姊夫池融資閘門） |
+| [`Eric_SKILL.md`](05_Team_stock/Eric_SKILL.md) | Eric — 籌碼分析研究員（A1 閘門、三大法人與融資券監控） |
 
 ### 📰 05_Team_stock/晨報
 
