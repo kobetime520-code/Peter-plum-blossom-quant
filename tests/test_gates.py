@@ -283,6 +283,75 @@ def test_market_regime():
     ok(seen == {"多頭", "中性", "空頭"}, "三種環境分支皆已實際走過（測資未失效）")
 
 
+# =====================================================================
+# ⑦ V9.4 全市場空跑保護（2026-09-17 稽核）
+# =====================================================================
+def test_market_data_guard():
+    section("⑦ 全市場空跑保護（valid_dfs 數量／覆蓋率雙門檻）")
+
+    ok(hasattr(radar, "is_market_data_sufficient"),
+       "is_market_data_sufficient 已抽為純函式（可離線測試）")
+
+    # 2026-09-16 實況：整批下載失敗
+    good, why = radar.is_market_data_sufficient(0, 2543)
+    ok(good is False and "絕對下限" in why, "0 檔有效股價 → 攔截（重現 2026-09-16 事故）")
+
+    # 2026-09-17 實況：正常執行
+    good, why = radar.is_market_data_sufficient(1985, 2543)
+    ok(good is True and why == "", "1985/2543＝78% → 放行（2026-09-17 正常執行不誤殺）")
+
+    # 絕對下限邊界
+    ok(radar.is_market_data_sufficient(radar.MIN_VALID_DFS - 1, 200)[0] is False,
+       f"{radar.MIN_VALID_DFS - 1} 檔（低於絕對下限 {radar.MIN_VALID_DFS}）→ 攔截")
+    ok(radar.is_market_data_sufficient(radar.MIN_VALID_DFS, 200)[0] is True,
+       f"{radar.MIN_VALID_DFS} 檔且覆蓋率 50% → 放行（邊界剛好成立）")
+
+    # 覆蓋率下限邊界
+    _target = 1000
+    _at = int(_target * radar.MIN_VALID_DFS_RATIO)
+    ok(radar.is_market_data_sufficient(_at, _target)[0] is True,
+       f"覆蓋率恰為下限 {radar.MIN_VALID_DFS_RATIO:.0%} → 放行（邊界）")
+    good, why = radar.is_market_data_sufficient(_at - 1, _target)
+    ok(good is False and "覆蓋率" in why,
+       f"覆蓋率低於 {radar.MIN_VALID_DFS_RATIO:.0%} 但檔數過關 → 仍攔截")
+
+    # 市場清單取得失敗
+    good, why = radar.is_market_data_sufficient(0, 0)
+    ok(good is False and "清單為空" in why, "下載目標清單為空 → 攔截且原因可辨識")
+
+    # 攔截時務必回報可辨識原因，供看板顯示
+    ok(all(radar.is_market_data_sufficient(v, t)[1]
+           for v, t in [(0, 2543), (10, 100), (200, 1000), (0, 0)]),
+       "所有攔截情境皆附帶非空的原因字串")
+
+
+def test_grace_source_guard():
+    section("⑧ Grace 拒吃壞戰報（第二道防線）")
+
+    import grace_theme_gen as gtg
+
+    ok(hasattr(gtg, "_is_plum_usable"), "_is_plum_usable 已抽為純函式")
+
+    bad = [{"stock_id": "6173", "close": "無資料", "price_date": "0000-00-00"},
+           {"stock_id": "3026", "close": "無資料", "price_date": "0000-00-00"}]
+    good, why = gtg._is_plum_usable(bad)
+    ok(good is False and "0000-00-00" in why,
+       "全數 price_date 0000-00-00 → 拒用（重現 2026-09-17 06:30 污染）")
+
+    no_close = [{"stock_id": "6173", "close": "無資料", "price_date": "2026-09-16"}]
+    good, why = gtg._is_plum_usable(no_close)
+    ok(good is False and "close" in why, "price_date 正常但 close 全「無資料」→ 仍拒用")
+
+    fine = [{"stock_id": "6173", "close": 123.5, "price_date": "2026-09-17"},
+            {"stock_id": "3026", "close": 88.0, "price_date": "2026-09-17"}]
+    ok(gtg._is_plum_usable(fine)[0] is True, "正常戰報 → 放行")
+
+    mixed = [{"stock_id": "6173", "close": 123.5, "price_date": "2026-09-17"},
+             {"stock_id": "3026", "close": "無資料", "price_date": "0000-00-00"}]
+    ok(gtg._is_plum_usable(mixed)[0] is True,
+       "僅部分個股缺資料 → 放行（不因單檔缺漏誤殺整份題材）")
+
+
 TESTS = [
     test_ocean_gates,
     test_merge_ocean_history,
@@ -290,6 +359,8 @@ TESTS = [
     test_jiefu_risk_params,
     test_jiefu_etf_signal,
     test_market_regime,
+    test_market_data_guard,
+    test_grace_source_guard,
 ]
 
 

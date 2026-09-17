@@ -72,8 +72,8 @@ logger.setLevel(logging.CRITICAL)
 # --- 1. 金鑰與設定區 ---
 # 🆕 2026-08-01 稽核 C4：版本字串集中一處，避免啟動橫幅／完成訊息各自寫死而落後
 #     （F-05：橫幅長期停在 V8.9，排錯時誤判執行版本）。升版只需改這一行。
-RADAR_VERSION = "V9.3"
-RADAR_VERSION_NOTE = "姊夫池改貴金屬ETF固定池 + A1/A2 雙閘門 + ATR 動態停損 + 大盤環境 + 記憶海真·僅追加"
+RADAR_VERSION = "V9.4"
+RADAR_VERSION_NOTE = "全市場空跑保護 + 姊夫池貴金屬ETF固定池 + A1/A2 雙閘門 + ATR 動態停損 + 大盤環境 + 記憶海真·僅追加"
 
 # 🔐 V7.5 安全修正：Token 從環境變數讀取（不再硬碼）
 FINMIND_TOKEN = os.environ.get("FINMIND_TOKEN", "")
@@ -92,6 +92,16 @@ LOG_REPORT_FILE = "log_report.json"           # 🆕 V7.9：維運日誌輸出�
 #    tests/verify_v89.py 三個本機端，故整欄移出推送檔。
 PUSH_STATUS_FILE = "push_status.json"
 SYNC_TIMEOUT_SECONDS = 360                    # git_sync 子程序逾時（含最多 180 秒推送鎖等待）
+
+# 🛡️ V9.4 全市場空跑保護門檻（2026-09-17 稽核）
+#    2026-09-16 20:57 實例：機器剛喚醒、網路未就緒，yfinance 全市場下載 0 檔成功，
+#    程式仍照常產出全「無資料」戰報（price_date 0000-00-00、汪洋 0 支、猛虎池消失）、
+#    log_report 回報 Success 並推上 GitHub；隔日 06:00 的 Grace 再吃下這份壞檔，
+#    grace_theme_data.json 的 source_price_date 變 0000-00-00、13 檔全評「低」。
+#    門檻取寬鬆值（正常執行覆蓋率約 78%，如 2026-09-17 為 1985/2543），
+#    僅攔截「明顯整批失敗」，避免誤殺部分股票抓不到的正常情境。
+MIN_VALID_DFS = 100                           # 有效股價檔數絕對下限
+MIN_VALID_DFS_RATIO = 0.30                    # 有效股價佔下載目標的比例下限
 
 # --- 2. 魚池設定區 ---
 # 🆕 V9.3：姊夫爆發小魚池由 V9.2 動態篩選改回固定清單，成員為 4 檔貴金屬期貨 ETF
@@ -741,6 +751,27 @@ _THEME_MAP = [
 ]
 
 
+def is_market_data_sufficient(valid_count: int, target_count: int) -> tuple:
+    """
+    🛡️ V9.4 全市場空跑保護（2026-09-17 稽核）。
+
+    判斷 yfinance 全市場下載結果是否足以產出可信戰報。
+    不足時呼叫端須「中止且不覆寫戰報、不推送」——寧可沿用昨日戰報，
+    也不要把全「無資料」的空殼推上線並污染隔日 Grace。
+
+    回傳 (是否足夠, 說明字串)。
+    """
+    if target_count <= 0:
+        return False, "下載目標清單為空（市場清單取得失敗）"
+    if valid_count < MIN_VALID_DFS:
+        return False, f"有效股價僅 {valid_count} 檔，低於絕對下限 {MIN_VALID_DFS} 檔"
+    ratio = valid_count / target_count
+    if ratio < MIN_VALID_DFS_RATIO:
+        return False, (f"有效股價 {valid_count}/{target_count} 檔＝{ratio:.1%}，"
+                       f"低於覆蓋率下限 {MIN_VALID_DFS_RATIO:.0%}")
+    return True, ""
+
+
 def _passes_ocean_gates(s_data: dict, rsi_ceiling) -> tuple:
     """
     🆕 V9.0 汪洋大魚入池雙閘門（2026-08-01 稽核 D3 由 main() 原地抽出，判斷條件未變）。
@@ -1252,6 +1283,20 @@ def main():
         time.sleep(1.0)
 
     print(f"  - 🎯 下載完成！成功取得 {len(valid_dfs)} 檔有效股價，進入雷達濾網...")
+
+    # 🛡️ V9.4：資料量不足即中止，不覆寫 plum_blossom_data.json、不推送
+    _ok_data, _data_reason = is_market_data_sufficient(len(valid_dfs), len(exact_tickers))
+    if not _ok_data:
+        print("")
+        print("=" * 60)
+        print(f"❌ 【空跑保護觸發】{_data_reason}")
+        print("   研判為網路／yfinance 整批失敗，本次中止：")
+        print("   • 不覆寫 plum_blossom_data.json（保留前一輪戰報）")
+        print("   • 不更新記憶海、不推送 GitHub")
+        print("   • log_report 狀態改 Failed-NoData，看板與 moly.py 將據此告警")
+        print("=" * 60)
+        _write_log_report(taiwan_time, stocks_processed=0, status="Failed-NoData")
+        return
 
     # =====================================================================
     # 🎯 V7.5 混合引擎核心（市場掃描段）

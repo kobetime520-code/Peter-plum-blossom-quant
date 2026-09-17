@@ -1,5 +1,5 @@
 # ==========================================
-# Grace 題材分析產生器 V1.0（任務4）— 被動元件
+# Grace 題材分析產生器 V1.1（任務4）— 被動元件
 # ==========================================
 # 仿孟恭範式：規則式本機產生，零外部 API。
 # 讀 plum_blossom_data.json 的「🃏 被動卡娃魚池」量化欄位，
@@ -97,9 +97,26 @@ def _build_risk(s: dict) -> str:
     return "；".join(risks) + "。"
 
 
+def _is_plum_usable(passive: list) -> tuple:
+    """
+    🛡️ V1.1：判斷來源戰報的被動卡娃池是否為有效資料。
+
+    radar.py 在全市場下載失敗時，會以 force_show 產出佔位卡片
+    （close="無資料"、price_date="0000-00-00"、strength_score=0），
+    這種戰報不可用於題材分析。回傳 (可用與否, 原因)。
+    """
+    bad_date = sum(1 for s in passive if str(s.get("price_date", "")) in ("", "0000-00-00"))
+    if bad_date == len(passive):
+        return False, "全數個股 price_date 為 0000-00-00"
+    no_close = sum(1 for s in passive if not isinstance(s.get("close"), (int, float)))
+    if no_close == len(passive):
+        return False, "全數個股 close 為「無資料」"
+    return True, ""
+
+
 def main():
     now_tw = datetime.now(TW_TZ)
-    print("🎯 Grace 題材分析產生器 V1.0（被動元件）啟動...")
+    print("🎯 Grace 題材分析產生器 V1.1（被動元件）啟動...")
     try:
         with open(PLUM_FILE, "r", encoding="utf-8") as f:
             plum = json.load(f)
@@ -110,6 +127,17 @@ def main():
     passive = plum.get("pools", {}).get(PASSIVE_POOL, [])
     if not passive:
         print("❌ plum 中無被動卡娃魚池資料，終止。")
+        return
+
+    # 🛡️ V1.1（2026-09-17 稽核）：拒吃壞戰報
+    #    2026-09-16 radar 全市場下載整批失敗，仍產出全「無資料」戰報並推上線；
+    #    隔日 06:00 本程式照吃，害 grace_theme_data.json 的 source_price_date
+    #    變成 0000-00-00、13 檔持續性全評「低」，錯誤資料在站上掛了一整天。
+    #    radar.py V9.4 已於上游加空跑保護，此處為第二道防線：
+    #    來源戰報明顯無效時保留既有題材檔，不覆寫、不推送。
+    ok_src, src_reason = _is_plum_usable(passive)
+    if not ok_src:
+        print(f"❌ 來源戰報無效（{src_reason}），保留既有 {OUTPUT_FILE} 不覆寫。")
         return
 
     tiers = {"Tier 1": [], "Tier 2": [], "Tier 3": []}
