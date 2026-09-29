@@ -5,7 +5,8 @@ tests/run_all.py — 離線測試批次入口（稽核 D3）
 性質：全程離線 —— 不呼叫 FinMind、不連 yfinance、不推送。可安全於任何時間執行。
 
 納入批次：
-  test_gates.py    V9.x 選股閘門回歸測試（純假資料）
+  test_gates.py      V9.x 選股閘門回歸測試（純假資料）
+  test_git_sync.py   git_sync 推送流程回歸測試（暫存 bare repo 當 origin，不碰 GitHub）
 
 不納入批次（需連網，請手動執行）：
   manual_atr_stop.py        ATR×2 動態停損實測（yfinance 抓真實股價）
@@ -22,9 +23,11 @@ if hasattr(sys.stdout, "reconfigure"):
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import test_gates
+import test_git_sync
 
 SUITES = [
     ("V9.x 閘門回歸", test_gates.main),
+    ("git_sync 推送流程", test_git_sync.main),
 ]
 
 

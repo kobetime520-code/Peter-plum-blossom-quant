@@ -91,7 +91,11 @@ LOG_REPORT_FILE = "log_report.json"           # 🆕 V7.9：維運日誌輸出�
 #    實測 index.html 未讀此欄位，讀取者僅 moly.py／schedule_progress.ps1／
 #    tests/verify_v89.py 三個本機端，故整欄移出推送檔。
 PUSH_STATUS_FILE = "push_status.json"
-SYNC_TIMEOUT_SECONDS = 360                    # git_sync 子程序逾時（含最多 180 秒推送鎖等待）
+SYNC_TIMEOUT_SECONDS = 720                    # git_sync 子程序逾時（2026-09-29 由 360 上調）
+#    預算：推送鎖等待 180 秒 ＋ git_sync V1.4 持鎖最壞約 510 秒
+#    （pull 60 ＋ push 60×4 ＋ 退避 15/45/90 ＋ 其餘 git 指令 60）＝ 690 秒。
+#    原 360 秒在 V1.4 加長 push 重試後會把仍在重試的推送砍掉，故一併上調；
+#    tests/test_git_sync.py 以斷言守住此預算，改任一端都會被測試攔下。
 
 # 🛡️ V9.4 全市場空跑保護門檻（2026-09-17 稽核）
 #    2026-09-16 20:57 實例：機器剛喚醒、網路未就緒，yfinance 全市場下載 0 檔成功，

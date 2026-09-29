@@ -1,6 +1,6 @@
 """
 git_sync.py — 彼夫有責戰情室自動推送腳本
-V1.3 | 2026-08-01
+V1.4 | 2026-09-29
 用途：將戰報檔案精準推送至 GitHub main 分支
       ・本地執行 radar.py 時由 radar.py 結尾自動呼叫（預設白名單 5 檔）
       ・mengong_auto.py 每日 21:00 呼叫（指定 mengong_summary.json）
@@ -20,6 +20,19 @@ V1.3 收斂（稽核 D1）：
       ③ 新增 .git_sync.lock 互斥鎖 —— 孟恭 21:00 的推送落在 radar
          （20:39 起、實測約 45 分鐘）執行區間內，兩者過去靠碰運氣避開，
          現改為明確排隊；陳舊鎖（> 10 分鐘）自動回收，避免死鎖。
+V1.4 修復（2026-09-29 推送失敗事件）：
+      事件：21:17 兩次 git push 皆遭 GitHub 回 500（remote rejected / Internal
+      Server Error），戰報 commit 滯留本機。依告警執行 `python git_sync.py` 補推，
+      卻因「無新變更」直接 return True、印出「資料與雲端一致」——實際上完全
+      沒推，本機仍領先 origin 1 筆。文件記載的補推指令在此情境下是失效的，
+      且之後任何無新變更的排程也不會帶走這筆滯留 commit。
+      ① 無新變更時改查「本機是否領先 origin」，有滯留 commit 就繼續走
+         pull --rebase → push，不再誤報一致；真的無事可做才略過。
+         效果：任一後續排程（孟恭 21:00、Grace 06:00、隔日 radar）都會自動
+         帶走前次失敗滯留的 commit，推送失敗從「需人工補推」變成「自癒」。
+      ② push 重試由 2 次／間隔 15 秒 改為 4 次／退避 15→45→90 秒（總等待
+         150 秒），涵蓋 GitHub 短暫 5xx；持鎖最壞時間仍低於陳舊鎖門檻
+         LOCK_STALE_SECONDS，避免等待方誤回收仍在使用中的鎖。
 """
 import sys
 import io
@@ -62,6 +75,14 @@ LOCK_WAIT_SECONDS = 180    # 最多等前一支推送完成
 LOCK_POLL_SECONDS = 3
 LOCK_STALE_SECONDS = 600   # 超過此秒數視為前次異常終止的殘留鎖
 
+# ── push 重試（V1.4）──────────────────────────────────────────────────
+# 每次失敗後依序等待的秒數；嘗試次數 = len + 1。
+# 持鎖最壞時間 ≈ pull 60 + push 60×4 + 60（add/commit/stash 等）+ 本組總和，
+# 須低於 LOCK_STALE_SECONDS，否則等待中的程序會把仍在使用的鎖當殘留回收。
+# tests/test_git_sync.py 以斷言守住此預算。
+PUSH_RETRY_DELAYS = (15, 45, 90)
+GIT_CMD_TIMEOUT = 60       # 單一 git 指令逾時（run_git 使用）
+
 
 def run_git(args):
     """執行 git 指令，回傳 (success: bool, output: str)"""
@@ -73,12 +94,12 @@ def run_git(args):
             text=True,
             encoding="utf-8",
             errors="replace",
-            timeout=60,
+            timeout=GIT_CMD_TIMEOUT,
         )
         output = result.stdout.strip() or result.stderr.strip()
         return result.returncode == 0, output
     except subprocess.TimeoutExpired:
-        return False, "⏰ Git 指令逾時（60 秒），可能為網路異常"
+        return False, f"⏰ Git 指令逾時（{GIT_CMD_TIMEOUT} 秒），可能為網路異常"
     except FileNotFoundError:
         return False, "❌ 找不到 git 指令，請確認 Git 已安裝並加入 PATH"
     except Exception as e:
@@ -136,6 +157,21 @@ def _repo_lock():
                 pass
 
 
+def _unpushed_count():
+    """
+    V1.4：本機領先 origin/main 的 commit 數（前次推送失敗滯留者）。
+
+    比對對象為本地的遠端追蹤分支，不需 fetch：推送失敗時 origin/main 不會前進，
+    滯留 commit 必然顯示為領先。查詢失敗回傳 0（維持 V1.3 行為，不因查詢
+    異常而誤推）。
+    """
+    ok, out = run_git(["rev-list", "--count", "origin/main..HEAD"])
+    try:
+        return int(out.strip()) if ok else 0
+    except ValueError:
+        return 0
+
+
 def _do_sync(existing, commit_msg):
     """實際推送流程：git add → commit → stash → pull --rebase → pop → push"""
     # ── Step 1：git add（只加存在的戰報檔案）────────────────────────────
@@ -151,20 +187,26 @@ def _do_sync(existing, commit_msg):
     # commit」而非「nothing to commit」，舊版字串比對漏接、把無變更誤判為推送失敗。
     # 此前 log_report.json 因 push_status 回寫而恆為 dirty，永遠有東西可提交，
     # 遮蔽了這個瑕疵；E5 讓工作區恢復乾淨後才會踩到。
+    #
+    # ⚠️ V1.4：「無新變更」不等於「與雲端一致」——前次 push 失敗滯留的 commit
+    # 仍需推出去。舊版在此直接 return True，使補推指令與後續排程全都略過推送。
     no_change, _ = run_git(["diff", "--cached", "--quiet", "--"] + existing)
-    if no_change:
-        print("  ℹ️  無變更需提交，資料與雲端一致，略過 commit")
-        return True  # 不算失敗
-
-    ok, out = run_git(["commit", "-m", commit_msg])
-    if not ok:
-        if "nothing to commit" in out.lower():
-            print("  ℹ️  無變更需提交，資料與雲端一致，略過 commit")
-            return True  # 不算失敗
-        else:
+    committed = False
+    if not no_change:
+        ok, out = run_git(["commit", "-m", commit_msg])
+        if ok:
+            committed = True
+            print(f"  ✅ git commit：{commit_msg}")
+        elif "nothing to commit" not in out.lower():
             print(f"  ❌ git commit 失敗：{out}")
             return False
-    print(f"  ✅ git commit：{commit_msg}")
+
+    if not committed:
+        pending = _unpushed_count()
+        if pending == 0:
+            print("  ℹ️  無變更需提交，且無滯留 commit，資料與雲端一致，略過推送")
+            return True  # 不算失敗
+        print(f"  ℹ️  無新變更，但本機有 {pending} 筆未推送 commit（前次推送失敗滯留），繼續推送")
 
     # ── Step 3：stash 殘留變動，確保工作區乾淨再 pull --rebase ─────────────
     # 注意：不用 --include-untracked，避免 yf_info_cache.json 等快取檔被吃進 stash
@@ -219,17 +261,20 @@ def _do_sync(existing, commit_msg):
         run_git(["stash", "pop", "stash@{0}"])
         print("  📦 stash pop：殘留變動已還原")
 
-    # ── Step 4：git push（最多重試 2 次，間隔 15 秒）────────────────────
-    for attempt in range(1, 3):
+    # ── Step 4：git push（V1.4：最多 len(PUSH_RETRY_DELAYS)+1 次，退避重試）──
+    attempts = len(PUSH_RETRY_DELAYS) + 1
+    for attempt in range(1, attempts + 1):
         ok, out = run_git(["push", "origin", "main"])
         if ok:
             print(f"  ✅ git push：成功推送至 GitHub main ✨（第 {attempt} 次）")
             return True
-        print(f"  ⚠️ git push 第 {attempt} 次失敗：{out}")
-        if attempt < 2:
-            print("     15 秒後重試...")
-            time.sleep(15)
-    print("     建議手動執行：git pull --rebase && git push origin main")
+        print(f"  ⚠️ git push 第 {attempt}/{attempts} 次失敗：{out}")
+        if attempt < attempts:
+            delay = PUSH_RETRY_DELAYS[attempt - 1]
+            print(f"     {delay} 秒後重試...")
+            time.sleep(delay)
+    print("     commit 已保留在本機；下一次排程推送（孟恭 21:00／Grace 06:00）會自動帶上，")
+    print("     或立即手動執行：python git_sync.py")
     return False
 
 
