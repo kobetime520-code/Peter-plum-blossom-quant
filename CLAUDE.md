@@ -1,6 +1,6 @@
 # 彼夫有責戰情室 — Claude 協作記憶檔
 
-> 最後更新：2026-09-17
+> 最後更新：2026-09-29
 > 負責人：Jeff（kobetime520@gmail.com）
 > 版本：**V9.4 ／ 前端 V9.2 UI**
 
@@ -30,7 +30,7 @@
 | 路徑 | 說明 |
 |---|---|
 | `radar.py` | 核心雷達掃描程式（正式版，根目錄） |
-| `moly.py` / `git_sync.py` | 本地主算入口 / **全系統唯一推送實作**（預設 5 個戰報檔，可帶 files 參數；`.git_sync.lock` 互斥，2026-08-01 D1） |
+| `moly.py` / `git_sync.py` | 本地主算入口 / **全系統唯一推送實作**（預設 5 個戰報檔，可帶 files 參數；`.git_sync.lock` 互斥，2026-08-01 D1；**V1.4 起 push 退避重試 4 次、滯留 commit 由任一後續排程自動帶走**，2026-09-29） |
 | `log_setup.py` | 三支排程執行器共用的輪替 logger（單檔 2 MB、保留 3 份，2026-08-01 E1） |
 | `plum_blossom_data.json` | 每日選股戰報（根目錄） |
 | `ocean_history.json` | 記憶海（根目錄，**真·僅追加**，2026-08-01 A1 修正） |
@@ -266,7 +266,7 @@ action = "買入加碼" if close_price >= ma5 and inst_buy_30d > 0 else "靜候�
 6. **維護手動備援**（`.github/workflows/manual_radar_update.yml`，僅 `workflow_dispatch`）
 7. **排查排程異常**（`排程進度看板.bat`／`moly_ps.log`／`radar_run.log`）
 8. **跑回歸測試**（改動 `radar.py` 閘門邏輯後執行 `python tests/run_all.py`，全離線、零 API）
-9. **手動補推**（`python git_sync.py`＝5 個戰報檔；`python git_sync.py <檔名>`＝指定檔案）
+9. **手動補推**（`python git_sync.py`＝5 個戰報檔；`python git_sync.py <檔名>`＝指定檔案；V1.4 起無新變更時也會推出前次失敗滯留的 commit。通常不必手動——孟恭 21:00／Grace 06:00 會自動帶走）
 
 ---
 
@@ -277,7 +277,7 @@ action = "買入加碼" if close_price >= ma5 and inst_buy_30d > 0 else "靜候�
 - 規格文件單一事實來源為本檔，`README.md` 與 `docs/00_INDEX.md` 只作導引（見「📖 文件分工」）
 - `ocean_history.json`（根目錄）**真·僅追加**：以既有累計為基底，當日未命中股原樣保留；筆數縮水即不覆寫
 - **推送一律走 `git_sync.py`**（2026-08-01 D1 收斂後為唯一實作），勿在任何腳本內自行 `git add/commit/push`——會繞過 stash 防呆、rebase 衝突處理、推送重試與 `.git_sync.lock` 互斥，重蹈孟恭旁路的覆轍
-- **改動 `radar.py` 閘門邏輯後須跑 `python tests/run_all.py`**（離線、零 API），並視情況補測試
+- **改動 `radar.py` 閘門邏輯或 `git_sync.py` 推送流程後須跑 `python tests/run_all.py`**（離線、零 API、不碰 GitHub），並視情況補測試
 - 程式、戰報、快取、前端頁面位於**專案根目錄**（2026-07-04 起集中）；例外為 `tests/`（回歸測試）與 `_archive/`（停用檔歸檔），皆 2026-08-01 建立
 - FinMind API token 以環境變數傳入，不寫入程式碼；日誌目前仍會落明文 token（**JW 決議接受風險、不處置**，自保方式為日誌不外傳）
 
@@ -299,6 +299,7 @@ action = "買入加碼" if close_price >= ma5 and inst_buy_30d > 0 else "靜候�
 
 | 日期 | 版本 | 說明 |
 |---|---|---|
+| 2026-09-29 | — | **推送失敗自癒：git_sync V1.3 → V1.4**（21:17 Moly-Daily 推送失敗排查）：① **直接原因**（外部）：`git push` 兩次（21:17:25／21:17:42）皆遭 GitHub 回 `remote: Internal Server Error`（`[remote rejected] main -> main`，附 Request ID），同輪 `pull --rebase` 成功，排除網路、認證、衝突與推送鎖；GitHub 狀態頁該時段無公告事故，研判為未公告的短暫 5xx。戰報 commit `68aaa06` 滯留本機。② **潛在缺陷**（本系統）：依告警執行 `python git_sync.py` 補推，因「無新變更」直接 `return True` 並印出「資料與雲端一致」——**實測 exit 0 但完全未推**，本機仍領先 origin 1 筆。文件記載的補推指令在此情境下失效，且之後任何無新變更的排程也不會帶走滯留 commit。本次以 `git pull --rebase && git push origin main` 完成補推。③ **修法**：(a) 無新變更時改查 `origin/main..HEAD` 領先數，有滯留 commit 就繼續 `pull --rebase → push`，真的無事可做才略過 —— 推送失敗由「需人工補推」變為**任一後續排程（孟恭 21:00／Grace 06:00／隔日 radar）自動帶走**；(b) push 重試由 2 次／間隔 15 秒改為 **4 次／退避 15→45→90 秒**（常數 `PUSH_RETRY_DELAYS`），涵蓋短暫 5xx；(c) 持鎖最壞時間 510 秒，壓在陳舊鎖門檻 600 秒內，避免等待方誤回收仍在使用中的鎖；`radar.py` 的 `SYNC_TIMEOUT_SECONDS` 360 → **720 秒**（等鎖 180 ＋ 持鎖 510 ＝ 690），否則會把仍在重試的推送砍掉。④ **測試**：新增 `tests/test_git_sync.py`（**22 項**，以暫存 bare repo 當 origin、pre-receive hook 模擬 GitHub 500，全程不碰 GitHub），涵蓋滯留補推、無事不誤推、既有 commit 回歸、2 次拒收後重試成功、重試耗盡後由下一支排程自癒、逾時預算三方一致；並以 commit 前的 V1.3 反跑確認①④兩段**如預期失敗**。已納入 `run_all.py`，離線合計 89 ＋ 22 ＝ **111 項全過**。⑤ 附帶觀察：本輪耗時 38 分（平常約 13 分），快取時間戳顯示 yfinance 全市場下載耗 36.5 分（平常約 11 分）、FinMind 僅約 2 分，屬 Yahoo 端緩慢；取得 1986 檔有效股價，空跑保護正確放行，與推送失敗無關。已知限制：推送重試期間最長持鎖約 8.5 分，若恰逢孟恭 21:00 等鎖（上限 180 秒）會逾時略過，孟恭資料順延至隔日更新。 |
 | 2026-09-21 | — | **🍁 楓大永動魚池新增 4532 瑞智**（JW 指示，7 → 8 支，2026-09-22 20:39 排程起生效）：`radar.py` `POOL_SETTINGS` 追加 `"4532"`（FinMind 確認為上市 twse、名稱瑞智）；本檔魚池表與 `Tim_SKILL.md` 檔數同步。離線測試 89 項全過。 |
 | 2026-09-17 | V9.4 | **全市場空跑保護＋Grace 拒吃壞戰報**（2026-09-17 執行後稽核）：① 事故重現 —— 2026-09-16 20:57 那輪（機器剛喚醒、網路未就緒）yfinance 全市場下載 **0 檔成功**，但 `radar.py` 取得 `valid_dfs` 後無任何數量判斷，仍走 `force_show` 產出全「無資料」卡片：五池 `price_date` 全為 `0000-00-00`、汪洋大魚 0 支、🐅 猛虎池整個池從輸出消失、`market_regime` 註記「^TWII 資料抓取失敗」，`log_report` 卻回報 **`Success`**，戰報照常覆寫並推上 GitHub（`3c188c7`）。記憶海因既有護欄未受損（535 支原樣保留 ✅）。② 污染擴散 —— 隔日 06:30 的 Grace 讀到這份壞檔，`grace_theme_data.json` 的 `source_price_date` 變 `0000-00-00`、13 檔題材持續性全評「低」，grace.html 掛著錯誤資料直到人工發現。③ **上游修法**：新增純函式 `is_market_data_sufficient(valid_count, target_count)` 與常數 `MIN_VALID_DFS`（100 檔）／`MIN_VALID_DFS_RATIO`（30%），於下載完成、進入雷達濾網「之前」攔截；觸發時中止並保留前一輪戰報、不更新記憶海、不推送，`log_report` 狀態改 **`Failed-NoData`** 供看板與 `moly.py` 告警。門檻刻意取寬（正常執行覆蓋率約 78%，2026-09-17 為 1985/2543），只擋「明顯整批失敗」，不誤殺部分抓不到的常態。④ **下游第二道防線**：`grace_theme_gen.py` 升 V1.1，新增 `_is_plum_usable(passive)`，來源戰報全數 `price_date` 為 `0000-00-00` 或 `close` 全為「無資料」時保留既有題材檔不覆寫；僅部分個股缺漏則照常放行，不因單檔誤殺整份題材。⑤ **測試**：`tests/test_gates.py` 新增 ⑦⑧ 兩段，離線斷言 75 → **89 項全過**（含以 0/2543 重現事故、以 1985/2543 確認不誤殺、兩個門檻的邊界值）。⑥ 線上資料修復：以 9/17 正確戰報重生 `grace_theme_data.json`（基準日 2026-09-17、高0/中2/低11）。 |
 | 2026-08-22 | V9.3 | **姊夫爆發小魚池重新設計：動態個股篩選 → 貴金屬期貨 ETF 固定池**（JW 決議）：① **移除全部 5 道 V9.2 條件**（inst_grade S/A、trend_quality STRONG/HEALTHY、ma5_breakout_day 1~3 日、金融傳產排除、融資 10 日遽增閘門）與 `_select_jiefu_pool`／`_is_excluded_industry`／`_check_margin_not_surging` 三個函式及 `JIEFU_EXCLUDED_INDUSTRIES`（無死碼殘留，測試以 `hasattr` 斷言）。改因回放 34 個掃描日（V9.2 上線 07-07～08-21）**19 日掛零（56%）**，滿編僅 3 日；瓶頸歸因為條件② 趨勢品質（08-21 當日 S/A 39 支 → 僅 7 支通過，STRONG 掛零）與條件③ 突破 1~3 日的交集過窄——② 要求收盤連續 5~8 日站上 MA5、③ 要求 MA5 剛上穿 MA30 僅 1~3 日，實務上只有急拉股同時成立。② **名單改固定 4 檔**：00635U 黃金期貨、00708L 黃金正2、00674R 黃金反1、00738U 白銀期貨（正本 `JIEFU_ETF_PARAMS`，改名單只動這一處）；四檔皆實測 FinMind 有完整日線（不在 `pure_stocks` 全市場掃描名單內，走雙重火力補抓）。③ **停損停利依商品槓桿分級**（`_apply_jiefu_risk_params` 改寫）：原型／反向 −7%／+8%，正2倍槓桿 −10%／+12%（−7% 對 2 倍商品等於標的跌 3.5% 即出場，過緊）；建議部位由曝險金額 ÷ 停損幅度反推自動縮放（29,000／20,000 元）。④ **動作訊號改純技術雙確認**（新增 `_apply_jiefu_etf_signal`）：`close ≥ MA5` 且 `vol_ratio ≥ 1.0`，取代全局的 `inst_buy_30d > 0`——實測四檔法人資料以 `Dealer_Hedging`（自營避險造市）為主，不代表看多看空；卡片附 `action_basis`／`chip_note` 說明，反向 ETF 另加 `signal_direction_note`「訊號成立＝偏向金價下跌方向」避免誤讀。⑤ **儀表板統計**：姊夫池排除於全域多空比（`_global_ratio_exclude`），因反向 ETF 的「買入加碼」與個股語意相反；池內健康度（`pool_buy_stats`）保留。⑥ **前端**：卡片新增商品類型徽章（原型／正2倍槓桿／反向1倍）、風險說明框、非買入卡片補顯示停損停利列；池說明與版本日誌同步。⑦ **測試**：`tests/test_gates.py` ③④⑤ 三段改寫，75 項離線斷言全過（原 57 項含融資閘門測試已隨函式移除）。前端以本機 mock 資料實測渲染四張卡片正確、無 console 錯誤。 |
