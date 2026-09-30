@@ -1,6 +1,6 @@
 # 彼夫有責戰情室 — Claude 協作記憶檔
 
-> 最後更新：2026-09-29
+> 最後更新：2026-09-30
 > 負責人：Jeff（kobetime520@gmail.com）
 > 版本：**V9.4 ／ 前端 V9.2 UI**
 
@@ -41,7 +41,7 @@
 | `tests/` | 離線回歸測試（`run_all.py` 為批次入口；`manual_*.py` 需連網，不入批次，2026-08-01 D3） |
 | `_archive/` | 已停用檔案歸檔（附 README 逐檔記錄停用原因，2026-08-01 E2）；**內容一律不要直接執行** |
 | `finmind_cache.json` 等 `*_cache.json` | 本地快取（不推送） |
-| `C:\Moly\`（倉庫外） | 排程進入點：`moly_start.ps1`（含交易日判斷）、`backtest_start.ps1`、`grace_start.ps1`、`holidays.txt`（證交所休市日）、`norton_root.pem` |
+| `C:\Moly\`（倉庫外） | 排程進入點：**`run_hidden.pyw`（無視窗啟動器，四支排程共用，2026-09-30）**、`moly_start.ps1`（含交易日判斷）、`backtest_start.ps1`、`grace_start.ps1`、`holidays.txt`（證交所休市日）、`norton_root.pem`、`task_backup_20260930\`（改啟動器前的排程 XML 備份） |
 | `.github/workflows/manual_radar_update.yml` | GitHub Actions 手動備援（僅 workflow_dispatch，無 cron） |
 
 ---
@@ -49,6 +49,8 @@
 ## 🤖 自動排程（本機工作排程器，2026-07-04 新機移轉後）
 
 > 架構為方案 B 本地主算：重度運算在本機執行，GitHub 僅展示戰報。排程任務設定為「使用者登入時執行」，排程時刻須保持開機且 User 帳號登入。
+>
+> **四支排程的動作一律經無視窗啟動器**（2026-09-30）：`pythonw.exe "C:\Moly\run_hidden.pyw" <原指令>`。勿改回 `powershell -WindowStyle Hidden` 或直接 `cmd.exe /c` —— Windows 11 由 Windows Terminal 接管主控台後，「隱藏」實為最小化在工作列，視窗一被關掉整串程序就以 `0xC000013A`（3221225786）結束。新增或重建排程（含換機）須沿用此啟動器。
 
 | 任務名稱 | 時間（台灣） | 執行內容 |
 |---|---|---|
@@ -264,7 +266,7 @@ action = "買入加碼" if close_price >= ma5 and inst_buy_30d > 0 else "靜候�
 4. **升版 radar.py**（V9.x → V9.y，Plan Mode 規劃 → JW 授權 → 直接改正式版）
 5. **優化前端展示**（直接改 `index.html`／`grace.html`／`mengong.html`）
 6. **維護手動備援**（`.github/workflows/manual_radar_update.yml`，僅 `workflow_dispatch`）
-7. **排查排程異常**（`排程進度看板.bat`／`moly_ps.log`／`radar_run.log`）
+7. **排查排程異常**（`排程進度看板.bat`／`moly_ps.log`／`radar_run.log`；結果碼 `3221225786`＝`0xC000013A` 代表主控台被關閉或外部終止，先查排程動作是否仍為 `run_hidden.pyw`；戰報未產出時以 `python moly.py` 補跑，不經排程器）
 8. **跑回歸測試**（改動 `radar.py` 閘門邏輯後執行 `python tests/run_all.py`，全離線、零 API）
 9. **手動補推**（`python git_sync.py`＝5 個戰報檔；`python git_sync.py <檔名>`＝指定檔案；V1.4 起無新變更時也會推出前次失敗滯留的 commit。通常不必手動——孟恭 21:00／Grace 06:00 會自動帶走）
 
@@ -299,6 +301,7 @@ action = "買入加碼" if close_price >= ma5 and inst_buy_30d > 0 else "靜候�
 
 | 日期 | 版本 | 說明 |
 |---|---|---|
+| 2026-09-30 | — | **排程改無視窗啟動：根除 `0xC000013A` 中斷**（20:39 Moly-Daily 失敗排查）：① **現象**：radar 於 20:39:01 正常啟動，下載至第 4 批（451~600 檔，最後寫檔 20:46:17）時 powershell／moly.py／radar.py 三層同時結束，`moly.log` 無「任務結束」，工作排程器結果碼 **3221225786（`0xC000013A`）**，當日戰報未產出。與網路、GitHub、前一日 git_sync V1.4 皆無關（尚未走到推送）。② **根因（實測重現）**：Windows 11「預設終端機＝由 Windows 決定」會讓 Windows Terminal 接管新主控台；排程的 `powershell -WindowStyle Hidden` 是「先開視窗再隱藏」，接管後實為**可見＋最小化**的 Windows Terminal 視窗，掛在工作列。以相同方式啟動三層測試程序並對其視窗送 `WM_CLOSE`，powershell 結束碼即為 3221225786、子程序全滅，與事件完全一致。目前的 WindowsTerminal.exe 於 20:47:52（開啟排程進度看板時）才啟動，代表排程視窗在此之前已被關閉（否則看板會併入既有程序）。③ **已排除**：電池（桌機）、關機／睡眠／登出（System 事件 20:30–20:55 僅截圖工具紀錄）、`RunOnlyIfIdle`（未設）、看板程式（唯讀，無終止指令）。關閉者無紀錄可查（TaskScheduler Operational 記錄未啟用）【資料不足】。2026-07-10 同碼事件當時歸因於防毒服務，看板為 07-09 建立，研判很可能同因（無法回頭驗證）。④ **修法**：新增 `C:\Moly\run_hidden.pyw`（`pythonw.exe` 無主控台，再以 `CREATE_NO_WINDOW` 執行子程序 —— 沒有任何可關閉的視窗；結束碼原樣傳回），四支排程動作改為 `pythonw.exe "C:\Moly\run_hidden.pyw" <原指令>`，觸發條件未動；原設定匯出備份於 `C:\Moly\task_backup_20260930\`。孟恭原為 `cmd.exe /c`（連隱藏都沒有，每日 21:00 直接跳視窗）一併改善。不採 `conhost --headless`：實測無視窗但結束碼一律回 0（子程序 exit 7 → 0），會讓看板把失敗顯示為成功。⑤ **驗證**：啟動器離線三測（`powershell -File` 中文輸出以 `*>>` 重導 → 仍為 UTF-16 LE、結束碼 5；`cmd /c` 含空白路徑 → 結束碼 9；大數值結束碼 3221225786 原樣傳回），執行中多出視窗數皆為 0；再以 `Start-ScheduledTask Moly-GraceDaily` 走真實排程器路徑：5 秒完成、結果碼 0、無新增視窗、`moly_ps.log` 編碼正常、推送成功（`cff411f`，Grace 基準日 2026-09-30）。⑥ **當日補救**：以 `python moly.py` 補跑（21:21 → 22:03，1987 檔有效股價、API 181 次、push 第 1 次成功，`ad4e32a`）；孟恭 21:00 於改設定前正常執行。耗時 42 分仍屬 yfinance 端緩慢（連兩日），另案觀察。 |
 | 2026-09-29 | — | **推送失敗自癒：git_sync V1.3 → V1.4**（21:17 Moly-Daily 推送失敗排查）：① **直接原因**（外部）：`git push` 兩次（21:17:25／21:17:42）皆遭 GitHub 回 `remote: Internal Server Error`（`[remote rejected] main -> main`，附 Request ID），同輪 `pull --rebase` 成功，排除網路、認證、衝突與推送鎖；GitHub 狀態頁該時段無公告事故，研判為未公告的短暫 5xx。戰報 commit `68aaa06` 滯留本機。② **潛在缺陷**（本系統）：依告警執行 `python git_sync.py` 補推，因「無新變更」直接 `return True` 並印出「資料與雲端一致」——**實測 exit 0 但完全未推**，本機仍領先 origin 1 筆。文件記載的補推指令在此情境下失效，且之後任何無新變更的排程也不會帶走滯留 commit。本次以 `git pull --rebase && git push origin main` 完成補推。③ **修法**：(a) 無新變更時改查 `origin/main..HEAD` 領先數，有滯留 commit 就繼續 `pull --rebase → push`，真的無事可做才略過 —— 推送失敗由「需人工補推」變為**任一後續排程（孟恭 21:00／Grace 06:00／隔日 radar）自動帶走**；(b) push 重試由 2 次／間隔 15 秒改為 **4 次／退避 15→45→90 秒**（常數 `PUSH_RETRY_DELAYS`），涵蓋短暫 5xx；(c) 持鎖最壞時間 510 秒，壓在陳舊鎖門檻 600 秒內，避免等待方誤回收仍在使用中的鎖；`radar.py` 的 `SYNC_TIMEOUT_SECONDS` 360 → **720 秒**（等鎖 180 ＋ 持鎖 510 ＝ 690），否則會把仍在重試的推送砍掉。④ **測試**：新增 `tests/test_git_sync.py`（**22 項**，以暫存 bare repo 當 origin、pre-receive hook 模擬 GitHub 500，全程不碰 GitHub），涵蓋滯留補推、無事不誤推、既有 commit 回歸、2 次拒收後重試成功、重試耗盡後由下一支排程自癒、逾時預算三方一致；並以 commit 前的 V1.3 反跑確認①④兩段**如預期失敗**。已納入 `run_all.py`，離線合計 89 ＋ 22 ＝ **111 項全過**。⑤ 附帶觀察：本輪耗時 38 分（平常約 13 分），快取時間戳顯示 yfinance 全市場下載耗 36.5 分（平常約 11 分）、FinMind 僅約 2 分，屬 Yahoo 端緩慢；取得 1986 檔有效股價，空跑保護正確放行，與推送失敗無關。已知限制：推送重試期間最長持鎖約 8.5 分，若恰逢孟恭 21:00 等鎖（上限 180 秒）會逾時略過，孟恭資料順延至隔日更新。 |
 | 2026-09-21 | — | **🍁 楓大永動魚池新增 4532 瑞智**（JW 指示，7 → 8 支，2026-09-22 20:39 排程起生效）：`radar.py` `POOL_SETTINGS` 追加 `"4532"`（FinMind 確認為上市 twse、名稱瑞智）；本檔魚池表與 `Tim_SKILL.md` 檔數同步。離線測試 89 項全過。 |
 | 2026-09-17 | V9.4 | **全市場空跑保護＋Grace 拒吃壞戰報**（2026-09-17 執行後稽核）：① 事故重現 —— 2026-09-16 20:57 那輪（機器剛喚醒、網路未就緒）yfinance 全市場下載 **0 檔成功**，但 `radar.py` 取得 `valid_dfs` 後無任何數量判斷，仍走 `force_show` 產出全「無資料」卡片：五池 `price_date` 全為 `0000-00-00`、汪洋大魚 0 支、🐅 猛虎池整個池從輸出消失、`market_regime` 註記「^TWII 資料抓取失敗」，`log_report` 卻回報 **`Success`**，戰報照常覆寫並推上 GitHub（`3c188c7`）。記憶海因既有護欄未受損（535 支原樣保留 ✅）。② 污染擴散 —— 隔日 06:30 的 Grace 讀到這份壞檔，`grace_theme_data.json` 的 `source_price_date` 變 `0000-00-00`、13 檔題材持續性全評「低」，grace.html 掛著錯誤資料直到人工發現。③ **上游修法**：新增純函式 `is_market_data_sufficient(valid_count, target_count)` 與常數 `MIN_VALID_DFS`（100 檔）／`MIN_VALID_DFS_RATIO`（30%），於下載完成、進入雷達濾網「之前」攔截；觸發時中止並保留前一輪戰報、不更新記憶海、不推送，`log_report` 狀態改 **`Failed-NoData`** 供看板與 `moly.py` 告警。門檻刻意取寬（正常執行覆蓋率約 78%，2026-09-17 為 1985/2543），只擋「明顯整批失敗」，不誤殺部分抓不到的常態。④ **下游第二道防線**：`grace_theme_gen.py` 升 V1.1，新增 `_is_plum_usable(passive)`，來源戰報全數 `price_date` 為 `0000-00-00` 或 `close` 全為「無資料」時保留既有題材檔不覆寫；僅部分個股缺漏則照常放行，不因單檔誤殺整份題材。⑤ **測試**：`tests/test_gates.py` 新增 ⑦⑧ 兩段，離線斷言 75 → **89 項全過**（含以 0/2543 重現事故、以 1985/2543 確認不誤殺、兩個門檻的邊界值）。⑥ 線上資料修復：以 9/17 正確戰報重生 `grace_theme_data.json`（基準日 2026-09-17、高0/中2/低11）。 |
