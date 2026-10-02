@@ -124,8 +124,8 @@ def test_merge_ocean_history():
 # =====================================================================
 def test_jiefu_etf_pool():
     section("③ 姊夫池貴金屬 ETF 固定名單（V9.3）")
-    ok(radar.JIEFU_ETF_POOL == ["00635U", "00708L", "00674R", "00738U"],
-       f"名單為圖表指定的 4 檔（實得 {radar.JIEFU_ETF_POOL}）")
+    ok(radar.JIEFU_ETF_POOL == ["00635U", "00708L", "00674R", "00738U", "009828"],
+       f"名單為貴金屬 4 檔＋009828（2026-10-02 加入）（實得 {radar.JIEFU_ETF_POOL}）")
     ok(radar.POOL_SETTINGS["🔥 姊夫爆發小魚池"] == radar.JIEFU_ETF_POOL,
        "POOL_SETTINGS 與 JIEFU_ETF_POOL 一致（不會出現空池日）")
     ok(list(radar.JIEFU_ETF_PARAMS.keys()) == radar.JIEFU_ETF_POOL,
