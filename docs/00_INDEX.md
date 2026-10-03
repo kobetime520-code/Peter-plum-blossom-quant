@@ -45,6 +45,10 @@
 | [`Joe_SKILL.md`](05_Team_stock/Joe_SKILL.md) | Joe — 技術面研究員（+quant-research 回測） |
 | [`Eric_SKILL.md`](05_Team_stock/Eric_SKILL.md) | Eric — 籌碼分析研究員（A1 閘門、三大法人與融資券監控） |
 
+### 📒 05_Team_stock/決策日誌
+
+Peter 綜合判定的決策留痕（2026-10-03 建立）：[`README.md`](05_Team_stock/決策日誌/README.md) 為使用規則與決策總表，一檔一份明細檔（`YYYY-MM-DD_股號_股名.md`），事後回填 5／20／60 日回測與反思。
+
 ### 📰 05_Team_stock/晨報
 
 已於 2026-08-01（稽核 E3）移除。晨報版角色設定早已併入正式 SKILL，該目錄僅剩一支被誤追蹤的 `desktop.ini`。
