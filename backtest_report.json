@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026/10/03 06:00",
+  "generated_at": "2026/10/10 06:00",
   "method": "持股回顧版（當前成員，存活者偏誤；非歷史選股回測）",
   "benchmark": "^TWII",
   "windows": [
@@ -13,239 +13,251 @@
     "126": "126日"
   },
   "benchmark_returns": {
-    "5": 1.16,
-    "30": 6.72,
-    "126": 48.7
+    "5": 1.99,
+    "30": 9.17,
+    "126": 41.86
   },
   "pools": {
     "🌟 彼神黃金魚池": {
       "5": {
-        "win_rate": 100.0,
-        "avg_return": 16.03,
-        "excess_return": 14.87,
+        "win_rate": 66.7,
+        "avg_return": 4.1,
+        "excess_return": 2.11,
         "n": 6,
         "details": [
           {
             "stock_id": "8289",
             "stock_name": "泰藝",
-            "return": 26.21,
-            "excess": 25.05
+            "return": 19.41,
+            "excess": 17.42
           },
           {
             "stock_id": "2484",
             "stock_name": "希華",
-            "return": 18.66,
-            "excess": 17.5
-          },
-          {
-            "stock_id": "3042",
-            "stock_name": "晶技",
-            "return": 16.41,
-            "excess": 15.25
+            "return": 7.09,
+            "excess": 5.1
           },
           {
             "stock_id": "8182",
             "stock_name": "加高",
-            "return": 14.71,
-            "excess": 13.55
+            "return": 3.28,
+            "excess": 1.29
           },
           {
             "stock_id": "3221",
             "stock_name": "台嘉碩",
-            "return": 11.78,
-            "excess": 10.62
+            "return": 2.42,
+            "excess": 0.43
+          },
+          {
+            "stock_id": "3042",
+            "stock_name": "晶技",
+            "return": -3.43,
+            "excess": -5.42
           },
           {
             "stock_id": "3675",
             "stock_name": "德微",
-            "return": 8.43,
-            "excess": 7.27
+            "return": -4.18,
+            "excess": -6.17
           }
         ]
       },
       "30": {
         "win_rate": 100.0,
-        "avg_return": 21.14,
-        "excess_return": 14.42,
+        "avg_return": 18.38,
+        "excess_return": 9.21,
         "n": 6,
         "details": [
           {
             "stock_id": "3675",
             "stock_name": "德微",
-            "return": 32.06,
-            "excess": 25.34
-          },
-          {
-            "stock_id": "3042",
-            "stock_name": "晶技",
-            "return": 23.92,
-            "excess": 17.2
-          },
-          {
-            "stock_id": "2484",
-            "stock_name": "希華",
-            "return": 19.59,
-            "excess": 12.87
+            "return": 30.19,
+            "excess": 21.02
           },
           {
             "stock_id": "8289",
             "stock_name": "泰藝",
-            "return": 19.36,
-            "excess": 12.64
+            "return": 29.57,
+            "excess": 20.4
+          },
+          {
+            "stock_id": "2484",
+            "stock_name": "希華",
+            "return": 14.25,
+            "excess": 5.08
+          },
+          {
+            "stock_id": "3042",
+            "stock_name": "晶技",
+            "return": 14.05,
+            "excess": 4.88
           },
           {
             "stock_id": "3221",
             "stock_name": "台嘉碩",
-            "return": 17.03,
-            "excess": 10.31
+            "return": 11.56,
+            "excess": 2.39
           },
           {
             "stock_id": "8182",
             "stock_name": "加高",
-            "return": 14.85,
-            "excess": 8.13
+            "return": 10.65,
+            "excess": 1.48
           }
         ]
       },
       "126": {
         "win_rate": 100.0,
-        "avg_return": 97.55,
-        "excess_return": 48.85,
+        "avg_return": 97.02,
+        "excess_return": 55.16,
         "n": 6,
         "details": [
           {
             "stock_id": "2484",
             "stock_name": "希華",
-            "return": 179.36,
-            "excess": 130.66
+            "return": 202.77,
+            "excess": 160.91
           },
           {
             "stock_id": "3042",
             "stock_name": "晶技",
-            "return": 150.41,
-            "excess": 101.71
+            "return": 119.64,
+            "excess": 77.78
           },
           {
             "stock_id": "3675",
             "stock_name": "德微",
-            "return": 98.44,
-            "excess": 49.74
-          },
-          {
-            "stock_id": "8182",
-            "stock_name": "加高",
-            "return": 60.33,
-            "excess": 11.63
+            "return": 76.21,
+            "excess": 34.35
           },
           {
             "stock_id": "8289",
             "stock_name": "泰藝",
-            "return": 51.74,
-            "excess": 3.04
+            "return": 65.62,
+            "excess": 23.76
+          },
+          {
+            "stock_id": "8182",
+            "stock_name": "加高",
+            "return": 65.0,
+            "excess": 23.14
           },
           {
             "stock_id": "3221",
             "stock_name": "台嘉碩",
-            "return": 45.03,
-            "excess": -3.67
+            "return": 52.89,
+            "excess": 11.03
           }
         ]
       }
     },
     "🔥 姊夫爆發小魚池": {
       "5": {
-        "win_rate": 25.0,
-        "avg_return": -3.4,
-        "excess_return": -4.56,
-        "n": 4,
+        "win_rate": 40.0,
+        "avg_return": 0.52,
+        "excess_return": -1.47,
+        "n": 5,
         "details": [
+          {
+            "stock_id": "009828",
+            "stock_name": "中信台日韓PCB",
+            "return": 7.71,
+            "excess": 5.72
+          },
           {
             "stock_id": "00674R",
             "stock_name": "期元大S&P黃金反1",
-            "return": 3.58,
-            "excess": 2.42
+            "return": 1.54,
+            "excess": -0.45
           },
           {
             "stock_id": "00635U",
             "stock_name": "期元大S&P黃金",
-            "return": -3.56,
-            "excess": -4.72
+            "return": -1.37,
+            "excess": -3.36
           },
           {
             "stock_id": "00738U",
             "stock_name": "期元大道瓊白銀",
-            "return": -6.72,
-            "excess": -7.88
+            "return": -2.41,
+            "excess": -4.4
           },
           {
             "stock_id": "00708L",
             "stock_name": "期元大S&P黃金正2",
-            "return": -6.92,
-            "excess": -8.08
+            "return": -2.89,
+            "excess": -4.88
           }
         ]
       },
       "30": {
-        "win_rate": 25.0,
-        "avg_return": -4.42,
-        "excess_return": -11.14,
-        "n": 4,
+        "win_rate": 40.0,
+        "avg_return": -4.44,
+        "excess_return": -13.61,
+        "n": 5,
         "details": [
           {
             "stock_id": "00674R",
             "stock_name": "期元大S&P黃金反1",
-            "return": 4.77,
-            "excess": -1.95
+            "return": 12.59,
+            "excess": 3.42
+          },
+          {
+            "stock_id": "009828",
+            "stock_name": "中信台日韓PCB",
+            "return": 11.8,
+            "excess": 2.63
           },
           {
             "stock_id": "00635U",
             "stock_name": "期元大S&P黃金",
-            "return": -5.25,
-            "excess": -11.97
+            "return": -11.57,
+            "excess": -20.74
           },
           {
             "stock_id": "00738U",
             "stock_name": "期元大道瓊白銀",
-            "return": -6.36,
-            "excess": -13.08
+            "return": -12.74,
+            "excess": -21.91
           },
           {
             "stock_id": "00708L",
             "stock_name": "期元大S&P黃金正2",
-            "return": -10.86,
-            "excess": -17.58
+            "return": -22.3,
+            "excess": -31.47
           }
         ]
       },
       "126": {
         "win_rate": 25.0,
-        "avg_return": 96.62,
-        "excess_return": 47.92,
+        "avg_return": 101.86,
+        "excess_return": 60.0,
         "n": 4,
         "details": [
           {
             "stock_id": "00674R",
             "stock_name": "期元大S&P黃金反1",
-            "return": 437.5,
-            "excess": 388.8
+            "return": 479.88,
+            "excess": 438.02
           },
           {
             "stock_id": "00635U",
             "stock_name": "期元大S&P黃金",
-            "return": -10.66,
-            "excess": -59.36
+            "return": -16.15,
+            "excess": -58.01
           },
           {
             "stock_id": "00738U",
             "stock_name": "期元大道瓊白銀",
-            "return": -17.64,
-            "excess": -66.34
+            "return": -24.37,
+            "excess": -66.23
           },
           {
             "stock_id": "00708L",
             "stock_name": "期元大S&P黃金正2",
-            "return": -22.71,
-            "excess": -71.41
+            "return": -31.9,
+            "excess": -73.76
           }
         ]
       }
@@ -253,707 +265,707 @@
     "🍁 楓大永動魚池": {
       "5": {
         "win_rate": 62.5,
-        "avg_return": 5.57,
-        "excess_return": 4.41,
+        "avg_return": 1.02,
+        "excess_return": -0.97,
         "n": 8,
         "details": [
           {
-            "stock_id": "6155",
-            "stock_name": "鈞寶",
-            "return": 29.0,
-            "excess": 27.84
-          },
-          {
             "stock_id": "2327",
             "stock_name": "國巨*",
-            "return": 9.25,
-            "excess": 8.09
-          },
-          {
-            "stock_id": "1785",
-            "stock_name": "光洋科",
-            "return": 6.22,
-            "excess": 5.06
-          },
-          {
-            "stock_id": "2344",
-            "stock_name": "華邦電",
-            "return": 3.77,
-            "excess": 2.61
-          },
-          {
-            "stock_id": "00923",
-            "stock_name": "群益台ESG低碳50",
-            "return": 0.55,
-            "excess": -0.61
-          },
-          {
-            "stock_id": "4532",
-            "stock_name": "瑞智",
-            "return": -0.6,
-            "excess": -1.76
+            "return": 5.48,
+            "excess": 3.49
           },
           {
             "stock_id": "2308",
             "stock_name": "台達電",
-            "return": -0.79,
-            "excess": -1.95
+            "return": 3.15,
+            "excess": 1.16
+          },
+          {
+            "stock_id": "1785",
+            "stock_name": "光洋科",
+            "return": 2.48,
+            "excess": 0.49
+          },
+          {
+            "stock_id": "6155",
+            "stock_name": "鈞寶",
+            "return": 1.87,
+            "excess": -0.12
+          },
+          {
+            "stock_id": "00923",
+            "stock_name": "群益台ESG低碳50",
+            "return": 1.32,
+            "excess": -0.67
+          },
+          {
+            "stock_id": "4532",
+            "stock_name": "瑞智",
+            "return": -1.61,
+            "excess": -3.6
+          },
+          {
+            "stock_id": "2344",
+            "stock_name": "華邦電",
+            "return": -1.67,
+            "excess": -3.66
           },
           {
             "stock_id": "00910",
             "stock_name": "第一金太空衛星",
             "return": -2.86,
-            "excess": -4.02
+            "excess": -4.85
           }
         ]
       },
       "30": {
-        "win_rate": 87.5,
-        "avg_return": 6.38,
-        "excess_return": -0.34,
+        "win_rate": 75.0,
+        "avg_return": 8.28,
+        "excess_return": -0.89,
         "n": 8,
         "details": [
           {
             "stock_id": "6155",
             "stock_name": "鈞寶",
-            "return": 24.78,
-            "excess": 18.06
+            "return": 28.21,
+            "excess": 19.04
           },
           {
             "stock_id": "2327",
             "stock_name": "國巨*",
-            "return": 8.68,
-            "excess": 1.96
+            "return": 16.73,
+            "excess": 7.56
           },
           {
             "stock_id": "2308",
             "stock_name": "台達電",
-            "return": 6.8,
-            "excess": 0.08
+            "return": 14.91,
+            "excess": 5.74
           },
           {
             "stock_id": "00923",
             "stock_name": "群益台ESG低碳50",
-            "return": 6.74,
-            "excess": 0.02
-          },
-          {
-            "stock_id": "2344",
-            "stock_name": "華邦電",
-            "return": 6.55,
-            "excess": -0.17
+            "return": 9.54,
+            "excess": 0.37
           },
           {
             "stock_id": "4532",
             "stock_name": "瑞智",
-            "return": 4.65,
-            "excess": -2.07
+            "return": 1.67,
+            "excess": -7.5
           },
           {
             "stock_id": "1785",
             "stock_name": "光洋科",
-            "return": 1.49,
-            "excess": -5.23
+            "return": 0.98,
+            "excess": -8.19
+          },
+          {
+            "stock_id": "2344",
+            "stock_name": "華邦電",
+            "return": -1.12,
+            "excess": -10.29
           },
           {
             "stock_id": "00910",
             "stock_name": "第一金太空衛星",
-            "return": -8.63,
-            "excess": -15.35
+            "return": -4.68,
+            "excess": -13.85
           }
         ]
       },
       "126": {
-        "win_rate": 100.0,
-        "avg_return": 52.47,
-        "excess_return": 3.77,
+        "win_rate": 75.0,
+        "avg_return": 43.16,
+        "excess_return": 1.3,
         "n": 8,
         "details": [
           {
             "stock_id": "2327",
             "stock_name": "國巨*",
-            "return": 150.69,
-            "excess": 101.99
+            "return": 135.56,
+            "excess": 93.7
           },
           {
             "stock_id": "2344",
             "stock_name": "華邦電",
-            "return": 92.27,
-            "excess": 43.57
+            "return": 85.15,
+            "excess": 43.29
           },
           {
             "stock_id": "6155",
             "stock_name": "鈞寶",
-            "return": 64.43,
-            "excess": 15.73
+            "return": 61.53,
+            "excess": 19.67
           },
           {
             "stock_id": "00923",
             "stock_name": "群益台ESG低碳50",
-            "return": 63.6,
-            "excess": 14.9
+            "return": 51.04,
+            "excess": 9.18
           },
           {
             "stock_id": "2308",
             "stock_name": "台達電",
-            "return": 28.46,
-            "excess": -20.24
+            "return": 18.64,
+            "excess": -23.22
           },
           {
             "stock_id": "1785",
             "stock_name": "光洋科",
-            "return": 13.41,
-            "excess": -35.29
-          },
-          {
-            "stock_id": "00910",
-            "stock_name": "第一金太空衛星",
-            "return": 5.87,
-            "excess": -42.83
+            "return": 10.2,
+            "excess": -31.66
           },
           {
             "stock_id": "4532",
             "stock_name": "瑞智",
-            "return": 1.03,
-            "excess": -47.67
+            "return": -0.01,
+            "excess": -41.87
+          },
+          {
+            "stock_id": "00910",
+            "stock_name": "第一金太空衛星",
+            "return": -16.84,
+            "excess": -58.7
           }
         ]
       }
     },
     "🔭 測試員觀察水域": {
       "5": {
-        "win_rate": 64.3,
-        "avg_return": 6.65,
-        "excess_return": 5.49,
+        "win_rate": 50.0,
+        "avg_return": 0.88,
+        "excess_return": -1.11,
         "n": 14,
         "details": [
           {
-            "stock_id": "3673",
-            "stock_name": "TPK-KY",
-            "return": 24.38,
-            "excess": 23.22
+            "stock_id": "3707",
+            "stock_name": "漢磊",
+            "return": 10.84,
+            "excess": 8.85
           },
           {
             "stock_id": "3016",
             "stock_name": "嘉晶",
-            "return": 24.05,
-            "excess": 22.89
-          },
-          {
-            "stock_id": "3707",
-            "stock_name": "漢磊",
-            "return": 21.37,
-            "excess": 20.21
-          },
-          {
-            "stock_id": "5292",
-            "stock_name": "華懋",
-            "return": 9.84,
-            "excess": 8.68
-          },
-          {
-            "stock_id": "4749",
-            "stock_name": "新應材",
-            "return": 8.13,
-            "excess": 6.97
-          },
-          {
-            "stock_id": "5425",
-            "stock_name": "台半",
-            "return": 6.58,
-            "excess": 5.42
-          },
-          {
-            "stock_id": "6270",
-            "stock_name": "倍微",
-            "return": 6.16,
-            "excess": 5.0
-          },
-          {
-            "stock_id": "6770",
-            "stock_name": "力積電",
-            "return": 4.65,
-            "excess": 3.49
-          },
-          {
-            "stock_id": "3706",
-            "stock_name": "神達",
-            "return": 3.44,
-            "excess": 2.28
+            "return": 9.23,
+            "excess": 7.24
           },
           {
             "stock_id": "6667",
             "stock_name": "信紘科",
-            "return": -0.57,
+            "return": 8.43,
+            "excess": 6.44
+          },
+          {
+            "stock_id": "5425",
+            "stock_name": "台半",
+            "return": 3.08,
+            "excess": 1.09
+          },
+          {
+            "stock_id": "5292",
+            "stock_name": "華懋",
+            "return": 2.53,
+            "excess": 0.54
+          },
+          {
+            "stock_id": "3673",
+            "stock_name": "TPK-KY",
+            "return": 1.5,
+            "excess": -0.49
+          },
+          {
+            "stock_id": "4749",
+            "stock_name": "新應材",
+            "return": 0.26,
             "excess": -1.73
           },
           {
-            "stock_id": "5289",
-            "stock_name": "宜鼎",
-            "return": -0.77,
-            "excess": -1.93
+            "stock_id": "3706",
+            "stock_name": "神達",
+            "return": -1.83,
+            "excess": -3.82
           },
           {
             "stock_id": "6224",
             "stock_name": "聚鼎",
-            "return": -1.7,
-            "excess": -2.86
+            "return": -2.2,
+            "excess": -4.19
           },
           {
             "stock_id": "8299",
             "stock_name": "群聯",
-            "return": -5.42,
-            "excess": -6.58
+            "return": -2.37,
+            "excess": -4.36
+          },
+          {
+            "stock_id": "6270",
+            "stock_name": "倍微",
+            "return": -2.78,
+            "excess": -4.77
+          },
+          {
+            "stock_id": "6770",
+            "stock_name": "力積電",
+            "return": -3.09,
+            "excess": -5.08
+          },
+          {
+            "stock_id": "5289",
+            "stock_name": "宜鼎",
+            "return": -3.1,
+            "excess": -5.09
           },
           {
             "stock_id": "5274",
             "stock_name": "信驊",
-            "return": -7.1,
-            "excess": -8.26
+            "return": -8.17,
+            "excess": -10.16
           }
         ]
       },
       "30": {
-        "win_rate": 92.9,
-        "avg_return": 18.31,
-        "excess_return": 11.59,
+        "win_rate": 71.4,
+        "avg_return": 14.56,
+        "excess_return": 5.39,
         "n": 14,
         "details": [
           {
             "stock_id": "3016",
             "stock_name": "嘉晶",
-            "return": 77.22,
-            "excess": 70.5
+            "return": 89.84,
+            "excess": 80.67
           },
           {
             "stock_id": "3707",
             "stock_name": "漢磊",
-            "return": 38.76,
-            "excess": 32.04
-          },
-          {
-            "stock_id": "3673",
-            "stock_name": "TPK-KY",
-            "return": 35.46,
-            "excess": 28.74
-          },
-          {
-            "stock_id": "6224",
-            "stock_name": "聚鼎",
-            "return": 23.17,
-            "excess": 16.45
-          },
-          {
-            "stock_id": "5274",
-            "stock_name": "信驊",
-            "return": 19.01,
-            "excess": 12.29
+            "return": 38.55,
+            "excess": 29.38
           },
           {
             "stock_id": "6667",
             "stock_name": "信紘科",
-            "return": 17.8,
-            "excess": 11.08
-          },
-          {
-            "stock_id": "6770",
-            "stock_name": "力積電",
-            "return": 15.24,
-            "excess": 8.52
-          },
-          {
-            "stock_id": "5292",
-            "stock_name": "華懋",
-            "return": 14.29,
-            "excess": 7.57
+            "return": 29.52,
+            "excess": 20.35
           },
           {
             "stock_id": "5425",
             "stock_name": "台半",
-            "return": 11.11,
-            "excess": 4.39
+            "return": 14.33,
+            "excess": 5.16
           },
           {
-            "stock_id": "8299",
-            "stock_name": "群聯",
-            "return": 6.62,
-            "excess": -0.1
+            "stock_id": "5292",
+            "stock_name": "華懋",
+            "return": 13.55,
+            "excess": 4.38
+          },
+          {
+            "stock_id": "5274",
+            "stock_name": "信驊",
+            "return": 13.54,
+            "excess": 4.37
+          },
+          {
+            "stock_id": "3673",
+            "stock_name": "TPK-KY",
+            "return": 12.73,
+            "excess": 3.56
+          },
+          {
+            "stock_id": "6770",
+            "stock_name": "力積電",
+            "return": 4.98,
+            "excess": -4.19
           },
           {
             "stock_id": "6270",
             "stock_name": "倍微",
-            "return": 3.68,
-            "excess": -3.04
-          },
-          {
-            "stock_id": "4749",
-            "stock_name": "新應材",
-            "return": 3.43,
-            "excess": -3.29
+            "return": 2.06,
+            "excess": -7.11
           },
           {
             "stock_id": "3706",
             "stock_name": "神達",
-            "return": 2.3,
-            "excess": -4.42
+            "return": 0.64,
+            "excess": -8.53
+          },
+          {
+            "stock_id": "6224",
+            "stock_name": "聚鼎",
+            "return": 0.0,
+            "excess": -9.17
+          },
+          {
+            "stock_id": "4749",
+            "stock_name": "新應材",
+            "return": -0.13,
+            "excess": -9.3
+          },
+          {
+            "stock_id": "8299",
+            "stock_name": "群聯",
+            "return": -1.2,
+            "excess": -10.37
           },
           {
             "stock_id": "5289",
             "stock_name": "宜鼎",
-            "return": -11.81,
-            "excess": -18.53
+            "return": -14.59,
+            "excess": -23.76
           }
         ]
       },
       "126": {
         "win_rate": 92.9,
-        "avg_return": 62.8,
-        "excess_return": 14.1,
+        "avg_return": 52.55,
+        "excess_return": 10.69,
         "n": 14,
         "details": [
           {
             "stock_id": "3016",
             "stock_name": "嘉晶",
-            "return": 243.22,
-            "excess": 194.52
+            "return": 241.81,
+            "excess": 199.95
           },
           {
             "stock_id": "6224",
             "stock_name": "聚鼎",
-            "return": 106.22,
-            "excess": 57.52
+            "return": 101.65,
+            "excess": 59.79
           },
           {
             "stock_id": "5425",
             "stock_name": "台半",
-            "return": 96.03,
-            "excess": 47.33
-          },
-          {
-            "stock_id": "3673",
-            "stock_name": "TPK-KY",
-            "return": 90.11,
-            "excess": 41.41
-          },
-          {
-            "stock_id": "5274",
-            "stock_name": "信驊",
-            "return": 84.0,
-            "excess": 35.3
+            "return": 78.42,
+            "excess": 36.56
           },
           {
             "stock_id": "3707",
             "stock_name": "漢磊",
-            "return": 71.26,
-            "excess": 22.56
+            "return": 69.76,
+            "excess": 27.9
           },
           {
-            "stock_id": "5289",
-            "stock_name": "宜鼎",
-            "return": 43.51,
-            "excess": -5.19
+            "stock_id": "5274",
+            "stock_name": "信驊",
+            "return": 53.17,
+            "excess": 11.31
           },
           {
-            "stock_id": "6770",
-            "stock_name": "力積電",
-            "return": 39.8,
-            "excess": -8.9
-          },
-          {
-            "stock_id": "6270",
-            "stock_name": "倍微",
-            "return": 28.52,
-            "excess": -20.18
-          },
-          {
-            "stock_id": "8299",
-            "stock_name": "群聯",
-            "return": 27.9,
-            "excess": -20.8
-          },
-          {
-            "stock_id": "3706",
-            "stock_name": "神達",
-            "return": 21.44,
-            "excess": -27.26
+            "stock_id": "3673",
+            "stock_name": "TPK-KY",
+            "return": 47.48,
+            "excess": 5.62
           },
           {
             "stock_id": "5292",
             "stock_name": "華懋",
-            "return": 18.49,
-            "excess": -30.21
+            "return": 28.08,
+            "excess": -13.78
+          },
+          {
+            "stock_id": "6770",
+            "stock_name": "力積電",
+            "return": 25.76,
+            "excess": -16.1
+          },
+          {
+            "stock_id": "6270",
+            "stock_name": "倍微",
+            "return": 23.63,
+            "excess": -18.23
           },
           {
             "stock_id": "6667",
             "stock_name": "信紘科",
-            "return": 13.02,
-            "excess": -35.68
+            "return": 21.5,
+            "excess": -20.36
+          },
+          {
+            "stock_id": "8299",
+            "stock_name": "群聯",
+            "return": 20.29,
+            "excess": -21.57
+          },
+          {
+            "stock_id": "5289",
+            "stock_name": "宜鼎",
+            "return": 19.97,
+            "excess": -21.89
+          },
+          {
+            "stock_id": "3706",
+            "stock_name": "神達",
+            "return": 16.0,
+            "excess": -25.86
           },
           {
             "stock_id": "4749",
             "stock_name": "新應材",
-            "return": -4.37,
-            "excess": -53.07
+            "return": -11.79,
+            "excess": -53.65
           }
         ]
       }
     },
     "🃏 被動卡娃魚池": {
       "5": {
-        "win_rate": 100.0,
-        "avg_return": 7.81,
-        "excess_return": 6.65,
+        "win_rate": 69.2,
+        "avg_return": 5.57,
+        "excess_return": 3.58,
         "n": 13,
         "details": [
           {
             "stock_id": "2492",
             "stock_name": "華新科",
-            "return": 18.14,
-            "excess": 16.98
-          },
-          {
-            "stock_id": "6175",
-            "stock_name": "立敦",
-            "return": 10.36,
-            "excess": 9.2
-          },
-          {
-            "stock_id": "6432",
-            "stock_name": "今展科",
-            "return": 9.9,
-            "excess": 8.74
-          },
-          {
-            "stock_id": "2327",
-            "stock_name": "國巨*",
-            "return": 9.25,
-            "excess": 8.09
-          },
-          {
-            "stock_id": "3026",
-            "stock_name": "禾伸堂",
-            "return": 8.72,
-            "excess": 7.56
-          },
-          {
-            "stock_id": "8042",
-            "stock_name": "金山電",
-            "return": 8.52,
-            "excess": 7.36
-          },
-          {
-            "stock_id": "3537",
-            "stock_name": "堡達",
-            "return": 7.37,
-            "excess": 6.21
-          },
-          {
-            "stock_id": "2375",
-            "stock_name": "凱美",
-            "return": 6.78,
-            "excess": 5.62
+            "return": 27.66,
+            "excess": 25.67
           },
           {
             "stock_id": "6449",
             "stock_name": "鈺邦",
-            "return": 6.65,
-            "excess": 5.49
+            "return": 17.83,
+            "excess": 15.84
+          },
+          {
+            "stock_id": "8042",
+            "stock_name": "金山電",
+            "return": 17.37,
+            "excess": 15.38
           },
           {
             "stock_id": "2472",
             "stock_name": "立隆電",
-            "return": 5.77,
-            "excess": 4.61
+            "return": 7.74,
+            "excess": 5.75
+          },
+          {
+            "stock_id": "2327",
+            "stock_name": "國巨*",
+            "return": 5.48,
+            "excess": 3.49
+          },
+          {
+            "stock_id": "2375",
+            "stock_name": "凱美",
+            "return": 4.82,
+            "excess": 2.83
           },
           {
             "stock_id": "3090",
             "stock_name": "日電貿",
-            "return": 5.15,
-            "excess": 3.99
+            "return": 2.96,
+            "excess": 0.97
+          },
+          {
+            "stock_id": "3026",
+            "stock_name": "禾伸堂",
+            "return": 2.93,
+            "excess": 0.94
+          },
+          {
+            "stock_id": "6175",
+            "stock_name": "立敦",
+            "return": 2.1,
+            "excess": 0.11
           },
           {
             "stock_id": "8163",
             "stock_name": "達方",
-            "return": 4.7,
-            "excess": 3.54
+            "return": -2.45,
+            "excess": -4.44
+          },
+          {
+            "stock_id": "3537",
+            "stock_name": "堡達",
+            "return": -2.9,
+            "excess": -4.89
+          },
+          {
+            "stock_id": "6432",
+            "stock_name": "今展科",
+            "return": -5.16,
+            "excess": -7.15
           },
           {
             "stock_id": "6173",
             "stock_name": "信昌電",
-            "return": 0.17,
-            "excess": -0.99
+            "return": -5.93,
+            "excess": -7.92
           }
         ]
       },
       "30": {
-        "win_rate": 61.5,
-        "avg_return": 7.54,
-        "excess_return": 0.82,
+        "win_rate": 92.3,
+        "avg_return": 19.49,
+        "excess_return": 10.32,
         "n": 13,
         "details": [
           {
-            "stock_id": "6173",
-            "stock_name": "信昌電",
-            "return": 41.92,
-            "excess": 35.2
-          },
-          {
             "stock_id": "2492",
             "stock_name": "華新科",
-            "return": 21.31,
-            "excess": 14.59
-          },
-          {
-            "stock_id": "3026",
-            "stock_name": "禾伸堂",
-            "return": 21.01,
-            "excess": 14.29
-          },
-          {
-            "stock_id": "2327",
-            "stock_name": "國巨*",
-            "return": 8.68,
-            "excess": 1.96
+            "return": 56.72,
+            "excess": 47.55
           },
           {
             "stock_id": "8042",
             "stock_name": "金山電",
-            "return": 8.52,
-            "excess": 1.8
+            "return": 40.04,
+            "excess": 30.87
           },
           {
-            "stock_id": "6175",
-            "stock_name": "立敦",
-            "return": 1.32,
-            "excess": -5.4
+            "stock_id": "6173",
+            "stock_name": "信昌電",
+            "return": 39.84,
+            "excess": 30.67
           },
           {
-            "stock_id": "3537",
-            "stock_name": "堡達",
-            "return": 0.89,
-            "excess": -5.83
-          },
-          {
-            "stock_id": "8163",
-            "stock_name": "達方",
-            "return": 0.32,
-            "excess": -6.4
-          },
-          {
-            "stock_id": "2472",
-            "stock_name": "立隆電",
-            "return": -0.65,
-            "excess": -7.37
+            "stock_id": "3026",
+            "stock_name": "禾伸堂",
+            "return": 39.65,
+            "excess": 30.48
           },
           {
             "stock_id": "6449",
             "stock_name": "鈺邦",
-            "return": -0.66,
-            "excess": -7.38
+            "return": 20.98,
+            "excess": 11.81
           },
           {
-            "stock_id": "2375",
-            "stock_name": "凱美",
-            "return": -0.79,
-            "excess": -7.51
+            "stock_id": "2327",
+            "stock_name": "國巨*",
+            "return": 16.73,
+            "excess": 7.56
+          },
+          {
+            "stock_id": "2472",
+            "stock_name": "立隆電",
+            "return": 11.7,
+            "excess": 2.53
+          },
+          {
+            "stock_id": "6175",
+            "stock_name": "立敦",
+            "return": 8.5,
+            "excess": -0.67
           },
           {
             "stock_id": "6432",
             "stock_name": "今展科",
-            "return": -1.62,
-            "excess": -8.34
+            "return": 6.77,
+            "excess": -2.4
+          },
+          {
+            "stock_id": "2375",
+            "stock_name": "凱美",
+            "return": 6.53,
+            "excess": -2.64
           },
           {
             "stock_id": "3090",
             "stock_name": "日電貿",
-            "return": -2.25,
-            "excess": -8.97
+            "return": 4.82,
+            "excess": -4.35
+          },
+          {
+            "stock_id": "3537",
+            "stock_name": "堡達",
+            "return": 4.6,
+            "excess": -4.57
+          },
+          {
+            "stock_id": "8163",
+            "stock_name": "達方",
+            "return": -3.55,
+            "excess": -12.72
           }
         ]
       },
       "126": {
         "win_rate": 100.0,
-        "avg_return": 145.55,
-        "excess_return": 96.85,
+        "avg_return": 142.11,
+        "excess_return": 100.25,
         "n": 13,
         "details": [
           {
             "stock_id": "3026",
             "stock_name": "禾伸堂",
-            "return": 491.83,
-            "excess": 443.13
+            "return": 428.55,
+            "excess": 386.69
           },
           {
             "stock_id": "6173",
             "stock_name": "信昌電",
-            "return": 411.76,
-            "excess": 363.06
+            "return": 359.8,
+            "excess": 317.94
           },
           {
             "stock_id": "2492",
             "stock_name": "華新科",
-            "return": 207.98,
-            "excess": 159.28
-          },
-          {
-            "stock_id": "2327",
-            "stock_name": "國巨*",
-            "return": 150.69,
-            "excess": 101.99
+            "return": 248.95,
+            "excess": 207.09
           },
           {
             "stock_id": "8042",
             "stock_name": "金山電",
-            "return": 125.69,
-            "excess": 76.99
+            "return": 155.97,
+            "excess": 114.11
+          },
+          {
+            "stock_id": "2327",
+            "stock_name": "國巨*",
+            "return": 135.56,
+            "excess": 93.7
           },
           {
             "stock_id": "6432",
             "stock_name": "今展科",
-            "return": 104.06,
-            "excess": 55.36
+            "return": 105.32,
+            "excess": 63.46
           },
           {
             "stock_id": "3090",
             "stock_name": "日電貿",
-            "return": 90.46,
-            "excess": 41.76
-          },
-          {
-            "stock_id": "2472",
-            "stock_name": "立隆電",
-            "return": 74.79,
-            "excess": 26.09
-          },
-          {
-            "stock_id": "2375",
-            "stock_name": "凱美",
-            "return": 67.2,
-            "excess": 18.5
-          },
-          {
-            "stock_id": "6175",
-            "stock_name": "立敦",
-            "return": 62.61,
-            "excess": 13.91
+            "return": 87.36,
+            "excess": 45.5
           },
           {
             "stock_id": "6449",
             "stock_name": "鈺邦",
-            "return": 50.15,
-            "excess": 1.45
+            "return": 76.57,
+            "excess": 34.71
+          },
+          {
+            "stock_id": "2472",
+            "stock_name": "立隆電",
+            "return": 75.94,
+            "excess": 34.08
+          },
+          {
+            "stock_id": "2375",
+            "stock_name": "凱美",
+            "return": 68.73,
+            "excess": 26.87
+          },
+          {
+            "stock_id": "6175",
+            "stock_name": "立敦",
+            "return": 57.77,
+            "excess": 15.91
           },
           {
             "stock_id": "3537",
             "stock_name": "堡達",
-            "return": 38.92,
-            "excess": -9.78
+            "return": 35.34,
+            "excess": -6.52
           },
           {
             "stock_id": "8163",
             "stock_name": "達方",
-            "return": 16.04,
-            "excess": -32.66
+            "return": 11.63,
+            "excess": -30.23
           }
         ]
       }
