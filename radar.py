@@ -1,6 +1,13 @@
 # ==========================================
-# 靜水流深戰情室：核心監控與全域雷達 V9.3
+# 靜水流深戰情室：核心監控與全域雷達 V9.5
 # ==========================================
+# V9.5 停牌／資料落後守門（2026-10-18，6173 信昌電減資停牌假買訊）：
+#   Yahoo 對停牌股補「收盤凍結、量 0」的列 → MA5 收斂成收盤價，close ≥ MA5 恆成立，
+#     搭配 30 日法人買超 > 0 就翻成「買入加碼」
+#   _apply_trading_halt_guard：當日量 0，或 price_date 落後全市場最新交易日
+#     （_latest_trade_date 取眾數）→ 強制「靜候觀察」並寫入 data_note／signal_paused
+#   套用於汪洋大魚市場掃描、魚池監控段（含姊夫 ETF 訊號之後）、被動卡娃段；
+#     A1／A2 閘門與強勢評分不動
 # V9.3 姊夫爆發小魚池重新設計（動態個股篩選 → 貴金屬 ETF 固定池，JW 2026-08-22 決議）：
 #   移除全部 5 道動態條件（inst_grade S/A、trend_quality、ma5_breakout_day、
 #     產業排除、融資遽增閘門）與 _select_jiefu_pool／_is_excluded_industry／
@@ -73,8 +80,8 @@ logger.setLevel(logging.CRITICAL)
 # --- 1. 金鑰與設定區 ---
 # 🆕 2026-08-01 稽核 C4：版本字串集中一處，避免啟動橫幅／完成訊息各自寫死而落後
 #     （F-05：橫幅長期停在 V8.9，排錯時誤判執行版本）。升版只需改這一行。
-RADAR_VERSION = "V9.4"
-RADAR_VERSION_NOTE = "全市場空跑保護 + 姊夫池貴金屬ETF固定池 + A1/A2 雙閘門 + ATR 動態停損 + 大盤環境 + 記憶海真·僅追加"
+RADAR_VERSION = "V9.5"
+RADAR_VERSION_NOTE = "停牌／資料落後守門 + 全市場空跑保護 + 姊夫池貴金屬ETF固定池 + A1/A2 雙閘門 + ATR 動態停損 + 大盤環境 + 記憶海真·僅追加"
 
 # 🔐 V7.5 安全修正：Token 從環境變數讀取（不再硬碼）
 FINMIND_TOKEN = os.environ.get("FINMIND_TOKEN", "")
@@ -727,6 +734,52 @@ def _apply_jiefu_etf_signal(s_data: dict) -> dict:
     return s_data
 
 
+def _latest_trade_date(valid_dfs: dict):
+    """
+    V9.5：全市場最新交易日 = 各檔最後一列日期的眾數。
+    不取 max：單一檔異常的未來日期會讓其餘約 2000 檔全被判為落後。
+    無資料時回傳 None（守門只做量 0 判斷）。
+    """
+    counts = {}
+    for df in valid_dfs.values():
+        try:
+            if df is not None and not df.empty:
+                d = str(df.index[-1])[:10]
+                counts[d] = counts.get(d, 0) + 1
+        except Exception:
+            continue
+    if not counts:
+        return None
+    return max(counts, key=counts.get)
+
+
+def _apply_trading_halt_guard(s_data: dict, latest_trade_date) -> dict:
+    """
+    V9.5 停牌／資料落後守門（2026-10-18，6173 信昌電現金減資停止買賣 10/7～10/16）。
+    Yahoo 對停牌股補「收盤凍結、量 0」的列，5 日後 MA5 = 收盤，close ≥ MA5 恆成立，
+    再加上 30 日法人買超 > 0 就產生假「買入加碼」。
+    當日量 0，或 price_date 落後全市場最新交易日 → 強制「靜候觀察」並加註；
+    評分、停損等其餘欄位一律不動。
+    """
+    try:
+        if not isinstance(s_data.get("close"), (int, float)):
+            return s_data   # 「無資料」「計算異常」卡本來就是靜候觀察
+
+        reason = ""
+        if s_data.get("volume") == 0:
+            reason = "停牌／無成交"
+        elif latest_trade_date and str(s_data.get("price_date", "")) < str(latest_trade_date):
+            reason = f"股價資料停在 {s_data.get('price_date')}，落後最新交易日 {latest_trade_date}"
+
+        if reason:
+            s_data["action"] = "靜候觀察"
+            s_data["data_note"] = f"⏸️ {reason}，訊號暫停"
+            s_data["signal_paused"] = True
+    except Exception:
+        pass
+    return s_data
+
+
 # =====================================================================
 # 🆕 V8.7 Grace：擴充版題材對應表（含英文關鍵字，yfinance 相容）
 # =====================================================================
@@ -1311,6 +1364,10 @@ def main():
         _write_log_report(taiwan_time, stocks_processed=0, status="Failed-NoData")
         return
 
+    # 🛡️ V9.5：全市場最新交易日（眾數），供停牌／資料落後守門比對
+    latest_trade_date = _latest_trade_date(valid_dfs)
+    print(f"  - 📅 全市場最新交易日：{latest_trade_date}（price_date 落後或當日量 0 → 訊號暫停）")
+
     # =====================================================================
     # 🎯 V7.5 混合引擎核心（市場掃描段）
     # =====================================================================
@@ -1321,6 +1378,7 @@ def main():
     yf_passed_filter = 0
     yf_skipped_chip = 0   # 🆕 V9.0 A1：籌碼方向閘門攔截數
     yf_skipped_rsi = 0    # 🆕 V9.0 A2：追高防護攔截數
+    yf_skipped_stale = 0  # 🆕 V9.5：停牌／資料落後守門攔截數
 
     for sid in set(market_sids):
         # 🆕 V8.8 PLAN H：前日低分股預篩（strength_score < 15 直接略過）
@@ -1370,6 +1428,10 @@ def main():
                 yf_info={"industry": yf_industry_map.get(sid, ""),
                           "sector":   yf_sector_map.get(sid, "")})
             if s_data and s_data['action'] == "買入加碼":
+                s_data = _apply_trading_halt_guard(s_data, latest_trade_date)
+                if s_data.get("signal_paused"):
+                    yf_skipped_stale += 1
+                    continue
                 ok_gate, gate_reason = _passes_ocean_gates(s_data, RSI_CEILING)
                 if not ok_gate:
                     if gate_reason == "chip":
@@ -1384,6 +1446,7 @@ def main():
 
     print(f"  - 📊 MA5 預篩：攔截 {yf_skipped_ma5} 支，量比第四關攔截 {yf_skipped_volratio} 支，{yf_passed_filter} 支進入籌碼精篩")
     print(f"  - 🆕 V9.0 籌碼方向閘門攔截 {yf_skipped_chip} 支、追高防護(RSI≥{RSI_CEILING})攔截 {yf_skipped_rsi} 支")
+    print(f"  - 🆕 V9.5 停牌／資料落後守門攔截 {yf_skipped_stale} 支")
 
     # V8.5：汪洋大魚依強勢評分由高到低排序
     market_pool.sort(key=lambda x: x.get('strength_score', 0), reverse=True)
@@ -1456,6 +1519,7 @@ def main():
                 if pool_name == "🔥 姊夫爆發小魚池":
                     s_data = _apply_jiefu_risk_params(s_data)
                     s_data = _apply_jiefu_etf_signal(s_data)
+                s_data = _apply_trading_halt_guard(s_data, latest_trade_date)
                 results.append(s_data)
                 seen_in_pool.add(sid)
             time.sleep(0.5)
@@ -1484,6 +1548,7 @@ def main():
                 yf_info={"industry": yf_industry_map.get(sid, ""),
                           "sector":   yf_sector_map.get(sid, "")})
             if s_data:
+                s_data = _apply_trading_halt_guard(s_data, latest_trade_date)
                 s_data["tier"] = tier_name
                 passive_results.append(s_data)
             time.sleep(0.5)

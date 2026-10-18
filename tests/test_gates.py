@@ -11,6 +11,9 @@ tests/test_gates.py — V9.x 選股閘門離線回歸測試（稽核 D3）
   ④ 姊夫池分級停損停利與建議部位       _apply_jiefu_risk_params（V9.3）
   ⑤ 姊夫池 ETF 技術訊號與方向標註      _apply_jiefu_etf_signal（V9.3）
   ⑥ 大盤環境三段式與 rsi_ceiling       _calc_market_regime（以假資料替換 yfinance）
+  ⑦ 全市場空跑保護                    is_market_data_sufficient（V9.4）
+  ⑧ Grace 拒吃壞戰報                  grace_theme_gen._is_plum_usable（V9.4）
+  ⑨ 停牌／資料落後守門                _apply_trading_halt_guard / _latest_trade_date（V9.5）
 """
 import sys
 import os
@@ -352,6 +355,72 @@ def test_grace_source_guard():
        "僅部分個股缺資料 → 放行（不因單檔缺漏誤殺整份題材）")
 
 
+# =====================================================================
+# ⑨ V9.5 停牌／資料落後守門（2026-10-18，6173 信昌電減資停牌假買訊）
+# =====================================================================
+def _df_ending(date_str, n=3):
+    idx = pd.date_range(end=date_str, periods=n, freq="D")
+    return pd.DataFrame({"Close": [1.0] * n, "Volume": [1000.0] * n}, index=idx)
+
+
+def test_trading_halt_guard():
+    section("⑨ 停牌／資料落後守門（V9.5）")
+    g = radar._apply_trading_halt_guard
+
+    # 2026-10-16 戰報 6173 實況：減資停牌，收盤凍結、量 0、MA5 收斂成收盤價
+    halted = g({"stock_id": "6173", "close": 302.13, "ma5": 302.13, "volume": 0,
+                "inst_buy": 4194, "action": "買入加碼", "price_date": "2026-10-15",
+                "strength_score": 47, "stop_loss": 278.61}, "2026-10-16")
+    ok(halted["action"] == "靜候觀察", "6173 停牌（量 0、收盤凍結）→ 買入加碼翻為靜候觀察")
+    ok("停牌" in halted["data_note"] and halted["signal_paused"] is True, "加註 data_note「停牌」且 signal_paused=True")
+    ok(halted["strength_score"] == 47 and halted["stop_loss"] == 278.61, "評分與停損欄位不被改動")
+
+    # 量 0 但日期正常（剛好與最新日同日）仍要攔
+    zero_today = g({"close": 50.0, "volume": 0, "action": "買入加碼", "price_date": "2026-10-16"}, "2026-10-16")
+    ok(zero_today["action"] == "靜候觀察", "量 0 即使日期為最新 → 仍靜候觀察")
+
+    # 2026-10-01 汪洋 2323 實況：有量但 price_date 停在前一日
+    stale = g({"stock_id": "2323", "close": 11.02, "volume": 12606, "action": "買入加碼",
+               "price_date": "2026-09-30"}, "2026-10-01")
+    ok(stale["action"] == "靜候觀察" and "落後" in stale["data_note"], "price_date 落後最新交易日 → 靜候觀察並註明落後")
+
+    normal = g({"close": 100.0, "volume": 5000, "action": "買入加碼", "price_date": "2026-10-16"}, "2026-10-16")
+    ok(normal["action"] == "買入加碼" and "data_note" not in normal and "signal_paused" not in normal,
+       "量 > 0 且日期為最新 → 原樣保留，不加註")
+
+    newer = g({"close": 100.0, "volume": 5000, "action": "買入加碼", "price_date": "2026-10-17"}, "2026-10-16")
+    ok(newer["action"] == "買入加碼", "price_date 比眾數新（Yahoo 部分先更新）→ 不誤殺")
+
+    wait = g({"close": 302.13, "volume": 0, "action": "靜候觀察", "price_date": "2026-10-08"}, "2026-10-13")
+    ok(wait["action"] == "靜候觀察" and wait["signal_paused"] is True, "原為靜候觀察的停牌卡 → 維持靜候觀察並加註（冪等）")
+
+    nodata = g({"close": "無資料", "volume": 0, "action": "靜候觀察", "price_date": "0000-00-00"}, "2026-10-16")
+    ok("data_note" not in nodata, "「無資料」卡 → 原樣返回，不加註")
+
+    no_latest = g({"close": 100.0, "volume": 5000, "action": "買入加碼", "price_date": "2026-09-30"}, None)
+    ok(no_latest["action"] == "買入加碼", "最新交易日未知 → 只判量 0，不以日期誤殺")
+    no_latest0 = g({"close": 100.0, "volume": 0, "action": "買入加碼", "price_date": "2026-09-30"}, None)
+    ok(no_latest0["action"] == "靜候觀察", "最新交易日未知但量 0 → 仍攔截")
+
+    # 姊夫 ETF：技術雙確認判為買入後，守門仍須覆寫
+    etf = radar._apply_jiefu_etf_signal(
+        {"stock_id": "00635U", "close": 47.0, "ma5": 46.0, "vol_ratio": 1.3, "volume": 0,
+         "price_date": "2026-10-16"})
+    ok(etf["action"] == "買入加碼", "（前提）ETF 技術雙確認先判為買入加碼")
+    etf = g(etf, "2026-10-16")
+    ok(etf["action"] == "靜候觀察", "姊夫 ETF 量 0 → 守門覆寫為靜候觀察（呼叫順序在 ETF 訊號之後）")
+
+    # 最新交易日 = 眾數
+    lt = radar._latest_trade_date
+    dfs = {str(i): _df_ending("2026-10-16") for i in range(5)}
+    dfs["6173"] = _df_ending("2026-10-15")
+    ok(lt(dfs) == "2026-10-16", "最新交易日取眾數（落後的 6173 不影響）")
+    dfs["9999"] = _df_ending("2026-12-31")
+    ok(lt(dfs) == "2026-10-16", "單一檔異常未來日期不影響（不取 max）")
+    ok(lt({}) is None, "無資料 → 回傳 None")
+    ok(lt({"x": pd.DataFrame()}) is None, "全為空 DataFrame → 回傳 None")
+
+
 TESTS = [
     test_ocean_gates,
     test_merge_ocean_history,
@@ -361,6 +430,7 @@ TESTS = [
     test_market_regime,
     test_market_data_guard,
     test_grace_source_guard,
+    test_trading_halt_guard,
 ]
 
 
