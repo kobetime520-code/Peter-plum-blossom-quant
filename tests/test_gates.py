@@ -14,6 +14,8 @@ tests/test_gates.py — V9.x 選股閘門離線回歸測試（稽核 D3）
   ⑦ 全市場空跑保護                    is_market_data_sufficient（V9.4）
   ⑧ Grace 拒吃壞戰報                  grace_theme_gen._is_plum_usable（V9.4）
   ⑨ 停牌／資料落後守門                _apply_trading_halt_guard / _latest_trade_date（V9.5）
+  ⑩ 猛虎晉升 28 天滑動窗口            merge_ocean_history（V9.6）
+  ⑪ 記憶海 dates 回補工具             tools/backfill_ocean_dates.py（V9.6）
 """
 import sys
 import os
@@ -96,7 +98,8 @@ def test_merge_ocean_history():
 
     # 新股票首次出現
     new3, promoted3, _ = m(hist, ["6173"], TODAY)
-    ok(new3["6173"] == {"count": 1, "last_date": TODAY}, "首次出現的 6173 記為 count=1")
+    ok(new3["6173"] == {"count": 1, "last_date": TODAY, "dates": [TODAY]},
+       "首次出現的 6173 記為 count=1（V9.6 起新股一律帶 dates）")
     ok(promoted3 == [], "count=1 不晉升猛虎")
     ok(len(new3) == 3, "新股票為追加，不取代既有 2 筆")
 
@@ -421,6 +424,96 @@ def test_trading_halt_guard():
     ok(lt({"x": pd.DataFrame()}) is None, "全為空 DataFrame → 回傳 None")
 
 
+# =====================================================================
+# ⑩ V9.6 猛虎晉升滑動窗口（2026-10-18 Right，累計門檻膨脹失效）
+# =====================================================================
+def test_tiger_window():
+    section("⑩ 猛虎晉升滑動窗口（V9.6）")
+    m = radar.merge_ocean_history
+    W, K = radar.TIGER_WINDOW_DAYS, radar.TIGER_MIN_HITS
+    ok((W, K) == (28, 3), f"窗口 {W} 天、門檻 {K} 次（回放選定 A20 ≈ 28 日曆天）")
+    TODAY = "2026-10-16"
+
+    # 膨脹失效的典型：累計 6 次但都在一個多月前 → 窗口內僅今日 1 次
+    hist = {"8050": {"count": 5, "last_date": "2026-08-20",
+                     "dates": ["2026-08-04", "2026-08-05", "2026-08-06", "2026-08-19", "2026-08-20"]}}
+    new, promoted, _ = m(hist, ["8050"], TODAY)
+    ok(new["8050"]["count"] == 6 and new["8050"]["last_date"] == TODAY, "count／last_date 照舊累計（向下相容）")
+    ok(new["8050"]["dates"][-1] == TODAY and len(new["8050"]["dates"]) == 6, "命中日追加至 dates")
+    ok(promoted == [], "累計 6 次但窗口內僅 1 次 → 不晉升（舊邏輯會晉升）")
+
+    # 窗口內 3 次 → 晉升
+    hist2 = {"2330": {"count": 2, "last_date": "2026-10-10", "dates": ["2026-10-01", "2026-10-10"]}}
+    _, promoted2, _ = m(hist2, ["2330"], TODAY)
+    ok(promoted2 == ["2330"], "窗口內 2 次＋今日 1 次 = 3 → 晉升")
+
+    # 邊界：today−27 計入、today−28 不計入
+    in_edge = {"1101": {"count": 2, "last_date": "2026-10-10", "dates": ["2026-09-19", "2026-10-10"]}}
+    out_edge = {"1101": {"count": 2, "last_date": "2026-10-10", "dates": ["2026-09-18", "2026-10-10"]}}
+    ok(m(in_edge, ["1101"], TODAY)[1] == ["1101"], "today−27（09-19）落在窗口內 → 計入")
+    ok(m(out_edge, ["1101"], TODAY)[1] == [], "today−28（09-18）落在窗口外 → 不計入")
+
+    # 同日重跑：不重複追加日期、不重複累加
+    again, _, _ = m(new, ["8050"], TODAY)
+    ok(again["8050"]["dates"].count(TODAY) == 1 and again["8050"]["count"] == 6, "同日重跑不重複追加（Date-Lock）")
+
+    # 真·僅追加：未命中股完全不動，且不污染輸入
+    both = {"8050": dict(hist["8050"], dates=list(hist["8050"]["dates"])),
+            "2330": dict(hist2["2330"], dates=list(hist2["2330"]["dates"]))}
+    snap = json_copy(both)
+    out, _, guard = m(both, ["2330"], TODAY)
+    ok(out["8050"] == snap["8050"], "未命中股的 count／last_date／dates 原樣保留")
+    ok(both == snap, "輸入的 history 未被就地修改（dates 為複本）")
+    ok(guard is None and len(out) == 2, "筆數不變、無護欄觸發")
+
+    # 舊格式（無 dates）退回累計判斷，且不會被半途補上不完整的 dates
+    legacy, promoted_l, _ = m({"2603": {"count": 2, "last_date": "2026-07-01"}}, ["2603"], TODAY)
+    ok(promoted_l == ["2603"] and "dates" not in legacy["2603"], "缺 dates 的舊紀錄 → 退回累計 count 判斷")
+
+    # 晉升必為當日命中股的子集（API 約束：不拉入無當日股價個股）
+    many = {s: {"count": 9, "last_date": "2026-10-15",
+                "dates": ["2026-10-13", "2026-10-14", "2026-10-15"]} for s in ("A", "B", "C")}
+    _, promoted_m, _ = m(many, ["B"], TODAY)
+    ok(promoted_m == ["B"], "窗口內達標但今日未命中的 A／C 不晉升（promoted ⊆ 當日命中）")
+
+
+def json_copy(obj):
+    import json
+    return json.loads(json.dumps(obj))
+
+
+# =====================================================================
+# ⑪ V9.6 記憶海 dates 回補工具（tools/backfill_ocean_dates.py）
+# =====================================================================
+def test_backfill_ocean_dates():
+    section("⑪ 記憶海 dates 回補工具（V9.6）")
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tools"))
+    import backfill_ocean_dates as bf
+
+    # 假 git 歷史：舊覆寫期（只留當日命中）→ 真·僅追加期
+    snaps = [
+        {"1101": {"count": 1, "last_date": "2026-07-01"}},                       # 窗口起點前，不計
+        {"1101": {"count": 1, "last_date": "2026-07-07"}},
+        {"1101": {"count": 2, "last_date": "2026-07-08"}, "2330": {"count": 1, "last_date": "2026-07-08"}},
+        {"1101": {"count": 2, "last_date": "2026-07-08"}, "2330": {"count": 2, "last_date": "2026-07-09"}},
+        {"1101": {"count": 3, "last_date": "2026-07-10"}, "2330": {"count": 2, "last_date": "2026-07-09"}},
+    ]
+    d = bf.collect_dates(snaps, since="2026-07-07")
+    ok(d["1101"] == ["2026-07-07", "2026-07-08", "2026-07-10"], "逐版 last_date 彙整為命中日（起點前不計、去重排序）")
+    ok(d["2330"] == ["2026-07-08", "2026-07-09"], "未命中的版本不重複計入")
+
+    cur = {"1101": {"count": 3, "last_date": "2026-07-10"},
+           "2330": {"count": 2, "last_date": "2026-07-09"},
+           "2603": {"count": 4, "last_date": "2026-07-10"},                          # 重建不出 4 個日期
+           "8050": {"count": 1, "last_date": "2026-07-10", "dates": ["2026-07-10"]}}  # 已回補過
+    new, filled, mism = bf.apply_dates(cur, d)
+    ok(new["1101"]["dates"] == d["1101"] and new["2330"]["dates"] == d["2330"], "len(dates)==count 者寫入 dates")
+    ok(filled == 2 and mism == [("2603", 4, 0)], "不一致者只列出（2603：count 4 vs 0 個日期）")
+    ok("dates" not in new["2603"] and new["2603"]["count"] == 4, "不一致者不寫 dates、不改 count")
+    ok(new["8050"] == cur["8050"], "已有 dates 的紀錄原樣保留（可重複執行）")
+    ok(len(new) == len(cur) and all(new[s]["count"] == cur[s]["count"] for s in cur), "筆數與 count 全數不變（只新增欄位）")
+
+
 TESTS = [
     test_ocean_gates,
     test_merge_ocean_history,
@@ -431,6 +524,8 @@ TESTS = [
     test_market_data_guard,
     test_grace_source_guard,
     test_trading_halt_guard,
+    test_tiger_window,
+    test_backfill_ocean_dates,
 ]
 
 

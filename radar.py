@@ -1,5 +1,10 @@
 # ==========================================
-# 靜水流深戰情室：核心監控與全域雷達 V9.5
+# 靜水流深戰情室：核心監控與全域雷達 V9.6
+# ==========================================
+# V9.6 猛虎晉升改滑動窗口（2026-10-18 Right，Peter 週報：累計 count 只增不減致門檻失效）：
+#   記憶海每筆新增 dates（命中日清單，只追加）；晉升改為「當日命中且近 TIGER_WINDOW_DAYS(28)
+#     天內出現 ≥ TIGER_MIN_HITS(3) 次」。count／last_date 照舊累計、向下相容；零新增 API
+#   既有紀錄的 dates 由 tools/backfill_ocean_dates.py 自 git 歷史回補（len(dates)==count 校驗）
 # ==========================================
 # V9.5 停牌／資料落後守門（2026-10-18，6173 信昌電減資停牌假買訊）：
 #   Yahoo 對停牌股補「收盤凍結、量 0」的列 → MA5 收斂成收盤價，close ≥ MA5 恆成立，
@@ -8,6 +13,7 @@
 #     （_latest_trade_date 取眾數）→ 強制「靜候觀察」並寫入 data_note／signal_paused
 #   套用於汪洋大魚市場掃描、魚池監控段（含姊夫 ETF 訊號之後）、被動卡娃段；
 #     A1／A2 閘門與強勢評分不動
+# ==========================================
 # V9.3 姊夫爆發小魚池重新設計（動態個股篩選 → 貴金屬 ETF 固定池，JW 2026-08-22 決議）：
 #   移除全部 5 道動態條件（inst_grade S/A、trend_quality、ma5_breakout_day、
 #     產業排除、融資遽增閘門）與 _select_jiefu_pool／_is_excluded_industry／
@@ -80,8 +86,8 @@ logger.setLevel(logging.CRITICAL)
 # --- 1. 金鑰與設定區 ---
 # 🆕 2026-08-01 稽核 C4：版本字串集中一處，避免啟動橫幅／完成訊息各自寫死而落後
 #     （F-05：橫幅長期停在 V8.9，排錯時誤判執行版本）。升版只需改這一行。
-RADAR_VERSION = "V9.5"
-RADAR_VERSION_NOTE = "停牌／資料落後守門 + 全市場空跑保護 + 姊夫池貴金屬ETF固定池 + A1/A2 雙閘門 + ATR 動態停損 + 大盤環境 + 記憶海真·僅追加"
+RADAR_VERSION = "V9.6"
+RADAR_VERSION_NOTE = "猛虎晉升28天窗口 + 停牌／資料落後守門 +全市場空跑保護 +姊夫池貴金屬ETF固定池 + A1/A2 雙閘門 + ATR 動態停損 + 大盤環境 + 記憶海真·僅追加"
 
 # 🔐 V7.5 安全修正：Token 從環境變數讀取（不再硬碼）
 FINMIND_TOKEN = os.environ.get("FINMIND_TOKEN", "")
@@ -114,6 +120,14 @@ SYNC_TIMEOUT_SECONDS = 720                    # git_sync 子程序逾時（2026-
 #    僅攔截「明顯整批失敗」，避免誤殺部分股票抓不到的正常情境。
 MIN_VALID_DFS = 100                           # 有效股價檔數絕對下限
 MIN_VALID_DFS_RATIO = 0.30                    # 有效股價佔下載目標的比例下限
+
+# 🐅 V9.5 猛虎晉升改滑動窗口（2026-10-18 Right）
+#    累計 count 只增不減，2026-10-16 記憶海 660 支中 count≥3 達 374 支（57%），
+#    門檻已失去鑑別度（猛虎池 ≈ 汪洋大魚當日前 8 名）。改為「近 28 個日曆天
+#    （約 20 個掃描日）內出現 ≥3 次」才晉升；回放 08-05～10-16 該比例降至 27%、
+#    猛虎池滿編日數不變。窗口只在讀取端計算，記憶海仍真·僅追加（新增 dates 欄位）。
+TIGER_WINDOW_DAYS = 28
+TIGER_MIN_HITS = 3
 
 # --- 2. 魚池設定區 ---
 # 🆕 V9.3：姊夫爆發小魚池由 V9.2 動態篩選改回固定清單，成員為 4 檔貴金屬期貨 ETF
@@ -866,8 +880,12 @@ def merge_ocean_history(history: dict, today_ocean_sids, today_str: str) -> tupl
     導致 count 無法累積、🐅 猛虎池長期近乎空池。
     改為：以既有累計為基底正規化複製，當日未命中者原樣保留。
 
+    🐅 V9.5：每筆另存 dates（命中日清單，只追加），晉升改看近 TIGER_WINDOW_DAYS 天的
+    命中次數；count／last_date 照舊累計，向下相容。缺 dates 的舊格式退回累計 count 判斷
+    （既有 660 支已由 tools/backfill_ocean_dates.py 回補 dates）。
+
     回傳 (new_history, promoted_sids, guard)：
-      promoted_sids — 當日命中且累計 ≥ 3 次者，供呼叫端晉升猛虎池
+      promoted_sids — 當日命中且窗口內 ≥ TIGER_MIN_HITS 次者，供呼叫端晉升猛虎池
                       （刻意只從當日命中股取，避免拉入無當日股價個股觸發雙重火力補抓、推高 API）
       guard         — None／("shrank", 合併後筆數)／("empty_day", None)
                       "shrank" 時 new_history 已改回既有累計，故縮水後的筆數一併回傳供告警列印
@@ -880,20 +898,31 @@ def merge_ocean_history(history: dict, today_ocean_sids, today_str: str) -> tupl
             "count": old_data.get("count", 0),
             "last_date": old_data.get("last_date", ""),
         }
+        if "dates" in old_data:
+            new_history[sid]["dates"] = list(old_data["dates"])
+
+    window_start = (datetime.strptime(today_str, "%Y-%m-%d")
+                    - timedelta(days=TIGER_WINDOW_DAYS - 1)).strftime("%Y-%m-%d")
 
     promoted_sids = []
     for sid in today_ocean_sids:
-        old_data = new_history.get(sid, {"count": 0, "last_date": ""})
+        is_new = sid not in new_history
+        entry = new_history.get(sid, {"count": 0, "last_date": ""})
 
-        count = old_data["count"]
-        last_date = old_data["last_date"]
+        if entry["last_date"] != today_str:
+            entry["count"] += 1
+        entry["last_date"] = today_str
+        if is_new:
+            entry["dates"] = []
+        if "dates" in entry and today_str not in entry["dates"]:
+            entry["dates"].append(today_str)
+        new_history[sid] = entry
 
-        if last_date != today_str:
-            count += 1
-
-        new_history[sid] = {"count": count, "last_date": today_str}
-
-        if count >= 3:
+        if "dates" in entry:
+            hits = sum(1 for d in entry["dates"] if window_start <= d <= today_str)
+        else:
+            hits = entry["count"]              # 舊格式（無逐日紀錄）退回累計判斷
+        if hits >= TIGER_MIN_HITS:
             promoted_sids.append(sid)
 
     # 🛡️ 記憶海防縮水護欄（2026-08-01 強化）

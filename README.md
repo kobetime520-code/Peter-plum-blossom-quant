@@ -31,7 +31,7 @@
 | `moly.py` / `git_sync.py` | 本地主算入口 / 精準推送（5 個戰報檔白名單） |
 | `index.html` / `grace.html` / `mengong.html` | 前端展示頁面（主頁 / Grace 題材 / 孟恭道路指引） |
 | `plum_blossom_data.json` | 每日選股戰報 |
-| `ocean_history.json` | 記憶海（真·僅追加，出現 ≥ 3 次晉升猛虎池） |
+| `ocean_history.json` | 記憶海（真·僅追加，近 28 天出現 ≥ 3 次晉升猛虎池） |
 | `log_report.json` / `backtest_report.json` / `grace_theme_data.json` | 維運日誌 / 週回測 / Grace 題材 |
 | `backtest_run.py` / `grace_run.py` / `mengong_auto.py` | 排程執行器（回測 / 題材 / 孟恭） |
 | `schedule_progress.ps1` / `排程進度看板.bat` | 四排程狀態看板（`-Watch` 即時刷新） |
