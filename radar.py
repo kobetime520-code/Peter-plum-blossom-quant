@@ -880,7 +880,7 @@ def merge_ocean_history(history: dict, today_ocean_sids, today_str: str) -> tupl
     導致 count 無法累積、🐅 猛虎池長期近乎空池。
     改為：以既有累計為基底正規化複製，當日未命中者原樣保留。
 
-    🐅 V9.5：每筆另存 dates（命中日清單，只追加），晉升改看近 TIGER_WINDOW_DAYS 天的
+    🐅 V9.6：每筆另存 dates（命中日清單，只追加），晉升改看近 TIGER_WINDOW_DAYS 天的
     命中次數；count／last_date 照舊累計，向下相容。缺 dates 的舊格式退回累計 count 判斷
     （既有 660 支已由 tools/backfill_ocean_dates.py 回補 dates）。
 
