@@ -3,49 +3,164 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🎯 彼神題材分析 ─ Grace 周報</title>
+<title>🔗 彼神題材鏈 ─ Grace 題材觀測站</title>
 <style>
+    /* V9.7 UI — 太空 × 海浪波濤（Zoey）：星空層＋極光星雲＋底部三層海浪；題材以區塊鏈呈現 */
     :root{
-        --bg:#0a192f; --panel:#0f2942; --panel2:#102b47; --border:rgba(100,255,218,.18);
-        --cyan:#64ffda; --gold:#ffd700; --red:#e74c3c; --green:#2ecc71; --muted:#8aa2b8; --text:#e6f1ff;
+        --bg0:#030817; --bg1:#071a36; --bg2:#06283f;
+        --panel:rgba(10,32,58,.62); --panel2:rgba(14,44,74,.72); --glass-hi:rgba(120,220,255,.08);
+        --border:rgba(100,255,218,.20); --border-hi:rgba(100,255,218,.55);
+        --cyan:#64ffda; --sky:#5ec8ff; --violet:#a78bfa; --gold:#ffd166;
+        --red:#ff7a6b; --green:#4ade80; --muted:#93a9c2; --text:#e8f3ff;
+        --warm:#4ade80; --flat:#ffd166; --cool:#93a9c2;
     }
     *{box-sizing:border-box;}
-    body{margin:0;font-family:'Noto Sans TC','Microsoft JhengHei',sans-serif;
-        background:radial-gradient(ellipse at top,#0d2138,#06101f 70%);color:var(--text);min-height:100vh;line-height:1.6;}
-    .wrap{max-width:1100px;margin:0 auto;padding:24px 16px 60px;}
+    html,body{overflow-x:hidden;}
+    body{margin:0;font-family:'Noto Sans TC','Microsoft JhengHei',sans-serif;color:var(--text);min-height:100vh;line-height:1.6;
+        background:
+            radial-gradient(1200px 600px at 15% -10%, rgba(167,139,250,.22), transparent 60%),
+            radial-gradient(900px 500px at 90% 5%, rgba(94,200,255,.18), transparent 60%),
+            radial-gradient(800px 600px at 50% 110%, rgba(100,255,218,.14), transparent 60%),
+            linear-gradient(180deg,var(--bg0) 0%,var(--bg1) 55%,var(--bg2) 100%);
+        background-attachment:fixed;}
+    /* 星空層（兩層不同密度，緩慢閃爍） */
+    body::before,body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;}
+    body::before{background-image:
+        radial-gradient(1.2px 1.2px at 12% 18%,#fff,transparent),radial-gradient(1px 1px at 28% 72%,#cfe8ff,transparent),
+        radial-gradient(1.4px 1.4px at 46% 34%,#fff,transparent),radial-gradient(1px 1px at 63% 12%,#e0f2ff,transparent),
+        radial-gradient(1.2px 1.2px at 78% 58%,#fff,transparent),radial-gradient(1px 1px at 88% 26%,#cfe8ff,transparent),
+        radial-gradient(1px 1px at 8% 52%,#fff,transparent),radial-gradient(1.3px 1.3px at 36% 8%,#fff,transparent),
+        radial-gradient(1px 1px at 55% 62%,#dbeafe,transparent),radial-gradient(1.2px 1.2px at 94% 82%,#fff,transparent);
+        background-size:420px 420px;opacity:.75;animation:twinkle 6s ease-in-out infinite alternate;}
+    body::after{background-image:
+        radial-gradient(1px 1px at 20% 40%,#fff,transparent),radial-gradient(1px 1px at 70% 80%,#fff,transparent),
+        radial-gradient(1.5px 1.5px at 85% 15%,#a5f3fc,transparent),radial-gradient(1px 1px at 40% 90%,#fff,transparent);
+        background-size:260px 260px;opacity:.45;animation:twinkle 9s ease-in-out infinite alternate-reverse;}
+    @keyframes twinkle{from{opacity:.35}to{opacity:.85}}
+
+    /* 底部海浪（固定於視窗底部，三層視差） */
+    .waves{position:fixed;left:0;right:0;bottom:0;height:150px;pointer-events:none;z-index:0;overflow:hidden;}
+    .waves svg{position:absolute;bottom:0;left:0;width:200%;height:100%;}
+    .waves .w1{animation:drift 22s linear infinite;opacity:.30;}
+    .waves .w2{animation:drift 15s linear infinite reverse;opacity:.22;bottom:-10px;}
+    .waves .w3{animation:drift 30s linear infinite;opacity:.16;bottom:-22px;}
+    @keyframes drift{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+    @media (prefers-reduced-motion: reduce){
+        body::before,body::after,.waves svg,.block.chained,.link .pulse{animation:none!important;}
+    }
+
+    .wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:24px 16px 170px;}
     .back{display:inline-block;color:var(--muted);text-decoration:none;font-size:14px;margin-bottom:14px;
-        border:1px solid var(--border);padding:6px 14px;border-radius:20px;transition:.25s;}
+        border:1px solid var(--border);padding:6px 14px;border-radius:20px;transition:.25s;background:var(--panel);backdrop-filter:blur(6px);}
     .back:hover{color:var(--cyan);border-color:var(--cyan);}
     .head{text-align:center;margin-bottom:8px;}
-    .head h1{font-size:26px;margin:6px 0;letter-spacing:1px;}
+    .head h1{font-size:clamp(22px,4.2vw,30px);margin:6px 0;letter-spacing:1px;
+        background:linear-gradient(90deg,var(--cyan),var(--sky),var(--violet));-webkit-background-clip:text;background-clip:text;color:transparent;}
+    .badge{display:inline-block;font-size:13px;font-weight:bold;color:#031322;background:linear-gradient(90deg,var(--cyan),var(--sky));
+        padding:2px 9px;border-radius:7px;vertical-align:middle;-webkit-text-fill-color:#031322;}
     .head .by{color:var(--gold);font-size:13px;}
     .head .ts{color:var(--muted);font-size:12px;margin-top:4px;}
-    .overview{background:linear-gradient(135deg,#0c2a45,#0a3a52);border:1px solid var(--border);
-        border-radius:14px;padding:16px 20px;margin:18px 0;font-size:14px;}
+
+    .glass{background:var(--panel);border:1px solid var(--border);border-radius:16px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+        box-shadow:inset 0 1px 0 var(--glass-hi),0 10px 30px rgba(0,0,0,.25);}
+    .overview{padding:16px 20px;margin:18px 0;font-size:14px;}
     .overview .ttl{color:var(--cyan);font-weight:bold;margin-bottom:6px;letter-spacing:1px;}
-    .stat{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:10px 0 4px;}
-    .stat .chip{font-size:12px;font-weight:bold;padding:5px 14px;border-radius:20px;border:1px solid var(--border);}
-    .tier{margin-top:26px;}
-    .tier h2{font-size:18px;color:var(--gold);border-left:4px solid var(--gold);padding-left:10px;margin-bottom:14px;}
-    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;}
-    .card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:15px 16px;transition:.25s;}
-    .card:hover{border-color:var(--cyan);box-shadow:0 6px 22px rgba(100,255,218,.12);}
-    .card .name{font-size:16px;font-weight:bold;margin-bottom:4px;}
-    .card .name .sid{color:var(--cyan);}
-    .ttype{display:inline-block;font-size:11px;color:var(--gold);background:rgba(255,215,0,.1);
-        border:1px solid rgba(255,215,0,.3);border-radius:6px;padding:2px 8px;margin-bottom:8px;}
-    .row{font-size:13px;margin:6px 0;}
-    .row .lab{color:var(--muted);}
-    .lvl{display:inline-block;font-size:12px;font-weight:bold;padding:1px 10px;border-radius:12px;}
-    .lvl.高{background:rgba(46,204,113,.16);color:var(--green);border:1px solid var(--green);}
-    .lvl.中{background:rgba(255,215,0,.14);color:var(--gold);border:1px solid var(--gold);}
-    .lvl.低{background:rgba(138,162,184,.14);color:var(--muted);border:1px solid var(--muted);}
-    .risk{color:#ffb4ac;font-size:12.5px;background:rgba(231,76,60,.08);border-radius:8px;padding:6px 9px;margin-top:8px;}
-    .snap{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px;}
-    .snap span{font-size:11px;color:var(--muted);background:var(--panel2);border:1px solid var(--border);
-        border-radius:6px;padding:2px 7px;}
+    .stat{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:12px 0 2px;}
+    .chip{font-size:12px;font-weight:bold;padding:4px 12px;border-radius:20px;border:1px solid var(--border);white-space:nowrap;}
+
+    .sec{margin-top:30px;}
+    .sec>h2{font-size:18px;margin:0 0 6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+    .sec>.sub{color:var(--muted);font-size:12.5px;margin-bottom:14px;}
+
+    /* ── 區塊（共用） ── */
+    .block{position:relative;background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:12px 14px;
+        backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);box-shadow:inset 0 1px 0 var(--glass-hi);}
+    .block.chained{border-color:var(--border-hi);box-shadow:0 0 0 1px rgba(100,255,218,.15),0 0 26px rgba(100,255,218,.18);animation:glow 3.6s ease-in-out infinite alternate;}
+    @keyframes glow{from{box-shadow:0 0 0 1px rgba(100,255,218,.12),0 0 14px rgba(100,255,218,.10)}to{box-shadow:0 0 0 1px rgba(100,255,218,.25),0 0 30px rgba(94,200,255,.25)}}
+    .bhead{display:flex;justify-content:space-between;align-items:center;gap:8px;font-family:Consolas,'Courier New',monospace;font-size:11px;color:var(--muted);}
+    .bhead .no{color:var(--sky);font-weight:bold;letter-spacing:.5px;}
+    .bhead .hash{opacity:.85;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .bname{font-size:17px;font-weight:bold;margin:6px 0 4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+    .st{font-size:12px;font-weight:bold;padding:1px 10px;border-radius:12px;border:1px solid;}
+    .st.升溫{color:var(--warm);border-color:var(--warm);background:rgba(74,222,128,.12);}
+    .st.盤整{color:var(--flat);border-color:var(--flat);background:rgba(255,209,102,.10);}
+    .st.降溫{color:var(--cool);border-color:var(--cool);background:rgba(147,169,194,.10);}
+    .heat{height:6px;border-radius:4px;background:rgba(255,255,255,.08);overflow:hidden;margin:6px 0 8px;}
+    .heat>i{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,var(--sky),var(--cyan),var(--gold));}
+    .metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;font-size:12px;}
+    .metrics div{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:4px 6px;text-align:center;}
+    .metrics b{display:block;font-size:14px;}
+    .metrics span{color:var(--muted);font-size:11px;}
+    .up{color:var(--green);} .dn{color:var(--red);}
+
+    /* ── 主題鏈（置頂）：區塊橫向串接，鏈結標示相關係數 ── */
+    .chain{padding:14px;margin-bottom:14px;}
+    .chain .ctop{display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;font-size:13px;color:var(--muted);margin-bottom:10px;}
+    .chain .ctop b{color:var(--cyan);}
+    .crow{display:flex;align-items:stretch;flex-wrap:wrap;gap:0;}
+    .crow .block{flex:1 1 210px;min-width:0;}
+    .link{flex:0 0 64px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--cyan);font-size:11px;font-family:Consolas,monospace;position:relative;}
+    .link .bar{width:100%;height:2px;background:repeating-linear-gradient(90deg,var(--cyan) 0 6px,transparent 6px 10px);position:relative;}
+    .link .pulse{position:absolute;top:-3px;left:0;width:8px;height:8px;border-radius:50%;background:var(--cyan);box-shadow:0 0 10px var(--cyan);animation:flow 2.2s linear infinite;}
+    @keyframes flow{from{left:0}to{left:calc(100% - 8px)}}
+    .link .ico{font-size:16px;line-height:1;}
+    .nochain{text-align:center;color:var(--muted);font-size:13px;padding:18px;}
+
+    /* ── 題材區塊鏈（全題材，垂直串接） ── */
+    .ledger{position:relative;padding-left:26px;}
+    .ledger::before{content:'';position:absolute;left:10px;top:6px;bottom:6px;width:2px;
+        background:linear-gradient(180deg,var(--violet),var(--cyan),var(--sky));opacity:.55;}
+    .lnode{position:relative;margin-bottom:16px;}
+    .lnode::before{content:'';position:absolute;left:-21px;top:18px;width:12px;height:12px;border-radius:50%;
+        background:var(--bg1);border:2px solid var(--cyan);box-shadow:0 0 10px rgba(100,255,218,.6);}
+    details.tblock>summary{cursor:pointer;list-style:none;}
+    details.tblock>summary::-webkit-details-marker{display:none;}
+    .chev{color:var(--cyan);font-size:13px;transition:transform .2s;margin-left:auto;}
+    details.tblock[open] .chev{transform:rotate(180deg);}
+    .linked{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;font-size:11.5px;}
+    .linked span{border:1px solid rgba(94,200,255,.4);color:var(--sky);border-radius:10px;padding:0 8px;}
+    .grp{margin-top:12px;}
+    .grp .gt{font-size:13px;color:var(--gold);font-weight:bold;margin-bottom:4px;border-left:3px solid var(--gold);padding-left:8px;}
+    .srow{display:grid;grid-template-columns:minmax(0,1.6fr) .8fr .7fr .6fr .9fr 1fr;gap:6px;align-items:center;
+        font-size:12.5px;padding:6px 8px;border-radius:8px;cursor:pointer;border:1px solid transparent;}
+    .srow:hover{background:rgba(100,255,218,.06);border-color:var(--border);}
+    .srow .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .srow .nm .sid{color:var(--cyan);font-family:Consolas,monospace;margin-right:4px;}
+    .srow.hd{cursor:default;color:var(--muted);font-size:11px;}
+    .srow.hd:hover{background:none;border-color:transparent;}
+    .act{font-size:11.5px;font-weight:bold;border-radius:10px;padding:0 8px;text-align:center;white-space:nowrap;}
+    .act.buy{color:var(--green);border:1px solid var(--green);}
+    .act.wait{color:var(--muted);border:1px solid rgba(147,169,194,.4);}
+    .sdetail{display:none;font-size:12.5px;margin:2px 0 8px;padding:9px 11px;border-radius:9px;background:var(--panel2);border:1px solid var(--border);}
+    .sdetail.on{display:block;}
+    .sdetail .row{margin:3px 0;}
+    .sdetail .lab{color:var(--muted);}
+    .lvl{display:inline-block;font-size:11.5px;font-weight:bold;padding:0 9px;border-radius:12px;border:1px solid;}
+    .lvl.高{color:var(--green);border-color:var(--green);} .lvl.中{color:var(--gold);border-color:var(--gold);} .lvl.低{color:var(--muted);border-color:var(--muted);}
+    .risk{color:#ffc2b8;background:rgba(255,122,107,.08);border-radius:7px;padding:5px 8px;margin-top:6px;}
+
+    /* ── 連動矩陣 ── */
+    .mtx{overflow-x:auto;padding:12px;}
+    .mtx table{border-collapse:separate;border-spacing:3px;font-size:11.5px;margin:0 auto;}
+    .mtx th{color:var(--muted);font-weight:normal;padding:3px 6px;white-space:nowrap;}
+    .mtx td{min-width:46px;text-align:center;padding:5px 4px;border-radius:6px;font-family:Consolas,monospace;}
+
     .err{text-align:center;color:var(--muted);margin-top:40px;}
     .footer{text-align:center;color:var(--muted);font-size:11px;margin-top:40px;letter-spacing:.05em;}
+
+    @media (max-width:720px){
+        .crow{flex-direction:column;}
+        .crow .block{flex:1 1 auto;}
+        .link{flex:0 0 46px;flex-direction:row;gap:8px;}
+        .link .bar{width:2px;height:100%;min-height:30px;background:repeating-linear-gradient(180deg,var(--cyan) 0 6px,transparent 6px 10px);}
+        .link .pulse{display:none;}
+        .metrics{grid-template-columns:repeat(2,minmax(0,1fr));}
+        .srow{grid-template-columns:minmax(0,1.7fr) .8fr .7fr 1fr;}
+        .srow .c-score,.srow .c-chip{display:none;}
+        .ledger{padding-left:20px;}
+        .ledger::before{left:6px;}
+        .lnode::before{left:-19px;}
+    }
     /* ── 個股轉型深度專題 ── */
     .feat-sec{margin-top:26px;}
     .feat-sec h2{font-size:18px;color:var(--cyan);border-left:4px solid var(--cyan);padding-left:10px;margin-bottom:14px;}
@@ -91,37 +206,91 @@
     .feat .fglance{font-size:11px;color:var(--muted);border:1px solid var(--border);border-radius:10px;padding:1px 9px;}
     .feat .fbody{margin-top:10px;}
     details.feat:not([open]):hover{border-color:var(--cyan);}
+
 </style>
 </head>
 <body>
+<div class="waves" aria-hidden="true">
+    <svg class="w1" viewBox="0 0 2880 150" preserveAspectRatio="none"><path fill="#5ec8ff" d="M0 80 C240 30 480 130 720 80 S1200 30 1440 80 S1920 130 2160 80 S2640 30 2880 80 V150 H0Z"/></svg>
+    <svg class="w2" viewBox="0 0 2880 150" preserveAspectRatio="none"><path fill="#64ffda" d="M0 95 C180 60 540 130 720 95 S1260 60 1440 95 S1980 130 2160 95 S2700 60 2880 95 V150 H0Z"/></svg>
+    <svg class="w3" viewBox="0 0 2880 150" preserveAspectRatio="none"><path fill="#a78bfa" d="M0 105 C300 80 420 135 720 105 S1140 80 1440 105 S1860 135 2160 105 S2580 80 2880 105 V150 H0Z"/></svg>
+</div>
 <div class="wrap">
     <a href="index.html" class="back">← 返回戰情室</a>
     <div class="head">
-        <h1>🎯 彼神題材分析 ─ 周報</h1>
+        <h1>🔗 彼神題材鏈 ─ Grace 題材觀測站 <span class="badge">V9.7</span></h1>
         <div class="by" id="g-analyst">Grace（題材面研究員）</div>
         <div class="ts" id="g-ts">資料同步中...</div>
     </div>
 
-    <div class="overview">
-        <div class="ttl">📡 本週題材總覽</div>
+    <div class="overview glass">
+        <div class="ttl">📡 題材總覽</div>
         <div id="g-overview">—</div>
         <div class="stat" id="g-stat"></div>
     </div>
 
+    <div class="sec">
+        <h2>⛓️ 主題鏈 <span class="chip" style="color:var(--cyan)">連動題材置頂</span></h2>
+        <div class="sub" id="g-chain-sub">—</div>
+        <div id="g-chains"></div>
+    </div>
+
+    <div class="sec">
+        <h2>🧱 題材區塊鏈</h2>
+        <div class="sub">依供應鏈上游 → 下游串接，每個區塊的雜湊都包含前一區塊；點個股列可展開題材分析。</div>
+        <div class="ledger" id="g-ledger"></div>
+    </div>
+
+    <div class="sec">
+        <h2>📈 連動矩陣</h2>
+        <div class="sub" id="g-mtx-sub">—</div>
+        <div class="glass mtx" id="g-mtx"></div>
+    </div>
+
     <div id="g-feature"></div>
-    <div id="g-body"></div>
-    <div class="footer">彼夫有責戰情室 ✦ Grace 題材分析 ✦ 規則式本機產生 × 每日更新</div>
+    <div class="footer">彼夫有責戰情室 V9.7 ✦ Grace 題材鏈 ✦ 規則式本機產生 × 每日更新 ✦ 題材敘述為規則式產業背景，非即時新聞</div>
 </div>
 
 <script>
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+const pct = v => v==null ? '—' : `<span class="${v>=0?'up':'dn'}">${v>=0?'+':''}${v}%</span>`;
+
 fetch('grace_theme_data.json?t=' + Date.now())
     .then(r => { if(!r.ok) throw new Error('no file'); return r.json(); })
     .then(render)
-    .catch(() => {
-        document.getElementById('g-body').innerHTML =
+    .catch(err => {
+        console.error(err);
+        document.getElementById('g-ledger').innerHTML =
             '<div class="err">⚠️ 尚無題材分析資料（grace_theme_data.json）。請執行 grace_theme_gen.py 產生。</div>';
         document.getElementById('g-ts').textContent = '—';
     });
+
+// 舊版資料（V1.x 只有 tiers）轉成單一題材區塊，確保新頁面可讀舊檔
+function legacyThemes(d){
+    const groups = {};
+    ['Tier 1','Tier 2','Tier 3'].forEach(t => { if((d.tiers||{})[t]?.length) groups[t] = d.tiers[t]; });
+    const all = Object.values(groups).flat();
+    return [{block_no:1,name:'被動元件',icon:'🃏',hash:'legacy',prev_hash:'0000000000',status:'盤整',heat:0,
+        breadth:0,buy_n:all.filter(c=>c.action==='買入加碼').length,total:all.length,avg_score:0,ret_5d:null,
+        in_chain:false,linked:[],groups}];
+}
+
+function metrics(t){
+    return `<div class="heat"><i style="width:${Math.max(2,Math.min(100,t.heat||0))}%"></i></div>
+        <div class="metrics">
+            <div><b>${t.heat ?? 0}</b><span>熱度</span></div>
+            <div><b>${Math.round((t.breadth||0)*100)}%</b><span>站上MA5</span></div>
+            <div><b>${pct(t.ret_5d)}</b><span>5日報酬</span></div>
+            <div><b>${t.buy_n||0}/${t.total||0}</b><span>買入訊號</span></div>
+        </div>`;
+}
+
+function blockCore(t){
+    return `<div class="bhead"><span class="no">BLOCK #${String(t.block_no).padStart(3,'0')}</span>
+            <span class="hash" title="prev ${esc(t.prev_hash)}">0x${esc(t.hash)}</span></div>
+        <div class="bname">${esc(t.icon)} ${esc(t.name)} <span class="st ${esc(t.status)}">${esc(t.status)}</span></div>
+        ${metrics(t)}`;
+}
 
 function render(d){
     document.getElementById('g-analyst').textContent = d.analyst || 'Grace（題材面研究員）';
@@ -129,47 +298,106 @@ function render(d){
         '⏱️ 更新：' + (d.last_updated || '—') + '　｜　資料基準日：' + (d.source_price_date || '—');
     document.getElementById('g-overview').textContent = d.theme_overview || '—';
 
+    const themes = (d.themes && d.themes.length) ? d.themes : legacyThemes(d);
+    const byName = Object.fromEntries(themes.map(t => [t.name, t]));
     const s = d.stat || {};
+    const warm = themes.filter(t => t.status==='升溫').length, cool = themes.filter(t => t.status==='降溫').length;
     document.getElementById('g-stat').innerHTML =
-        `<span class="chip" style="color:var(--green);border-color:var(--green)">持續性高 ${s.high||0}</span>`
+        `<span class="chip" style="color:var(--cyan);border-color:var(--cyan)">${themes.length} 大題材・${s.total||0} 檔</span>`
+      + `<span class="chip" style="color:var(--warm);border-color:var(--warm)">升溫 ${warm}</span>`
+      + `<span class="chip" style="color:var(--flat);border-color:var(--flat)">盤整 ${themes.length-warm-cool}</span>`
+      + `<span class="chip" style="color:var(--cool)">降溫 ${cool}</span>`
+      + `<span class="chip" style="color:var(--green);border-color:var(--green)">持續性高 ${s.high||0}</span>`
       + `<span class="chip" style="color:var(--gold);border-color:var(--gold)">中 ${s.mid||0}</span>`
-      + `<span class="chip" style="color:var(--muted)">低 ${s.low||0}</span>`
-      + `<span class="chip" style="color:var(--cyan);border-color:var(--cyan)">合計 ${s.total||0} 檔</span>`;
+      + `<span class="chip" style="color:var(--muted)">低 ${s.low||0}</span>`;
 
-    const order = ['Tier 1','Tier 2','Tier 3'];
-    const tierDesc = {'Tier 1':'核心','Tier 2':'主力','Tier 3':'衛星'};
-    const tiers = d.tiers || {};
-    let html = '';
-    order.forEach(tn => {
-        const cards = tiers[tn] || [];
-        if(!cards.length) return;
-        html += `<div class="tier"><h2>${tn}　${tierDesc[tn]||''}（${cards.length} 檔）</h2><div class="grid">`;
-        cards.forEach(c => {
-            const lvl = c.sustainability_level || '中';
-            html += `<div class="card">
-                <div class="name"><span class="sid">${c.stock_id}</span> ${c.stock_name}</div>
-                <div class="ttype">${c.theme_type || '被動元件'}</div>
-                <div class="row"><span class="lab">🔥 催化劑：</span>${c.catalyst || '—'}</div>
-                <div class="row"><span class="lab">⏳ 題材持續性：</span><span class="lvl ${lvl}">${lvl}</span>　<span style="color:var(--muted);font-size:12px">${c.sustainability_note||''}</span></div>
-                <div class="risk">⚠️ 風險提示：${c.risk || '—'}</div>
-                <div class="snap">
-                    <span>現價 ${c.close}</span>
-                    <span>強勢 ${c.strength_score}</span>
-                    <span>籌碼 ${c.chip_signal}</span>
-                    <span>法人 ${c.inst_grade} 級</span>
-                    <span>RSI ${c.rsi14}</span>
-                    <span>量比 ${c.vol_ratio}</span>
-                    <span>${c.action}</span>
-                </div>
-            </div>`;
+    // ── 主題鏈 ──
+    const thr = d.link_threshold ?? 0.5;
+    document.getElementById('g-chain-sub').textContent =
+        `成鏈條件：題材間相關 ρ ≥ ${thr}（${d.linkage_basis || '近 20 日題材等權日報酬'}），雙方皆非降溫，且鏈上至少一個題材升溫。`;
+    const chains = d.chains || [];
+    let ch = '';
+    chains.forEach((c, ci) => {
+        const corrOf = (a,b) => { const l = (c.links||[]).find(x => (x.a===a&&x.b===b)||(x.a===b&&x.b===a)); return l ? l.corr : null; };
+        ch += `<div class="glass chain"><div class="ctop"><span>⛓️ 主題鏈 <b>#${ci+1}</b>　${c.themes.map(esc).join(' → ')}</span><span>平均熱度 <b>${c.heat}</b></span></div><div class="crow">`;
+        c.themes.forEach((n, i) => {
+            const t = byName[n]; if(!t) return;
+            if(i > 0){
+                const r = corrOf(c.themes[i-1], n);
+                ch += `<div class="link"><span class="ico">⛓️</span><div class="bar"><span class="pulse"></span></div><span>${r==null?'間接':'ρ '+r.toFixed(2)}</span></div>`;
+            }
+            ch += `<div class="block chained">${blockCore(t)}</div>`;
         });
-        html += `</div></div>`;
+        ch += `</div></div>`;
     });
-    document.getElementById('g-body').innerHTML = html || '<div class="err">目前無題材資料</div>';
+    document.getElementById('g-chains').innerHTML = ch ||
+        `<div class="glass nochain">目前沒有題材形成連動鏈。各題材獨立運行時，請依下方區塊各自的熱度判讀。</div>`;
+
+    // ── 題材區塊鏈（全題材） ──
+    let lg = '';
+    themes.forEach(t => {
+        const open = t.in_chain || t.status === '升溫';
+        const linked = (t.linked||[]).map(l => `<span>⛓️ ${esc(l.theme)} ρ ${Number(l.corr).toFixed(2)}</span>`).join('');
+        let body = '';
+        Object.entries(t.groups || {}).forEach(([g, cards]) => {
+            body += `<div class="grp"><div class="gt">${esc(g)}（${cards.length}）</div>
+                <div class="srow hd"><span>代碼／名稱</span><span>現價</span><span>5日</span><span class="c-score">評分</span><span class="c-chip">籌碼</span><span>動作</span></div>`;
+            cards.forEach(c => {
+                const buy = c.action === '買入加碼';
+                const lvl = c.sustainability_level || '中';
+                body += `<div class="srow" onclick="this.nextElementSibling.classList.toggle('on')">
+                        <span class="nm"><span class="sid">${esc(c.stock_id)}</span>${esc(c.stock_name)}</span>
+                        <span>${esc(c.close)}</span><span>${pct(c.ret_5d)}</span>
+                        <span class="c-score">${esc(c.strength_score)}</span><span class="c-chip">${esc(c.chip_signal)}</span>
+                        <span class="act ${buy?'buy':'wait'}">${esc(c.action)}</span></div>
+                    <div class="sdetail">
+                        <div class="row"><span class="lab">🏷️ 類型：</span>${esc(c.theme_type)}</div>
+                        <div class="row"><span class="lab">🔥 題材背景：</span>${esc(c.catalyst)}</div>
+                        <div class="row"><span class="lab">⏳ 持續性：</span><span class="lvl ${esc(lvl)}">${esc(lvl)}</span> <span style="color:var(--muted)">${esc(c.sustainability_note)}</span></div>
+                        <div class="row" style="color:var(--muted)">法人 ${esc(c.inst_grade)} 級｜RSI ${esc(c.rsi14)}｜量比 ${esc(c.vol_ratio)}｜MA5 ${esc(c.ma5)}</div>
+                        <div class="risk">⚠️ ${esc(c.risk)}</div>
+                    </div>`;
+            });
+            body += `</div>`;
+        });
+        lg += `<div class="lnode"><details class="block tblock${t.in_chain?' chained':''}"${open?' open':''}>
+            <summary>${blockCore(t)}
+                <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+                    ${t.in_chain?'<span class="chip" style="color:var(--cyan);border-color:var(--cyan)">⛓️ 鏈上</span>':''}
+                    <span style="color:var(--muted);font-size:12px">${t.total||0} 檔・平均評分 ${t.avg_score ?? '—'}・20日 ${pct(t.ret_20d)}</span>
+                    <span class="chev">▾</span></div>
+                ${linked?`<div class="linked">${linked}</div>`:''}
+            </summary>${body}</details></div>`;
+    });
+    document.getElementById('g-ledger').innerHTML = lg || '<div class="err">目前無題材資料</div>';
+
+    // ── 連動矩陣 ──
+    const cm = d.correlation || {names:[],matrix:[]};
+    document.getElementById('g-mtx-sub').textContent = cm.names.length >= 2
+        ? `近 20 日題材等權日報酬相關係數${d.mean_corr!=null?'（兩兩平均 ρ '+d.mean_corr+'）':''}；ρ ≥ 門檻 ${thr} 以實心青色標示，負相關以紅色標示。`
+        : '資料累積中：題材需有近 20 日收盤才能計算連動（V9.7 上線後首次掃描即補齊）。';
+    if(cm.names.length >= 2){
+        const short = n => (byName[n]?.icon || '') + ' ' + n;
+        let tb = '<table><tr><th></th>' + cm.names.map(n => `<th>${esc(short(n))}</th>`).join('') + '</tr>';
+        cm.names.forEach((a, i) => {
+            tb += `<tr><th style="text-align:right">${esc(short(a))}</th>`;
+            cm.matrix[i].forEach((r, j) => {
+                if(i === j){ tb += '<td style="color:var(--muted)">—</td>'; return; }
+                if(r == null){ tb += '<td>·</td>'; return; }
+                const a1 = Math.min(1, Math.abs(r));
+                const bg = r >= 0 ? `rgba(100,255,218,${(a1*0.45).toFixed(2)})` : `rgba(255,122,107,${(a1*0.40).toFixed(2)})`;
+                const bold = r >= thr ? 'font-weight:bold;color:#031322;' : '';
+                tb += `<td style="background:${bg};${bold}">${r.toFixed(2)}</td>`;
+            });
+            tb += '</tr>';
+        });
+        document.getElementById('g-mtx').innerHTML = tb + '</table>';
+    } else {
+        document.getElementById('g-mtx').innerHTML = '<div class="nochain">—</div>';
+    }
 }
 
 // ── 個股轉型深度專題（grace_feature_data.json，手動產生、不被每日排程覆蓋）──
-function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 fetch('grace_feature_data.json?t=' + Date.now())
     .then(r => { if(!r.ok) throw new Error('no feature file'); return r.json(); })
     .then(renderFeature)
@@ -247,6 +475,7 @@ function renderFeature(d){
     html += `</div>`;
     document.getElementById('g-feature').innerHTML = html;
 }
+
 </script>
 </body>
 </html>

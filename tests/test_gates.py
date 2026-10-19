@@ -16,6 +16,7 @@ tests/test_gates.py — V9.x 選股閘門離線回歸測試（稽核 D3）
   ⑨ 停牌／資料落後守門                _apply_trading_halt_guard / _latest_trade_date（V9.5）
   ⑩ 猛虎晉升 28 天滑動窗口            merge_ocean_history（V9.6）
   ⑪ 記憶海 dates 回補工具             tools/backfill_ocean_dates.py（V9.6）
+  ⑫ 題材觀察池與題材鏈                THEME_WATCH / _recent_closes / grace_theme_gen 熱度與連動（V9.7）
 """
 import sys
 import os
@@ -514,6 +515,95 @@ def test_backfill_ocean_dates():
     ok(len(new) == len(cur) and all(new[s]["count"] == cur[s]["count"] for s in cur), "筆數與 count 全數不變（只新增欄位）")
 
 
+# =====================================================================
+# ⑫ V9.7 題材觀察池與題材鏈
+# =====================================================================
+def _tcard(sid, closes, ma5=None, score=50, action="靜候觀察"):
+    close = closes[-1] if closes else "無資料"
+    return {"stock_id": sid, "close": close, "ma5": ma5 if ma5 is not None else close,
+            "strength_score": score, "action": action, "closes_21d": closes,
+            "price_date": "2026-10-19"}
+
+
+def test_theme_watch():
+    section("⑫ V9.7 題材觀察池與題材鏈")
+    import grace_theme_gen as gtg
+
+    # --- THEME_WATCH 名單結構 ---
+    tw = radar.THEME_WATCH
+    ok(len(tw) == 6, "THEME_WATCH 共 6 大題材")
+    for name, cfg in tw.items():
+        sids = [x for g in cfg["groups"].values() for x in g]
+        ok(len(sids) == len(set(sids)), f"「{name}」題材內代碼不重複")
+        ok(all(x.isdigit() and len(x) == 4 for x in sids), f"「{name}」代碼皆為 4 碼數字")
+    all_sids = radar._theme_watch_sids()
+    ok(len(all_sids) == len(set(all_sids)), "_theme_watch_sids 去重")
+    ok(set(gtg.CHAIN_ORDER) == set(tw) | {gtg.PASSIVE_THEME}, "Grace 供應鏈順序涵蓋全部題材＋被動元件")
+
+    # --- _recent_closes ---
+    df = pd.DataFrame({"Close": [float(i) for i in range(1, 31)], "Volume": [1] * 30})
+    ok(radar._recent_closes(df) == [float(i) for i in range(10, 31)], "_recent_closes 取近 21 日收盤")
+    ok(radar._recent_closes(None) == [] and radar._recent_closes(pd.DataFrame()) == [], "_recent_closes 無資料回空清單")
+
+    # --- 熱度 ---
+    up = [100 + i for i in range(21)]
+    down = [120 - i for i in range(21)]
+    h_up = gtg._theme_heat([_tcard("A", up, ma5=up[-1] - 2), _tcard("B", up, ma5=up[-1] - 1)])
+    ok(h_up["status"] == "升溫" and h_up["breadth"] == 1.0 and h_up["ret_5d"] > 0, "全數站上 MA5 且 5 日報酬為正 → 升溫")
+    h_dn = gtg._theme_heat([_tcard("A", down, ma5=down[-1] + 2), _tcard("B", down, ma5=down[-1] + 1)])
+    ok(h_dn["status"] == "降溫", "全數跌破 MA5 且 5 日報酬為負 → 降溫")
+    h_na = gtg._theme_heat([_tcard("A", [])])
+    ok(h_na["status"] == "盤整" and h_na["heat"] == 0, "無有效股價 → 盤整、heat 0，不拋例外")
+    h_short = gtg._theme_heat([_tcard("A", [10, 11, 12])])
+    ok(h_short["ret_5d"] is None and h_short["status"] == "盤整", "收盤筆數不足 → 報酬 None、判盤整")
+    ok(0 <= h_up["heat"] <= 100 and 0 <= h_dn["heat"] <= 100, "heat 介於 0～100")
+
+    # --- 連動：題材日報酬相關與自適應門檻 ---
+    base = [0.01, -0.02, 0.015, -0.005, 0.02, -0.01, 0.005, 0.012, -0.018, 0.007,
+            0.01, -0.02, 0.015, -0.005, 0.02, -0.01, 0.005, 0.012, -0.018, 0.007]
+    anti = [-x for x in base]
+    flat = [0.001 * ((i % 3) - 1) for i in range(20)]
+    corr = gtg._correlation_matrix({"X": base, "Y": [x * 1.5 for x in base], "Z": anti, "W": flat})
+    names, m = corr["names"], corr["matrix"]
+    rxy = m[names.index("X")][names.index("Y")]
+    rxz = m[names.index("X")][names.index("Z")]
+    ok(rxy is not None and rxy > 0.9, f"同向題材高度相關（{rxy}）")
+    ok(rxz is not None and rxz < 0, f"反向題材相關為負（{rxz}）")
+    ok(all(m[i][i] == 1.0 for i in range(len(names))), "對角線為 1")
+    short = gtg._correlation_matrix({"X": base[:5], "Y": base[:5]})
+    ok(short["names"] == [], "日報酬不足 MIN_LINK_POINTS → 不計相關")
+    thr, mean = gtg._link_threshold({"names": ["a", "b", "c"],
+                                     "matrix": [[1, 0.2, 0.3], [0.2, 1, 0.1], [0.3, 0.1, 1]]})
+    ok(thr == gtg.LINK_THRESHOLD and abs(mean - 0.2) < 1e-9, "兩兩平均相關低 → 門檻取絕對下限")
+    thr2, _ = gtg._link_threshold({"names": ["a", "b", "c"],
+                                   "matrix": [[1, 0.8, 0.85], [0.8, 1, 0.9], [0.85, 0.9, 1]]})
+    ok(abs(thr2 - (0.85 + gtg.LINK_MARGIN)) < 1e-9, "大盤齊漲齊跌（平均 ρ 0.85）→ 門檻自動拉高至 1.0")
+    ok(gtg._link_threshold({"names": [], "matrix": []}) == (gtg.LINK_THRESHOLD, None), "無相關資料 → 退回絕對下限")
+
+    # --- 主題鏈 ---
+    heat = {"X": {"status": "升溫", "heat": 70}, "Y": {"status": "盤整", "heat": 50},
+            "Z": {"status": "升溫", "heat": 60}, "W": {"status": "盤整", "heat": 40}}
+    chains = gtg._build_chains(heat, corr, threshold=0.5)
+    xy = [c for c in chains if "X" in c["themes"]]
+    ok(len(xy) == 1 and set(xy[0]["themes"]) == {"X", "Y"}, "升溫＋盤整且高相關 → 成一條鏈；反向題材不入同鏈")
+    ok(all(l["corr"] >= 0.5 for c in chains for l in c["links"]), "鏈內每條連結相關皆 ≥ 門檻")
+    heat2 = dict(heat, X={"status": "盤整", "heat": 70}, Z={"status": "盤整", "heat": 60})
+    ok(gtg._build_chains(heat2, corr, threshold=0.5) == [], "鏈內無任何升溫題材 → 不成鏈")
+    heat3 = dict(heat, Y={"status": "降溫", "heat": 20})
+    ok(not any("X" in c["themes"] for c in gtg._build_chains(heat3, corr, threshold=0.5)),
+       "相連的一方降溫 → 不相連")
+
+    # --- 題材等權指數 ---
+    idx = gtg._theme_index_returns([_tcard("A", up), _tcard("B", [100] * 21), _tcard("C", [1, 2])])
+    ok(len(idx) == 20, "題材指數取近 20 日；收盤不足的個股略過")
+    ok(abs(idx[-1] - (up[-1] / up[-2] - 1) / 2) < 1e-12, "題材指數為成分股日報酬等權平均")
+
+    # --- 區塊雜湊串接 ---
+    h1 = gtg._block_hash("0" * 10, "封測", "2026-10-19", 60)
+    ok(h1 != gtg._block_hash("0" * 10, "封測", "2026-10-19", 61), "熱度變動即改變區塊雜湊")
+    ok(len(h1) == 10, "區塊雜湊長度 10")
+
+
 TESTS = [
     test_ocean_gates,
     test_merge_ocean_history,
@@ -526,6 +616,7 @@ TESTS = [
     test_trading_halt_guard,
     test_tiger_window,
     test_backfill_ocean_dates,
+    test_theme_watch,
 ]
 
 

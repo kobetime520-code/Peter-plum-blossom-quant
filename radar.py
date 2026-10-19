@@ -1,5 +1,12 @@
 # ==========================================
-# 靜水流深戰情室：核心監控與全域雷達 V9.6
+# 靜水流深戰情室：核心監控與全域雷達 V9.7
+# ==========================================
+# V9.7 題材觀察擴充（2026-10-19 Peter／Grace，JW 指示）：
+#   新增 THEME_WATCH 六大題材（CCL/PCB/玻纖布/樹脂、記憶體/HDD、封測、散熱/電源、
+#     資安/軟體、特用化學），與被動卡娃同為 display-only：不參與篩選、不影響猛虎晉升、
+#     不計入儀表板統計；輸出至 plum_blossom_data.json 頂層 theme_watch（不放進 pools）
+#   題材卡與被動卡娃卡另存 closes_21d（近 21 日收盤），供 grace_theme_gen.py 算題材連動
+#   每檔 1 次 FinMind 法人 API（股價走 Yahoo 全市場批次），首跑約 +50 次、仍 < 200
 # ==========================================
 # V9.6 猛虎晉升改滑動窗口（2026-10-18 Right，Peter 週報：累計 count 只增不減致門檻失效）：
 #   記憶海每筆新增 dates（命中日清單，只追加）；晉升改為「當日命中且近 TIGER_WINDOW_DAYS(28)
@@ -86,8 +93,8 @@ logger.setLevel(logging.CRITICAL)
 # --- 1. 金鑰與設定區 ---
 # 🆕 2026-08-01 稽核 C4：版本字串集中一處，避免啟動橫幅／完成訊息各自寫死而落後
 #     （F-05：橫幅長期停在 V8.9，排錯時誤判執行版本）。升版只需改這一行。
-RADAR_VERSION = "V9.6"
-RADAR_VERSION_NOTE = "猛虎晉升28天窗口 + 停牌／資料落後守門 +全市場空跑保護 +姊夫池貴金屬ETF固定池 + A1/A2 雙閘門 + ATR 動態停損 + 大盤環境 + 記憶海真·僅追加"
+RADAR_VERSION = "V9.7"
+RADAR_VERSION_NOTE = "六大題材觀察 + 猛虎晉升28天窗口 + 停牌／資料落後守門 +全市場空跑保護 +姊夫池貴金屬ETF固定池 + A1/A2 雙閘門 + ATR 動態停損 + 大盤環境 + 記憶海真·僅追加"
 
 # 🔐 V7.5 安全修正：Token 從環境變數讀取（不再硬碼）
 FINMIND_TOKEN = os.environ.get("FINMIND_TOKEN", "")
@@ -149,6 +156,62 @@ PASSIVE_KAWA_TIERS = {
     "Tier 2": ["6175", "2472", "2327", "2375", "6449", "8042", "8163"],  # 立敦 / 立隆電 / 國巨 / 凱美(2375) / 鈺邦 / 金山電 / 達方
     "Tier 3": ["3090", "3537", "6432"],                                  # 日電貿 / 堡達 / 今展科
 }
+
+# --- 2-C. 🔗 V9.7 題材觀察池（display-only，與被動卡娃同規格；正本在此，改名單只動這裡）---
+# 結構：題材名 → {"icon", "groups": {子類: [代碼...]}}；代碼可跨題材重複（法人資料有快取，不重複計 API）
+# 名單於 2026-10-19 以 FinMind TaiwanStockInfo 核對代碼與上市櫃別；成分股選定依據見 CLAUDE.md V9.7
+THEME_WATCH = {
+    "CCL/PCB/玻纖布/樹脂": {"icon": "🧱", "groups": {
+        "CCL 銅箔基板": ["2383", "6274", "6213"],          # 台光電 / 台燿 / 聯茂
+        "PCB 載板":     ["2368", "3037", "8046", "3044"],  # 金像電 / 欣興 / 南電 / 健鼎
+        "玻纖布":       ["1802", "1815", "5340", "5475"],  # 台玻 / 富喬 / 建榮 / 德宏
+        "高頻樹脂":     ["4722", "4764"],                  # 國精化 / 雙鍵
+    }},
+    "記憶體/HDD": {"icon": "💾", "groups": {
+        "記憶體": ["2408", "2344", "2337", "8299", "3260"],  # 南亞科 / 華邦電 / 旺宏 / 群聯 / 威剛
+        "HDD 零組件": ["3060", "2236", "4545", "1586"],      # 銘異 / 百達-KY / 銘鈺 / 和勤
+    }},
+    "封測": {"icon": "🔬", "groups": {
+        "封裝": ["3711", "6239", "6147", "8150", "3374"],  # 日月光投控 / 力成 / 頎邦 / 南茂 / 精材
+        "測試": ["2449", "3264", "6257"],                  # 京元電子 / 欣銓 / 矽格
+    }},
+    "散熱/電源": {"icon": "🌀", "groups": {
+        "散熱": ["3017", "3324", "3653", "6230"],  # 奇鋐 / 雙鴻 / 健策 / 尼得科超眾
+        "電源": ["2308", "2301", "6409", "3015"],  # 台達電 / 光寶科 / 旭隼 / 全漢
+    }},
+    "資安/軟體": {"icon": "🛡️", "groups": {
+        "資安": ["6690", "2471", "7765", "3029", "6214"],  # 安碁資訊 / 資通 / 中華資安 / 零壹 / 精誠
+        "軟體服務": ["5203", "2453", "4953", "6148"],      # 訊連 / 凌群 / 緯致 / 驊宏資
+    }},
+    "特用化學": {"icon": "⚗️", "groups": {
+        "半導體特化": ["1773", "4755", "4772", "4749", "1727"],  # 勝一 / 三福化 / 台特化 / 新應材 / 中華化
+        "電子材料":   ["5234", "1711"],                          # 達興材料 / 永光
+    }},
+}
+
+
+def _theme_watch_sids() -> list:
+    """V9.7：THEME_WATCH 全部代碼（去重、保留首次出現順序）。"""
+    seen = []
+    for cfg in THEME_WATCH.values():
+        for sids in cfg["groups"].values():
+            for sid in sids:
+                if sid not in seen:
+                    seen.append(sid)
+    return seen
+
+
+def _recent_closes(df_prices, n: int = 21) -> list:
+    """V9.7：近 n 日收盤（供 Grace 算題材連動）；資料不足或格式異常回傳空清單，不中斷主流程。"""
+    try:
+        if df_prices is None or df_prices.empty:
+            return []
+        if 'Close' not in df_prices.columns:
+            df_prices = normalize_finmind_price_df(df_prices)
+        closes = pd.to_numeric(df_prices['Close'], errors='coerce').dropna().tail(n)
+        return [round(float(x), 2) for x in closes]
+    except Exception:
+        return []
 
 # =====================================================================
 # 🎯 V7.4 全域快取與 API 計數器
@@ -1321,6 +1384,8 @@ def main():
     # 🃏 被動卡娃魚池股票也需下載股價（純展示，不進市場掃描）
     passive_sids = [sid for tier_sids in PASSIVE_KAWA_TIERS.values() for sid in tier_sids]
     core_sids.extend(passive_sids)
+    # 🔗 V9.7 題材觀察池同理（純展示，不進市場掃描）
+    core_sids.extend(_theme_watch_sids())
 
     all_sids = list(set(market_sids + core_sids))
 
@@ -1579,9 +1644,48 @@ def main():
             if s_data:
                 s_data = _apply_trading_halt_guard(s_data, latest_trade_date)
                 s_data["tier"] = tier_name
+                s_data["closes_21d"] = _recent_closes(df_price_to_use)  # V9.7：供題材連動
                 passive_results.append(s_data)
             time.sleep(0.5)
     final_data_structure[PASSIVE_KAWA_POOL_NAME] = passive_results
+
+    # =====================================================================
+    # 🔗 V9.7 題材觀察池（display-only，同被動卡娃規格；輸出至頂層 theme_watch）
+    #    不放進 final_data_structure，故不影響魚池渲染、猛虎晉升與儀表板統計
+    # =====================================================================
+    theme_watch_out = {}
+    _theme_card_memo = {}   # 同一代碼跨題材只算一次
+    print(f"🔗 監控中: 題材觀察池 {len(THEME_WATCH)} 大題材（純展示不篩選）...")
+    for theme_name, cfg in THEME_WATCH.items():
+        cards = []
+        for group_name, g_sids in cfg["groups"].items():
+            for sid in g_sids:
+                if sid not in _theme_card_memo:
+                    df_price_to_use = valid_dfs.get(sid)
+                    if df_price_to_use is None or df_price_to_use.empty:
+                        df_price_to_use = download_yf_data_single(sid, market_map)
+                        if df_price_to_use is None or df_price_to_use.empty:
+                            df_price_to_use = fetch_finmind("TaiwanStockPrice", start_60d, today_str, sid)
+                    df_i = fetch_finmind("TaiwanStockInstitutionalInvestorsBuySell", start_30d, today_str, sid)
+                    ind = industry_map.get(sid, theme_name)
+                    s_data = calculate_stock_data(
+                        sid, name_map.get(sid, sid), ind, df_price_to_use, df_i,
+                        force_show=True,
+                        yf_info={"industry": yf_industry_map.get(sid, ""),
+                                  "sector":   yf_sector_map.get(sid, "")})
+                    if s_data:
+                        s_data = _apply_trading_halt_guard(s_data, latest_trade_date)
+                        s_data["closes_21d"] = _recent_closes(df_price_to_use)
+                    _theme_card_memo[sid] = s_data
+                    time.sleep(0.5)
+                base = _theme_card_memo.get(sid)
+                if base:
+                    card = dict(base)
+                    card["theme"] = theme_name
+                    card["subcat"] = group_name
+                    cards.append(card)
+        theme_watch_out[theme_name] = {"icon": cfg["icon"], "stocks": cards}
+    print(f"  - 🔗 題材觀察池完成：{len(_theme_card_memo)} 檔（{len(THEME_WATCH)} 大題材）")
 
     final_data_structure["🌊 汪洋大魚"] = market_pool
 
@@ -1626,6 +1730,7 @@ def main():
         "market_regime": market_regime,
         "dashboard_stats": dashboard_stats,
         "pools": final_data_structure,
+        "theme_watch": theme_watch_out,   # 🔗 V9.7 題材觀察池（display-only）
     }
     with open("plum_blossom_data.json", 'w', encoding='utf-8') as f:
         json.dump(output, f, ensure_ascii=False, indent=2)
