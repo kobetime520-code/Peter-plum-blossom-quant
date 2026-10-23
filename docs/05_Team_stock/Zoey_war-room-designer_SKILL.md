@@ -2,9 +2,9 @@
 name: war-room-designer
 description: "戰情室視覺設計工具：Dashboard 2.0 版面規劃、Chart.js 圖表選型、各品牌分頁視覺一致性、響應式斷點、色彩與資訊層級。用於把數據與戰報轉成一眼看懂、風格統一的戰情室介面。觸發條件：'戰情室介面'、'Dashboard 設計'、'加個圖表'、'視覺一致性'、'響應式版面'、'配色/字級'、'/war-room-designer'。"
 owner: Zoey（Team Stock 投資行銷創意長）
-aligns_with: index.html V9.2 UI（極光玻璃／粉紅泡泡糖雙主題）/ grace.html 題材分頁 / Chart.js / plum_blossom_data.json 資料源
+aligns_with: index.html V9.7 UI（極光玻璃／粉紅泡泡糖雙主題）/ grace.html V9.7 題材區塊鏈 / Chart.js 4.4.1（index.html）＋手寫 SVG（grace.html）/ plum_blossom_data.json 與 grace_theme_data.json 資料源
 installed: 2026-07-06
-updated: 2026-08-01
+updated: 2026-10-23
 ---
 
 # War Room Designer — 戰情室視覺設計引擎
@@ -19,7 +19,7 @@ updated: 2026-08-01
 > **兩者不重疊、不合併**：人格檔決定「誰在做」，本檔決定「用什麼流程做」。
 > 需要 Zoey 完整操刀一項視覺工作時兩份併用。（2026-08-01 稽核 D2／F-10 釐清）
 >
-> ⚠️ 本檔修改後須同步全域安裝副本，否則兩邊會再度漂移（本次漂移即 V9.1 → V9.2 未同步所致）。
+> ⚠️ 本檔修改後須同步全域安裝副本，否則兩邊會再度漂移（前次漂移為 V9.1 → V9.2 未同步；2026-10-23 已一併同步至 V9.7 UI）。
 
 > Zoey 用於把「一堆數字與戰報」變成一眼看懂、跨分頁風格一致的戰情室介面。
 > 核心信念：「先定資訊層級，再選圖表，最後才談配色。好看是結果，看得懂才是目的。」
@@ -28,8 +28,8 @@ updated: 2026-08-01
 
 ## 啟動前的定錨問題（Phase 0）
 
-1. **頁面範圍** — 主戰情室（index.html）？題材分頁（grace.html）？新品牌分頁？
-2. **資料來源** — 對接哪個 JSON（plum_blossom_data.json 等）？欄位與更新頻率為何？
+1. **頁面範圍** — 主戰情室（index.html，V9.7 UI）？題材區塊鏈（grace.html，V9.7 改版）？孟恭道路指引（mengong.html）？新品牌分頁？
+2. **資料來源** — 對接哪個 JSON（戰報 plum_blossom_data.json、題材 grace_theme_data.json、回測 backtest_report.json）？欄位與更新頻率為何？題材與被動卡娃為 display-only，不得計入多空／健康度統計。
 3. **使用情境** — 桌機盯盤為主，或需兼顧手機速覽？（決定斷點策略）
 4. **視覺目標** — 新增元件 / 既有版面優化 / 全站風格統整？
 
@@ -51,16 +51,19 @@ updated: 2026-08-01
 | 分項貢獻（strength_score 拆解） | horizontalBar / stacked bar | 籌碼/技術/基本面占比 |
 | 方向與強弱分級 | doughnut + 中央數字 | inst_grade、chip_signal 燈號 |
 | 多維比較（魚池橫向） | radar / table | 個股健檢對照 |
+| 題材熱度與連動（V9.7） | 手寫 SVG 串接＋矩陣 | 主題鏈、連動矩陣（grace.html 不載 Chart.js） |
 - 原則：能用表格說清楚就不硬上花俏圖；圖表一律附單位與時間戳
 
 ### Phase 3 — 視覺一致性（跨分頁）
-- **共用設計 token**：主色/警示色/背景/字級階梯，統一沿用 index.html V9.2 UI 既有變數（雙主題各自的 CSS 變數），不新增雜色
+- **共用設計 token**：主色/警示色/背景/字級階梯，統一沿用 index.html V9.7 UI 既有變數（雙主題各自的 CSS 變數），不新增雜色
 - 燈號語意固定：🔴 風險/賣、🟡 觀察、🟢 穩固/買（全站一致，不可分頁各自定義）
 - 元件複用：卡片、標籤、表格樣式共用同一套 class，新分頁繼承而非另造
+- **狀態提示（V9.5 起）**：停牌／資料落後的 `data_note` 為動作框上方的橘色提示列，語意固定「訊號暫停」，不可改成風險紅或與賣出混用
 
 ### Phase 4 — 響應式與交付
 - 斷點策略：桌機多欄 → 平板兩欄 → 手機單欄堆疊；圖表容器用百分比寬 + 固定高
-- 交付前自檢：手機不橫向捲動、圖表不溢出、深色背景對比達 AA、時間戳與資料源標註齊全
+- 交付前自檢：手機不橫向捲動、圖表不溢出、深色背景對比達 AA（淺色主題含 12px 小字亦須過 4.5）、時間戳與資料源標註齊全
+- **動效自檢（V9.7 起）**：串接／波浪等動態一律包在 `@media (prefers-reduced-motion: no-preference)` 內，關閉動效時版面仍須完整可讀；行動版題材鏈改直向串接
 - 實作落地交棒 [[karpathy-coder]]（Left），Zoey 出視覺規格與驗收，不直接推 code
 
 ---
@@ -69,7 +72,7 @@ updated: 2026-08-01
 
 ```
 ## 戰情室視覺規格：[頁面/元件]
-資料源：[JSON 檔] | 目標裝置：[桌機/手機] | 版本對齊：index.html V9.2 UI
+資料源：[JSON 檔] | 目標裝置：[桌機/手機] | 版本對齊：index.html V9.7 UI
 
 ### 資訊層級（三秒重點）
 [使用者最先看到的 1–2 項]
@@ -96,10 +99,12 @@ updated: 2026-08-01
 - **分頁走鐘** — 新分頁自訂配色/燈號 = 全站不一致，一律回收沿用共用 token
 - **圖表誤導** — 截斷 Y 軸、缺單位/時間戳會誤導判讀，強制標註
 - **手機破版** — 只在桌機驗收就交付是常見坑，務必實測窄螢幕
+- **凍結資料當現行值** — 手動維護的區塊（grace.html 個股轉型深度專題等）須標示「資料截至 …（不隨排程更新）」，否則讀者會誤判為當日資料
 - **不越權寫死邏輯** — 視覺與資料呈現由 Zoey 定，選股/分數邏輯回歸引擎與 Right/Eric，不在前端動手改規則
 
 ---
 
 **Owner:** Zoey ｜ **實作交棒:** [[karpathy-coder]]（Left）｜ **資料品質前置:** [[data-quality-auditor]]
 **角色人格正本:** `Zoey_SKILL.md`（本檔為方法論工具包，兩者分工見檔首）
-**對齊:** index.html V9.2 UI（極光玻璃／粉紅泡泡糖雙主題）/ grace.html 題材分頁 / Chart.js
+**對齊:** index.html V9.7 UI（極光玻璃／粉紅泡泡糖雙主題）/ grace.html V9.7 題材區塊鏈 / Chart.js 4.4.1（index.html）＋手寫 SVG（grace.html）
+**升版紀錄:** 2026-10-23 對齊 V9.7 UI（題材區塊鏈版面、V9.5 `data_note` 提示列、reduced-motion 自檢）；前版對齊 V9.2 UI，2026-08-01

@@ -1,6 +1,6 @@
 # 🌸 彼夫有責戰情室 — 梅花選股量化系統
 
-> 負責人：JW ｜ AI 特助：Jemini ｜ 最後更新：2026-08-01 ｜ 版本：**V9.2 / V9.2 UI**
+> 負責人：JW ｜ AI 特助：Jemini ｜ 最後更新：2026-10-23 ｜ 版本：**V9.7 / V9.7 UI**
 
 台股自動選股與監控系統，以量化模型搭配三大法人籌碼，每日自動掃描股票池、輸出操作訊號，協助 JW 做出進出場決策。架構為**方案 B 本地主算**：重度運算在本機（工作排程器）執行，GitHub 僅作靜態戰報展示。
 
@@ -27,18 +27,19 @@
 | 檔案 / 資料夾 | 說明 |
 |--------------|------|
 | `CLAUDE.md` | 戰情室核心記憶檔（規格唯一事實來源） |
-| `radar.py` | 核心雷達掃描程式（正式版，V9.2） |
-| `moly.py` / `git_sync.py` | 本地主算入口 / 精準推送（5 個戰報檔白名單） |
-| `index.html` / `grace.html` / `mengong.html` | 前端展示頁面（主頁 / Grace 題材 / 孟恭道路指引） |
+| `radar.py` | 核心雷達掃描程式（正式版，V9.7） |
+| `moly.py` / `git_sync.py` | 本地主算入口 / 全系統唯一推送實作（預設 5 個戰報檔；V1.4 起推送失敗由後續排程自動補推） |
+| `index.html` / `grace.html` / `mengong.html` | 前端展示頁面（主頁 / Grace 題材區塊鏈 / 孟恭道路指引） |
 | `plum_blossom_data.json` | 每日選股戰報 |
 | `ocean_history.json` | 記憶海（真·僅追加，近 28 天出現 ≥ 3 次晉升猛虎池） |
 | `log_report.json` / `backtest_report.json` / `grace_theme_data.json` | 維運日誌 / 週回測 / Grace 題材 |
 | `backtest_run.py` / `grace_run.py` / `mengong_auto.py` | 排程執行器（回測 / 題材 / 孟恭） |
 | `schedule_progress.ps1` / `排程進度看板.bat` | 四排程狀態看板（`-Watch` 即時刷新） |
 | `*_cache.json` | 本地快取（`finmind_cache.json` 等，不推送） |
+| `tests/` | 離線回歸測試（`python tests/run_all.py`，零 API；改閘門或推送流程後必跑） |
 | `.github/workflows/manual_radar_update.yml` | GitHub Actions 手動備援（僅 `workflow_dispatch`，無 cron） |
 
-> `C:\Moly\`（倉庫外）為排程進入點：`moly_start.ps1`（含交易日判斷）、`backtest_start.ps1`、`grace_start.ps1`、`holidays.txt`、`norton_root.pem`。
+> `C:\Moly\`（倉庫外）為排程進入點：`run_hidden.pyw`（無視窗啟動器，四支排程共用）、`moly_start.ps1`（含交易日判斷）、`backtest_start.ps1`、`grace_start.ps1`、`holidays.txt`、`norton_root.pem`。
 
 ---
 

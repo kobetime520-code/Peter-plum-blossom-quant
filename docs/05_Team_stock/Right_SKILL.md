@@ -1,6 +1,6 @@
 ---
 name: Right
-description: Team Stock 投資研發長 — 量化系統底層架構設計與 API 降載策略（對齊 radar.py V9.3）
+description: Team Stock 投資研發長 — 量化系統底層架構設計與 API 降載策略（對齊 radar.py V9.7）
 type: skill
 ---
 
@@ -157,4 +157,15 @@ Yahoo Finance 全市場批量下載 60 日 K（chunk=150）
 
 ---
 
-*此檔案由 Claude 與 JW 共同維護。版本：V2.4（對齊 radar.py V9.3：姊夫池動態篩選架構拆除、改貴金屬 ETF 固定池，2026-08-22；前版 V2.3：姊夫池動態篩選架構，2026-07-11）*
+## V9.4–V9.7 引擎對齊摘要（2026-10-23）
+
+- **V9.4 全市場空跑保護**：純函式 `is_market_data_sufficient(valid_count, target_count)`＋常數 `MIN_VALID_DFS`＝100 檔、`MIN_VALID_DFS_RATIO`＝30%，於下載完成、進入雷達濾網**之前**攔截；觸發時中止、保留前一輪戰報、不更新記憶海、不推送，`log_report` 狀態 `Failed-NoData`。門檻刻意取寬（正常覆蓋率約 78%），只擋整批失敗。
+- **V9.5 停牌／資料落後守門**：`_latest_trade_date(valid_dfs)` 取全市場最後一列日期的**眾數**（不取 max，避免單檔未來日期誤殺全市場），`_apply_trading_halt_guard(s_data, latest_trade_date)` 強制「靜候觀察」。三處呼叫點：汪洋大魚市場掃描（action 判斷前）、魚池監控段（姊夫 `_apply_jiefu_etf_signal` 之後）、被動卡娃段。A1／A2 閘門與強勢評分未動。
+- **V9.6 記憶海與猛虎晉升**：`merge_ocean_history` 每筆另存 `dates`（只追加、去重），晉升改看 28 天窗口內次數；`count`／`last_date` 照舊累計、缺 `dates` 的舊格式退回累計判斷；**零新增 API**。
+- **V9.7 題材觀察池 API 預算**：`THEME_WATCH` 六大題材 55 檔，每檔 1 次 FinMind 法人 API、股價走 Yahoo 全市場批次，與既有魚池重疊者走快取，首跑約 +50 次，**總量仍 < 200 次/執行**。
+- A1／A2 雙閘門（V9.0）、大盤環境過濾（V8.9）、姊夫 ETF 固定池（V9.3）架構未改。
+- 紀律：改動閘門邏輯或推送流程後須跑 `python tests/run_all.py`（現為 gates 165 項＋git_sync 22 項，全離線零 API）。
+
+---
+
+*此檔案由 Claude 與 JW 共同維護。版本：V2.5（對齊 radar.py V9.7：空跑保護、停牌守門純函式、記憶海滑動窗口、題材池 API 預算，2026-10-23；前版 V2.4：姊夫池動態篩選架構拆除、改貴金屬 ETF 固定池，2026-08-22）*

@@ -1,6 +1,6 @@
 ---
 name: Left
-description: Team Stock 投資程設助理 — Git 版控流程、實彈測試、Bug 修復與多分頁前端響應式 UI 調整
+description: Team Stock 投資程設助理 — Git 版控流程、實彈測試、Bug 修復與多分頁前端響應式 UI 調整（對齊 V9.7 UI）
 type: skill
 ---
 
@@ -141,4 +141,15 @@ index.html 排列優化 P1–P4，純前端、零 API 影響。Left 維護時須
 
 ---
 
-*此檔案由 Claude 與 JW 共同維護。版本：V2.4（對齊 V9.2/V9.2 UI：姊夫池動態引擎落地 + 雙主題樣式維護，2026-07-11；前版 V2.3：+grace 分頁、根目錄路徑、V9.1 UI 實作紀錄 + 工作連結，2026-07-05）*
+## V9.4–V9.7 引擎對齊摘要（2026-10-23）
+
+- **V9.7 UI 落地**：`grace.html` 全面改版為題材區塊鏈（置頂主題鏈橫向串接＋全題材垂直帳本＋連動矩陣，行動版改直向串接、尊重 `prefers-reduced-motion`）；`index.html` 版本徽章／系統橫幅／頁尾升 V9.7，分頁入口改名「🔗 彼神題材鏈」。
+- **V9.5 前端**：卡片於動作框上方顯示 `data_note` 橘色提示（停牌／資料落後），規則說明區補一行。
+- **V9.6 前端**：猛虎倒數徽章改用 28 天窗口次數（有 `dates` 時）。
+- **測試紀律**：`tests/test_gates.py` 現為 **165 項**（V9.7 新增 ⑫ 段 37 項：名單結構、`_recent_closes`、熱度三態、自適應門檻、成鏈條件、題材指數、雜湊串接），加 `tests/test_git_sync.py` 22 項；入口 `python tests/run_all.py`，全離線零 API。改動 `radar.py` 閘門或 `git_sync.py` 推送流程後必跑。
+- **推送紀律**：一律走 `git_sync.py`（V1.4：push 退避重試 4 次 15→45→90 秒、滯留 commit 由任一後續排程自動帶走），**勿在任何腳本內自行 `git add/commit/push`**——會繞過 stash 防呆、rebase 衝突處理與 `.git_sync.lock` 互斥。
+- BUG-001（`index.html` 結尾易被截斷，改完確認最後一行為 `</html>`）續行。V9.1／V9.2 UI 雙主題維護職責不變。
+
+---
+
+*此檔案由 Claude 與 JW 共同維護。版本：V2.5（對齊 V9.7／前端 V9.7 UI：V9.7 UI 落地、gates 165 項測試紀律、git_sync V1.4 推送紀律，2026-10-23；前版 V2.4：姊夫池動態引擎落地 + 雙主題樣式維護，2026-07-11）*
