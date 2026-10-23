@@ -13,7 +13,7 @@
 
 | 團隊 | 正本位置（本機） | 成員 |
 |------|----------------|------|
-| 🏢 AI 總管理處 | `C:\AIworkplace\AI Magic\AI總管理處\` | Sidey、Ken、Joseph ＋ 清冊/架構圖/公告日期版系列（最新 20260706） |
+| 🏢 AI 總管理處 | `C:\AIworkplace\AI Magic\AI總管理處\` | Sidney、Ken、Joseph ＋ 清冊/架構圖/公告日期版系列（最新 20260706） |
 | 🤖 Team AI | `C:\AIworkplace\AI Magic\Team AI\` | Ted（V2.0）＋ IT_memory.md |
 | 🏠 Team Life | `C:\AIworkplace\AI Magic\Team Life\` | ChingWen ＋ 教育/財管/家庭/旅遊四顧問 ＋ Life_memory.md |
 | 🏭 Team PID | `C:\AIworkplace\AI Magic\Team PID\` | Jeff（協理）、Oscar、Ann、Sian、Luci、Edda ＋ PID_memory.md |
