@@ -1,6 +1,6 @@
 # 彼夫有責戰情室 — Claude 協作記憶檔
 
-> 最後更新：2026-10-20
+> 最後更新：2026-11-22
 > 負責人：Jeff（kobetime520@gmail.com）
 > 版本：**V9.7 ／ 前端 V9.7 UI（Grace 題材鏈）**
 
@@ -306,6 +306,7 @@ action = "買入加碼" if close_price >= ma5 and inst_buy_30d > 0 else "靜候�
 
 | 日期 | 版本 | 說明 |
 |---|---|---|
+| 2026-11-22 | — | **Tim SKILL 對齊 V9.7**（P0 深度盤點、JW 指示）：`Tim_SKILL.md` V2.2 → **V2.3**，名單註記由「V8.9 已更新」改為對齊 V9.7（楓大 8／彼神 7 與 `POOL_SETTINGS` 核對一致），補 2026-09-21 楓大新增 4532；新增「V9.0–V9.7 引擎對齊摘要」— V9.5 停牌守門旗標納入健檢風險訊號、V9.4 空跑保護下先確認戰報日期、A1／A2 與猛虎窗口不影響楓大彼神、姊夫 ETF 池／被動卡娃／題材觀察池不在健檢範圍、跨池重複個股（2308／2327／2344／4716）以魚池身分為準。`.claude\agents\tim.md` 描述與 SKILL 版本引用同步。Team Stock 成員 SKILL 至此 8 人對齊 V9.7（Peter／Maple SKILL 內容不涉引擎規則，未加版本註記）。仍未處理：claude.ai 帳號上的 Team Stock 個人 skill 仍寫 V9.2（本機無檔，須手動）。 |
 | 2026-10-23 | — | **成員 SKILL 與 agent 定義檔對齊 V9.7**（JW 指示）：六位 Team Stock 成員自述由 V9.3／V9.2 升至 V9.7 — Eric V1.5（V9.5 停牌守門旗標納入籌碼解讀前置檢查、V9.7 題材池列為非監控範圍）、Grace V2.6（V9.7 六大題材觀察池、grace_theme_gen V2.0 熱度三態與自適應連動門檻、grace.html 題材區塊鏈）、Joe V2.6（V9.6 猛虎 28 天滑動窗口、V9.5 守門後的訊號解讀紀律）、Right V2.5（V9.4 空跑保護、V9.5 守門純函式、V9.6 記憶海 dates、V9.7 題材池 API 預算）、Left V2.5（V9.7 UI 落地、gates 165 項測試紀律、git_sync V1.4 推送紀律）、Zoey V2.5（V9.7 UI 版面與 V9.5／V9.6 卡片徽章）；每份新增「V9.4–V9.7 引擎對齊摘要」段落。`.claude\agents\` 六個 agent 檔同步版本註記與 SKILL 版本引用。同日另將方法論工具包 `Zoey_war-room-designer_SKILL.md` 與其全域安裝副本（`.claude\skills\war-room-designer\`）對齊 V9.7 UI：frontmatter `aligns_with`／`updated`、Phase 0 頁面與資料源（補 mengong.html、grace_theme_data.json、display-only 不計入統計）、Phase 2 新增題材熱度與連動列（grace.html 不載 Chart.js、走手寫 SVG）、Phase 3 `data_note` 橘色提示列語意、Phase 4 reduced-motion 與淺色 12px 小字對比自檢、新增「凍結資料當現行值」風險旗標；兩份寫入後逐字比對一致。 |
 | 2026-10-23 | — | **待處理清單 B01–B07 收尾**（Magic Lab 盤點、JW 指示）：① 四個專案 skill（data-quality-auditor／karpathy-coder／llm-cost-optimizer／statistical-analyst）由「對齊 radar.py V9.0」升至 V9.7，專案正本與使用者層副本（%USERPROFILE%\.claude\skills）同步寫入、逐字一致；各補「V9.4–V9.7 對齊要點」段落，llm-cost-optimizer 的 L2 快取由誤植的 DuckDB 更正為 radar.py 實際的 JSON 快取（finmind_cache／TaiwanStockInfo／stock_result_cache／yf_info_cache）。② README.md 檔首升 V9.7／V9.7 UI，補 run_hidden.pyw 與 tests/。③ Moly_SKILL V2.2 → **V2.3**：補 run_hidden.pyw 無視窗啟動器、git_sync V1.4 推送自癒、V9.4 Failed-NoData 狀態判讀、排程異常排查表；API 評估基準由「< 300 優良」校正為對齊引擎目標 < 200；修正「只要同步」指令原寫手動 git push（違反唯一推送規則）。④ .claude\agents\oscar.md 描述補 OSAT 封測週報。未處理：claude.ai 帳號上的 10 個 Team Stock 個人 skill 仍寫 V9.2（本機無檔，須手動）；pid-planner-toolkit 與選情儀表板尚未指定負責成員。 |
 | 2026-10-20 | — | **🔗 題材觀察池新增 4716 大立**（JW 指示，54 → 55 檔，2026-10-20 20:39 排程起生效）：`radar.py` `THEME_WATCH`「特用化學 → 電子材料」追加 `"4716"`（與達興材料、永光同組；轉型主軸為導電高分子水性分散液切入固態電容，同日已列入 `grace.html` 個股轉型深度專題）。4716 已在 🌟 彼神黃金魚池，法人資料走快取、**零額外 API**。仍為 display-only，不影響篩選與猛虎晉升。 |
